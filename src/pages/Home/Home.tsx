@@ -1,7 +1,58 @@
 import { useNavigate } from "react-router-dom"
+import {
+    CodeXml,
+    Flame,
+    FlaskConical,
+    ListChecks,
+    RefreshCw,
+    Trophy,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/authContext"
+import { InfoCard } from "@/pages/Home/components/InfoCard"
+import { TrialCard } from "@/pages/Home/components/TrialCard"
+
+const infoCards = [
+    {
+        label: "Streak",
+        value: "123",
+        description: "dias consecutivos",
+        icon: Flame,
+        color: "text-orange-500",
+    },
+    {
+        label: "XP",
+        value: "4.567",
+        description: "total",
+        icon: FlaskConical,
+        color: "text-violet-700",
+    },
+    {
+        label: "Conquistas",
+        value: "56",
+        description: "ganhas",
+        icon: Trophy,
+        color: "text-amber-400",
+    },
+    {
+        label: "Em andamento",
+        value: "40",
+        description: "trilhas",
+        icon: RefreshCw,
+        color: "text-sky-600",
+    },
+    {
+        label: "Concluídas",
+        value: "12",
+        description: "trilhas",
+        icon: ListChecks,
+        color: "text-emerald-600",
+    },
+] as const
+
+const enrolledTrials = Array.from({ length: 6 })
+const availableTrials = Array.from({ length: 6 })
 
 export function HomePage() {
     const { logout } = useAuth()
@@ -13,15 +64,70 @@ export function HomePage() {
     }
 
     return (
-        <main className="flex min-h-screen items-center justify-center">
-            <div className="space-y-4 text-center">
-                <h1 className="text-4xl font-bold">Home</h1>
+        <main className="min-h-screen bg-[#e8ebef] px-4 py-6 text-slate-900 sm:px-7 sm:py-8">
+            <div className="mx-auto max-w-[1210px]">
+                <header className="mb-6 flex items-center justify-between gap-4">
+                    <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+                        Olá, Joe Doe!
+                    </h1>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-slate-500 hover:text-slate-900"
+                        onClick={handleLogout}
+                    >
+                        Sair
+                    </Button>
+                </header>
 
-                <p className="text-muted-foreground">Você está autenticado.</p>
+                <section
+                    aria-label="Resumo do seu progresso"
+                    className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5"
+                >
+                    {infoCards.map((card) => (
+                        <InfoCard key={card.label} {...card} />
+                    ))}
+                </section>
 
-                <Button variant="destructive" onClick={handleLogout}>
-                    Sair
-                </Button>
+                <section className="mt-7">
+                    <div className="mb-4 flex items-center gap-2">
+                        <h2 className="text-lg font-bold">Minhas trilhas</h2>
+                    </div>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {enrolledTrials.map((_, index) => (
+                            <TrialCard
+                                key={`enrolled-${index}`}
+                                category="Tecnologia"
+                                title="Javascript"
+                                modules="10/12 módulos"
+                                image={
+                                    <CodeXml
+                                        aria-hidden="true"
+                                        className="size-8 stroke-[2.5]"
+                                    />
+                                }
+                                progress={50}
+                            />
+                        ))}
+                    </div>
+                </section>
+
+                <section className="mt-8 pb-4">
+                    <h2 className="mb-4 text-lg font-bold">Trilhas disponíveis</h2>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {availableTrials.map((_, index) => (
+                            <TrialCard
+                                key={`available-${index}`}
+                                category="Tecnologia"
+                                title="Javascript"
+                                modules="52 módulos"
+                                image={
+                                    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/React_Logo_SVG.svg/1280px-React_Logo_SVG.svg.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail" alt="" className="size-8" />
+                                }
+                            />
+                        ))}
+                    </div>
+                </section>
             </div>
         </main>
     )
