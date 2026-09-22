@@ -6,7 +6,7 @@
         "verbatimModuleSyntax": false,
         "esModuleInterop": true,
         "jsx": "react-jsx",
-        "types": ["jest", "node", "@testing-library/jest-dom"]
+        "types": ["vite/client", "jest", "node", "@testing-library/jest-dom"]
     },
     "include": ["src/**/*.ts", "src/**/*.tsx"]
 }
