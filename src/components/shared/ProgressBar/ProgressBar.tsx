@@ -16,14 +16,14 @@ export function ProgressBar({ value, className, ...props }: ProgressBarProps) {
             aria-valuemax={100}
             aria-valuenow={clamped}
             className={cn(
-                "h-1.5 w-full overflow-hidden rounded-full bg-slate-200 sm:h-2",
+                "h-2 w-full overflow-hidden rounded-full bg-[#d9d9d9] sm:h-3",
                 className,
             )}
             {...props}
         >
             <div
                 data-slot="progress-fill"
-                className="h-full rounded-full bg-sky-500 transition-[width] duration-500 ease-out"
+                className="h-full rounded-full bg-[#b8b8b8] transition-[width] duration-500 ease-out"
                 style={{ width: `${clamped}%` }}
             />
         </div>
