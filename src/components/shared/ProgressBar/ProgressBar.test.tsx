@@ -54,6 +54,6 @@ describe("ProgressBar", () => {
 
         const bar = screen.getByRole("progressbar")
 
-        expect(bar).toHaveClass("w-full", "h-1.5", "sm:h-2", "minha-classe")
+        expect(bar).toHaveClass("w-full", "h-2", "sm:h-3", "minha-classe")
     })
 })
