@@ -25,7 +25,9 @@ export function TrialCard({
                 {image}
             </div>
             <div className="min-w-0 flex-1">
-                <p className="text-[9px] font-medium text-sky-500">{category}</p>
+                <p className="text-[9px] font-medium text-sky-500">
+                    {category}
+                </p>
                 <h3 className="truncate text-xs font-bold text-slate-900">
                     {title}
                 </h3>
