@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom"
 import {
     CodeXml,
     Flame,
@@ -8,8 +7,6 @@ import {
     Trophy,
 } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
-import { useAuth } from "@/contexts/authContext"
 import { InfoCard } from "@/pages/Home/components/InfoCard"
 import { TrialCard } from "@/pages/Home/components/TrialCard"
 
@@ -55,37 +52,26 @@ const enrolledTrials = Array.from({ length: 6 })
 const availableTrials = Array.from({ length: 6 })
 
 export function HomePage() {
-    const { logout } = useAuth()
-    const navigate = useNavigate()
-
-    function handleLogout() {
-        logout()
-        navigate("/login")
-    }
-
     return (
         <main className="min-h-screen bg-[#e8ebef] px-4 py-6 text-slate-900 sm:px-7 sm:py-8">
             <div className="mx-auto max-w-[1210px]">
-                <header className="mb-6 flex items-center justify-between gap-4">
+                <header className="mb-6">
                     <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
                         Olá, Joe Doe!
                     </h1>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-slate-500 hover:text-slate-900"
-                        onClick={handleLogout}
-                    >
-                        Sair
-                    </Button>
                 </header>
 
                 <section
                     aria-label="Resumo do seu progresso"
-                    className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5"
+                    className="flex gap-3 overflow-x-auto px-0.5 pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-5"
                 >
                     {infoCards.map((card) => (
-                        <InfoCard key={card.label} {...card} />
+                        <div
+                            key={card.label}
+                            className="min-w-[92px] flex-1 sm:min-w-0"
+                        >
+                            <InfoCard {...card} />
+                        </div>
                     ))}
                 </section>
 
@@ -113,7 +99,9 @@ export function HomePage() {
                 </section>
 
                 <section className="mt-8 pb-4">
-                    <h2 className="mb-4 text-lg font-bold">Trilhas disponíveis</h2>
+                    <h2 className="mb-4 text-lg font-bold">
+                        Trilhas disponíveis
+                    </h2>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                         {availableTrials.map((_, index) => (
                             <TrialCard
@@ -122,7 +110,11 @@ export function HomePage() {
                                 title="Javascript"
                                 modules="52 módulos"
                                 image={
-                                    <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/React_Logo_SVG.svg/1280px-React_Logo_SVG.svg.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail" alt="" className="size-8" />
+                                    <img
+                                        src="https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/React_Logo_SVG.svg/1280px-React_Logo_SVG.svg.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
+                                        alt=""
+                                        className="size-8"
+                                    />
                                 }
                             />
                         ))}

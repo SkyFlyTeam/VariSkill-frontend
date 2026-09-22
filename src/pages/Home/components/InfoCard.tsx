@@ -16,18 +16,21 @@ export function InfoCard({
     color,
 }: InfoCardProps) {
     return (
-        <article className="flex min-h-20 items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-[0_3px_8px_rgba(15,23,42,0.08)] sm:min-h-21">
+        <article className="flex min-h-24 flex-col items-center justify-start gap-1 rounded-2xl bg-white px-2 py-3 text-center shadow-[0_3px_8px_rgba(15,23,42,0.08)] sm:min-h-21 sm:flex-row sm:gap-5 sm:px-4 sm:py-3 sm:text-left">
             <div className={`shrink-0 ${color}`}>
-                <Icon aria-hidden="true" className="size-9 stroke-[1.9]" />
+                <Icon
+                    aria-hidden="true"
+                    className="size-7 stroke-[1.9] sm:size-9"
+                />
             </div>
             <div className="min-w-0">
-                <p className="text-[10px] font-medium leading-tight text-slate-500">
+                <p className="text-[9px] font-medium leading-tight text-slate-500 sm:text-[10px]">
                     {label}
                 </p>
-                <p className="mt-1 text-lg font-bold leading-none text-slate-900">
+                <p className="mt-1 text-base font-bold leading-none text-slate-900 sm:text-lg">
                     {value}
                 </p>
-                <p className="mt-2 text-[10px] leading-none text-slate-500">
+                <p className="mt-1 text-[9px] leading-none text-slate-500 sm:mt-2 sm:text-[10px]">
                     {description}
                 </p>
             </div>

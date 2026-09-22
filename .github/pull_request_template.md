@@ -1,12 +1,15 @@
-# | Título da issue/task relacionada | (link issue) | #
+# | Título da issue/task relacionada | (link issue) |
 
-### O que foi feito: ###
+### O que foi feito:
+
 - Mudanças
 
-### Passos para testar: ###
-1. 
+### Passos para testar:
 
-### Checklist 
+1.
+
+### Checklist
+
 - [ ] Atualizado com a develop
 - [ ] Dentro dos critérios de aceitação
 - [ ] Adicionado novas dependências
