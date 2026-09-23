@@ -1,10 +1,13 @@
+import { ToastProvider } from "@/components/shared/toast"
 import { AuthProvider } from "@/contexts/authContext"
 import { AppRoutes } from "@/routes/routes"
 
 function App() {
     return (
         <AuthProvider>
-            <AppRoutes />
+            <ToastProvider>
+                <AppRoutes />
+            </ToastProvider>
         </AuthProvider>
     )
 }
