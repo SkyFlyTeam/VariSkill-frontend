@@ -1,6 +1,7 @@
-import { Navigate, Outlet } from "react-router-dom"
+import { Navigate, Outlet, useLocation } from "react-router-dom"
 
 import { AppSidebar } from "@/components/shared/AppSidebar"
+import { ChatFloatingButton } from "@/components/shared/ChatFloatingButton"
 import {
     SidebarInset,
     SidebarProvider,
@@ -10,6 +11,7 @@ import { useAuth } from "@/contexts/authContext"
 
 export function PrivateRoute() {
     const { isAuthenticated } = useAuth()
+    const location = useLocation()
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />
@@ -23,6 +25,7 @@ export function PrivateRoute() {
                     <SidebarTrigger className="text-gray-50" />
                 </div>
                 <Outlet />
+                {location.pathname !== "/chat" && <ChatFloatingButton />}
             </SidebarInset>
         </SidebarProvider>
     )
