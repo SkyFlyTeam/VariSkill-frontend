@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { HomePage } from "@/pages/Home/Home"
 import { LoginPage } from "@/pages/Login/Login"
+import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
 import { VariMessageModalPreviewPage } from "@/pages/VariMessageModalPreview/VariMessageModalPreview"
 import { PrivateRoute } from "@/routes/privateRoute"
 import { PublicRoute } from "@/routes/publicRoute"
@@ -16,6 +17,7 @@ export const AppRoutes = () => {
 
                 <Route element={<PrivateRoute />}>
                     <Route path="/" element={<HomePage />} />
+                    <Route path="/onboarding" element={<OnboardingPage />} />
                 </Route>
 
                 {/* Preview manual pra revisão de PR, sem login (VAR-34). */}
