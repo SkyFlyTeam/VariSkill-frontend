@@ -86,4 +86,42 @@ describe("VariMessageModal", () => {
             baseElement.querySelector('[data-slot="dialog-overlay"]'),
         ).toBeInTheDocument()
     })
+
+    it("não exibe dots de progresso nem ação secundária por padrão", () => {
+        renderWithProviders(<ControlledModal />)
+
+        expect(screen.queryByRole("tab")).not.toBeInTheDocument()
+    })
+
+    it("exibe dots de progresso quando stepIndicator é informado", () => {
+        renderWithProviders(
+            <VariMessageModal
+                open
+                onOpenChange={() => {}}
+                message="Etapa 2"
+                stepIndicator={{ current: 2, total: 4 }}
+            />,
+        )
+
+        expect(screen.getAllByRole("tab")).toHaveLength(4)
+        expect(
+            screen.getByRole("tab", { name: "Etapa 2 de 4" }),
+        ).toHaveAttribute("aria-selected", "true")
+    })
+
+    it("exibe e aciona a ação secundária quando informada", () => {
+        const handleSkip = jest.fn()
+        renderWithProviders(
+            <VariMessageModal
+                open
+                onOpenChange={() => {}}
+                message="Etapa 1"
+                secondaryAction={{ label: "Pular tour", onClick: handleSkip }}
+            />,
+        )
+
+        fireEvent.click(screen.getByRole("button", { name: "Pular tour" }))
+
+        expect(handleSkip).toHaveBeenCalledTimes(1)
+    })
 })
