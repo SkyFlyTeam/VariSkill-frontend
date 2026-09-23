@@ -73,7 +73,7 @@ const components: Components = {
     pre: (props) => (
         <pre
             {...withoutNode(props)}
-            className="my-4 overflow-hidden rounded-lg text-sm"
+            className="my-4 overflow-x-auto rounded-lg text-sm"
         />
     ),
     code: (props) => {
