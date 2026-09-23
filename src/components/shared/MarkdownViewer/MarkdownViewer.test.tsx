@@ -97,4 +97,36 @@ describe("MarkdownViewer", () => {
         expect(document.querySelector("blockquote")).toBeInTheDocument()
         expect(document.querySelector("pre code")).toBeInTheDocument()
     })
+
+    it("deve permitir rolagem horizontal em bloco de código com linha longa", () => {
+        const longLine = "const x = " + "1".repeat(120)
+
+        const { container } = render(
+            <MarkdownViewer content={"```js\n" + longLine + "\n```"} />,
+        )
+
+        expect(container.querySelector("pre")).toHaveClass("overflow-x-auto")
+    })
+
+    it("não renderiza HTML bruto como elemento real (sanitização XSS)", () => {
+        const { container } = render(
+            <MarkdownViewer content={"<script>alert('xss')</script>"} />,
+        )
+
+        expect(container.querySelector("script")).not.toBeInTheDocument()
+        expect(
+            screen.getByText("<script>alert('xss')</script>"),
+        ).toBeInTheDocument()
+    })
+
+    it("não mantém href perigoso (javascript:) em links", () => {
+        const { container } = render(
+            <MarkdownViewer content={"[clique](javascript:alert(1))"} />,
+        )
+
+        const link = container.querySelector("a")
+
+        expect(link).toBeInTheDocument()
+        expect(link?.getAttribute("href") ?? "").not.toContain("javascript:")
+    })
 })
