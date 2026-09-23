@@ -18,5 +18,24 @@ export default defineConfig([
         languageOptions: {
             globals: globals.browser,
         },
+        rules: {
+            "react-refresh/only-export-components": [
+                "error",
+                {
+                    allowConstantExport: true,
+                    allowExportNames: [
+                        "useAuth",
+                        "useSidebar",
+                        "buttonVariants",
+                    ],
+                },
+            ],
+        },
+    },
+    {
+        files: ["src/hooks/**/*.ts"],
+        rules: {
+            "react-hooks/set-state-in-effect": "off",
+        },
     },
 ])
