@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { ActivityResultModalPreviewPage } from "@/pages/ActivityResultModalPreview/ActivityResultModalPreview"
+import { ChatPage } from "@/pages/Chat/Chat"
 import { HomePage } from "@/pages/Home/Home"
 import { LoginPage } from "@/pages/Login/Login"
 import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
@@ -21,6 +22,7 @@ export const AppRoutes = () => {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/trilhas/:id" element={<TrackRoadmapPage />} />
                     <Route path="/onboarding" element={<OnboardingPage />} />
+                    <Route path="/chat" element={<ChatPage />} />
                 </Route>
 
                 {/* Preview manual pra revisão de PR, sem login (VAR-34). */}
