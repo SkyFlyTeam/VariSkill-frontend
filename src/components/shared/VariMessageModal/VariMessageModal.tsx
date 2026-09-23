@@ -20,6 +20,10 @@ export interface VariMessageModalProps {
     actionLabel?: string
     /** Chamado ao clicar no botão de ação, antes de fechar o modal. */
     onAction?: () => void
+    /** Dots de progresso (ex.: sequências de onboarding). Omitido = sem indicador. */
+    stepIndicator?: { current: number; total: number }
+    /** Ação secundária opcional, exibida ao lado do botão principal (ex.: "Pular tour"). */
+    secondaryAction?: { label: string; onClick: () => void }
     className?: string
 }
 
@@ -30,6 +34,8 @@ export function VariMessageModal({
     title = "Vari",
     actionLabel = "Entendi!",
     onAction,
+    stepIndicator,
+    secondaryAction,
     className,
 }: VariMessageModalProps) {
     function handleAction() {
@@ -43,7 +49,7 @@ export function VariMessageModal({
             onOpenChange={(nextOpen) => onOpenChange(nextOpen)}
         >
             <DialogPortal>
-                <DialogOverlay />
+                <DialogOverlay className="bg-[rgba(30,41,57,0.6)]" />
 
                 <DialogPrimitive.Popup
                     data-slot="vari-message-modal"
@@ -71,7 +77,35 @@ export function VariMessageModal({
                         </div>
                     </div>
 
-                    <div className="flex justify-center">
+                    {stepIndicator && (
+                        <div
+                            className="flex justify-center gap-2"
+                            role="tablist"
+                            aria-label="Progresso"
+                        >
+                            {Array.from(
+                                { length: stepIndicator.total },
+                                (_, index) => (
+                                    <span
+                                        key={index}
+                                        role="tab"
+                                        aria-selected={
+                                            index === stepIndicator.current - 1
+                                        }
+                                        aria-label={`Etapa ${index + 1} de ${stepIndicator.total}`}
+                                        className={cn(
+                                            "h-2 w-2 rounded-full transition-colors",
+                                            index === stepIndicator.current - 1
+                                                ? "bg-vari"
+                                                : "bg-gray-200",
+                                        )}
+                                    />
+                                ),
+                            )}
+                        </div>
+                    )}
+
+                    <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
                         <Button
                             variant="vari"
                             className="h-auto rounded-[10px] px-9 py-3.5 text-xs font-bold"
@@ -79,6 +113,16 @@ export function VariMessageModal({
                         >
                             {actionLabel}
                         </Button>
+
+                        {secondaryAction && (
+                            <button
+                                type="button"
+                                className="text-xs font-bold text-muted-foreground underline-offset-2 hover:underline"
+                                onClick={secondaryAction.onClick}
+                            >
+                                {secondaryAction.label}
+                            </button>
+                        )}
                     </div>
                 </DialogPrimitive.Popup>
             </DialogPortal>
