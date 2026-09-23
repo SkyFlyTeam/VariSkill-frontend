@@ -9,6 +9,7 @@ import { MultipleChoicePreviewPage } from "@/pages/MultipleChoicePreview/Multipl
 import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
 import { TrackRoadmapPage } from "@/pages/TrackRoadmap/TrackRoadmap"
 import { VariMessageModalPreviewPage } from "@/pages/VariMessageModalPreview/VariMessageModalPreview"
+import { ProfilePage } from "@/pages/Profile/Profile"
 import { PrivateRoute } from "@/routes/privateRoute"
 import { PublicRoute } from "@/routes/publicRoute"
 
@@ -25,6 +26,7 @@ export const AppRoutes = () => {
                     <Route path="/trilhas/:id" element={<TrackRoadmapPage />} />
                     <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route path="/chat" element={<ChatPage />} />
+                    <Route path="/perfil" element={<ProfilePage />} />
                 </Route>
 
                 {/* Preview manual pra revisão de PR, sem login (VAR-34). */}
