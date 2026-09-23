@@ -52,6 +52,8 @@ export function ChangePasswordDialog({
             toast.success("Senha alterada. Entre novamente com a nova senha.")
             handleOpenChange(false)
             clearSession()
+            toast.success("Senha alterada com sucesso!")
+            handleOpenChange(false)
         } catch (error) {
             toast.error(
                 error instanceof Error
