@@ -6,12 +6,13 @@ import {
     useState,
 } from "react"
 
-import { Camera, Flame, Lock, Pencil, Star, User } from "lucide-react"
+import { Camera, Lock, Pencil, User } from "lucide-react"
 
 import { useToast } from "@/components/shared/toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ChangePasswordDialog } from "@/pages/Profile/ChangePasswordDialog"
+import { useProfilePhoto } from "@/pages/Profile/useProfilePhoto"
 import { type UserProfile, userService } from "@/services/userService"
 
 const fieldClass =
@@ -44,6 +45,15 @@ export function ProfilePage() {
     const [passwordOpen, setPasswordOpen] = useState(false)
     const nomeRef = useRef<HTMLInputElement>(null)
     const apelidoRef = useRef<HTMLInputElement>(null)
+    const photoInputRef = useRef<HTMLInputElement>(null)
+    const { photo, handleFileChange } = useProfilePhoto({
+        onError: toast.error,
+        onSuccess: toast.success,
+    })
+
+    function openPhotoPicker() {
+        photoInputRef.current?.click()
+    }
 
     useEffect(() => {
         userService
@@ -115,8 +125,6 @@ export function ProfilePage() {
         )
     }
 
-    const cadastro = new Date(profile.dataCadastro).toLocaleDateString("pt-BR")
-
     return (
         <main className="flex min-h-screen items-center justify-center bg-page p-4 sm:p-8">
             <form
@@ -124,13 +132,30 @@ export function ProfilePage() {
                 className="w-full max-w-4xl rounded-3xl bg-white px-6 py-10 sm:px-20"
             >
                 <div className="flex flex-col items-center">
+                    <input
+                        ref={photoInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleFileChange}
+                    />
+
                     <div className="relative">
-                        <div className="flex size-40 items-center justify-center rounded-full bg-brand-blue text-slate-200">
-                            <User className="size-24" strokeWidth={1.5} />
+                        <div className="flex size-40 items-center justify-center overflow-hidden rounded-full bg-brand-blue text-slate-200">
+                            {photo ? (
+                                <img
+                                    src={photo}
+                                    alt="Foto de perfil"
+                                    className="size-full object-cover"
+                                />
+                            ) : (
+                                <User className="size-24" strokeWidth={1.5} />
+                            )}
                         </div>
                         <button
                             type="button"
                             aria-label="Editar foto"
+                            onClick={openPhotoPicker}
                             className="absolute right-1 bottom-2 flex size-8 items-center justify-center rounded-full bg-brand-navy text-white"
                         >
                             <Camera className="size-4" />
@@ -140,47 +165,15 @@ export function ProfilePage() {
                     <h1 className="mt-6 text-base font-bold">{profile.nome}</h1>
                     <button
                         type="button"
+                        onClick={openPhotoPicker}
                         className="text-xs font-bold text-brand-blue hover:underline"
                     >
                         Editar foto
                     </button>
-
-                    <div className="mt-6 flex gap-4">
-                        <div className="flex items-center gap-2 rounded-xl bg-slate-50 px-4 py-2">
-                            <Star className="size-5 text-amber-500" />
-                            <div className="leading-tight">
-                                <p className="text-sm font-bold">
-                                    {profile.xpTotal.toLocaleString("pt-BR")} XP
-                                </p>
-                                <p className="text-[10px] text-muted-foreground">
-                                    Total acumulado
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2 rounded-xl bg-slate-50 px-4 py-2">
-                            <Flame className="size-5 text-brand-red" />
-                            <div className="leading-tight">
-                                <p className="text-sm font-bold">
-                                    {profile.diasOfensiva}{" "}
-                                    {profile.diasOfensiva === 1
-                                        ? "dia"
-                                        : "dias"}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground">
-                                    De ofensiva
-                                </p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <section className="mt-10">
-                    <div className="flex items-baseline justify-between">
-                        <h2 className="text-base font-bold">Informações</h2>
-                        <p className="text-xs text-muted-foreground">
-                            Membro desde {cadastro}
-                        </p>
-                    </div>
+                    <h2 className="text-base font-bold">Informações</h2>
 
                     <div className="mt-6 grid gap-x-16 gap-y-8 sm:grid-cols-2">
                         <Field id="nome" label="Nome">
@@ -266,6 +259,7 @@ export function ProfilePage() {
             <ChangePasswordDialog
                 open={passwordOpen}
                 onOpenChange={setPasswordOpen}
+                apelido={profile.apelido}
             />
         </main>
     )
