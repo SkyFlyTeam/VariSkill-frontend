@@ -4,6 +4,7 @@ import { ActivityResultModalPreviewPage } from "@/pages/ActivityResultModalPrevi
 import { HomePage } from "@/pages/Home/Home"
 import { LoginPage } from "@/pages/Login/Login"
 import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
+import { TrackRoadmapPage } from "@/pages/TrackRoadmap/TrackRoadmap"
 import { VariMessageModalPreviewPage } from "@/pages/VariMessageModalPreview/VariMessageModalPreview"
 import { PrivateRoute } from "@/routes/privateRoute"
 import { PublicRoute } from "@/routes/publicRoute"
@@ -18,6 +19,7 @@ export const AppRoutes = () => {
 
                 <Route element={<PrivateRoute />}>
                     <Route path="/" element={<HomePage />} />
+                    <Route path="/trilhas/:id" element={<TrackRoadmapPage />} />
                     <Route path="/onboarding" element={<OnboardingPage />} />
                 </Route>
 
