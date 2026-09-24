@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
+import { ActivityResultModalPreviewPage } from "@/pages/ActivityResultModalPreview/ActivityResultModalPreview"
 import { HomePage } from "@/pages/Home/Home"
 import { LoginPage } from "@/pages/Login/Login"
 import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
@@ -24,6 +25,12 @@ export const AppRoutes = () => {
                 <Route
                     path="/preview/vari-message-modal"
                     element={<VariMessageModalPreviewPage />}
+                />
+
+                {/* Preview manual pra revisão de PR, sem login (VAR-69). */}
+                <Route
+                    path="/preview/activity-result-modal"
+                    element={<ActivityResultModalPreviewPage />}
                 />
             </Routes>
         </BrowserRouter>
