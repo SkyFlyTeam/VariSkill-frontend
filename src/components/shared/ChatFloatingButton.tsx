@@ -1,7 +1,5 @@
 import { useNavigate } from "react-router-dom"
 
-import { MessageCircle } from "lucide-react"
-
 import variMascot from "@/assets/vari/bubbleVari.svg"
 
 export function ChatFloatingButton() {
