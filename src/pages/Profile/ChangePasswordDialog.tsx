@@ -10,11 +10,13 @@ import { userService } from "@/services/userService"
 type ChangePasswordDialogProps = {
     open: boolean
     onOpenChange: (open: boolean) => void
+    apelido: string
 }
 
 export function ChangePasswordDialog({
     open,
     onOpenChange,
+    apelido,
 }: ChangePasswordDialogProps) {
     const toast = useToast()
     const [senhaAtual, setSenhaAtual] = useState("")
@@ -46,7 +48,7 @@ export function ChangePasswordDialog({
 
         setSaving(true)
         try {
-            await userService.changePassword({ senhaAtual, novaSenha })
+            await userService.changePassword({ apelido, senhaAtual, novaSenha })
             toast.success("Senha alterada com sucesso!")
             handleOpenChange(false)
         } catch (error) {

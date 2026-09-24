@@ -11,4 +11,17 @@ export default defineConfig({
             "@": path.resolve(__dirname, "./src"),
         },
     },
+    server: {
+        // MOCK-TEMP-ADJACENT: o backend Django ainda não tem CORS configurado.
+        // Esse proxy faz o navegador enxergar /api como same-origin em dev,
+        // evitando o bloqueio de CORS sem precisar mexer no backend. Remover
+        // (ou ajustar pra produção) quando o backend expuser CORS/estiver
+        // atrás do mesmo domínio.
+        proxy: {
+            "/api": {
+                target: "http://localhost:8000",
+                changeOrigin: true,
+            },
+        },
+    },
 })
