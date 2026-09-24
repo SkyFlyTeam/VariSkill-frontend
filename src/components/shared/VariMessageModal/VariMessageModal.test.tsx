@@ -124,4 +124,39 @@ describe("VariMessageModal", () => {
 
         expect(handleSkip).toHaveBeenCalledTimes(1)
     })
+    it("usa o mascote padrão e não renderiza conteúdo extra por padrão", () => {
+        renderWithProviders(<ControlledModal />)
+
+        expect(
+            screen.getByRole("img", { name: /vari, o mascote/i }),
+        ).toBeInTheDocument()
+    })
+
+    it("aceita uma arte customizada do mascote", () => {
+        renderWithProviders(
+            <VariMessageModal
+                open
+                onOpenChange={() => {}}
+                message="Resultado"
+                illustration={{ src: "arte.svg", alt: "Vari comemorando" }}
+            />,
+        )
+
+        expect(
+            screen.getByRole("img", { name: "Vari comemorando" }),
+        ).toHaveAttribute("src", "arte.svg")
+        expect(
+            screen.queryByRole("img", { name: /vari, o mascote/i }),
+        ).not.toBeInTheDocument()
+    })
+
+    it("renderiza children entre o texto e o botão de ação", () => {
+        renderWithProviders(
+            <VariMessageModal open onOpenChange={() => {}} message="Texto">
+                <p>Conteúdo extra</p>
+            </VariMessageModal>,
+        )
+
+        expect(screen.getByText("Conteúdo extra")).toBeInTheDocument()
+    })
 })
