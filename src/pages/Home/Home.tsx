@@ -7,8 +7,8 @@ import {
     Trophy,
 } from "lucide-react"
 
+import { TrackCard } from "@/components/shared/TrackCard/TrackCard"
 import { InfoCard } from "@/pages/Home/components/InfoCard"
-import { TrialCard } from "@/pages/Home/components/TrialCard"
 
 const infoCards = [
     {
@@ -48,8 +48,18 @@ const infoCards = [
     },
 ] as const
 
-const enrolledTrials = Array.from({ length: 6 })
-const availableTrials = Array.from({ length: 6 })
+// Dados de demonstração até a integração com a API de trilhas.
+const enrolledTracks = Array.from({ length: 6 }, (_, index) => ({
+    id: `javascript-${index + 1}`,
+    title: "Javascript",
+    totalModules: 12,
+    completedModules: 10,
+}))
+const availableTracks = Array.from({ length: 6 }, (_, index) => ({
+    id: `react-${index + 1}`,
+    title: "React",
+    totalModules: 52,
+}))
 
 export function HomePage() {
     return (
@@ -80,19 +90,18 @@ export function HomePage() {
                         <h2 className="text-lg font-bold">Minhas trilhas</h2>
                     </div>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        {enrolledTrials.map((_, index) => (
-                            <TrialCard
-                                key={`enrolled-${index}`}
+                        {enrolledTracks.map((track) => (
+                            <TrackCard
+                                key={track.id}
+                                {...track}
+                                variant="in-progress"
                                 category="Tecnologia"
-                                title="Javascript"
-                                modules="10/12 módulos"
                                 image={
                                     <CodeXml
                                         aria-hidden="true"
                                         className="size-8 stroke-[2.5]"
                                     />
                                 }
-                                progress={50}
                             />
                         ))}
                     </div>
@@ -103,12 +112,12 @@ export function HomePage() {
                         Trilhas disponíveis
                     </h2>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        {availableTrials.map((_, index) => (
-                            <TrialCard
-                                key={`available-${index}`}
+                        {availableTracks.map((track) => (
+                            <TrackCard
+                                key={track.id}
+                                {...track}
+                                variant="available"
                                 category="Tecnologia"
-                                title="Javascript"
-                                modules="52 módulos"
                                 image={
                                     <img
                                         src="https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/React_Logo_SVG.svg/1280px-React_Logo_SVG.svg.png?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=thumbnail"
