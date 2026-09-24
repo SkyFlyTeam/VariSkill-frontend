@@ -49,7 +49,7 @@ export function ActivityNode({
             data-status={status}
             data-purpose={purpose}
             className={cn(
-                "relative flex h-[73px] w-[134px] flex-col items-center justify-center gap-2 rounded-2xl border-2 border-transparent bg-neutral-200 px-3 py-2 text-center transition-colors",
+                "relative flex aspect-[134/73] w-full max-w-[134px] min-w-[104px] flex-col items-center justify-center gap-2 rounded-lg border-2 border-transparent bg-neutral-200 px-2 py-2 text-center transition-colors sm:gap-3",
                 isLocked
                     ? "cursor-not-allowed opacity-60"
                     : "cursor-pointer hover:bg-neutral-300 focus-visible:border-sky-500 focus-visible:outline-none",
@@ -58,24 +58,24 @@ export function ActivityNode({
             )}
         >
             <PurposeIcon
-                className="size-6 shrink-0 text-black"
+                className="size-4 shrink-0 text-black sm:size-[17px]"
                 aria-hidden="true"
             />
 
-            <span className="text-xs font-medium text-neutral-800">
+            <span className="text-[10px] font-medium text-neutral-800 sm:text-xs">
                 {title}
             </span>
 
             {isLocked && (
                 <Lock
-                    className="absolute top-2 right-2 size-4 text-slate-400"
+                    className="absolute top-1.5 right-1.5 size-3 text-slate-400 sm:top-2 sm:right-2 sm:size-4"
                     aria-hidden="true"
                 />
             )}
 
             {isCompleted && (
                 <Check
-                    className="absolute top-2 right-2 size-4 text-emerald-500"
+                    className="absolute top-1.5 right-1.5 size-3 text-emerald-500 sm:top-2 sm:right-2 sm:size-4"
                     aria-hidden="true"
                 />
             )}
