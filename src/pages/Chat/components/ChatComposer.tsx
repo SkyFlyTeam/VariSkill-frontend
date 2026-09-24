@@ -51,8 +51,7 @@ export function ChatComposer({
                 className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#48b7de] text-white transition-colors hover:bg-[#319fc7] disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!value.trim()}
             >
-                <SendHorizonal className="size-5 sm:hidden" />
-                <SendHorizonal className="hidden size-5 sm:block" />
+                <SendHorizonal className="size-5" />
             </button>
         </form>
     )
