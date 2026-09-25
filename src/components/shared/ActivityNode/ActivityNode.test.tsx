@@ -54,11 +54,52 @@ describe("ActivityNode", () => {
 
         const node = screen.getByRole("button")
 
-        expect(node).toBeDisabled()
+        expect(node).toHaveAttribute("aria-disabled", "true")
 
         fireEvent.click(node)
 
         expect(onClick).not.toHaveBeenCalled()
+    })
+
+    it("deve expor o estado no aria-label", () => {
+        const { rerender } = render(
+            <ActivityNode
+                title="Variáveis"
+                purpose="theoretical"
+                status="locked"
+            />,
+        )
+
+        expect(screen.getByRole("button")).toHaveAttribute(
+            "aria-label",
+            "Variáveis, bloqueado",
+        )
+
+        rerender(
+            <ActivityNode
+                title="Variáveis"
+                purpose="theoretical"
+                status="in_progress"
+            />,
+        )
+
+        expect(screen.getByRole("button")).toHaveAttribute(
+            "aria-label",
+            "Variáveis, em andamento",
+        )
+
+        rerender(
+            <ActivityNode
+                title="Variáveis"
+                purpose="theoretical"
+                status="completed"
+            />,
+        )
+
+        expect(screen.getByRole("button")).toHaveAttribute(
+            "aria-label",
+            "Variáveis, concluído",
+        )
     })
 
     it("deve mostrar o check quando concluído", () => {
@@ -71,6 +112,19 @@ describe("ActivityNode", () => {
         )
 
         expect(container.querySelector(".lucide-check")).toBeInTheDocument()
+    })
+
+    it("deve destacar a borda quando em andamento", () => {
+        render(
+            <ActivityNode
+                title="Variáveis"
+                purpose="theoretical"
+                status="in_progress"
+            />,
+        )
+
+        expect(screen.getByRole("button")).toHaveClass("border-4")
+        expect(screen.getByRole("button")).toHaveClass("border-[#4bb8e0]")
     })
 
     it("deve aplicar o efeito 3D (camada de fundo) conforme o propósito", () => {
