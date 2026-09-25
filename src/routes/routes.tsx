@@ -4,6 +4,7 @@ import { ActivityResultModalPreviewPage } from "@/pages/ActivityResultModalPrevi
 import { ChatPage } from "@/pages/Chat/Chat"
 import { HomePage } from "@/pages/Home/Home"
 import { LoginPage } from "@/pages/Login/Login"
+import { MultipleChoicePreviewPage } from "@/pages/MultipleChoicePreview/MultipleChoicePreview"
 import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
 import { TrackRoadmapPage } from "@/pages/TrackRoadmap/TrackRoadmap"
 import { VariMessageModalPreviewPage } from "@/pages/VariMessageModalPreview/VariMessageModalPreview"
@@ -35,6 +36,12 @@ export const AppRoutes = () => {
                 <Route
                     path="/preview/activity-result-modal"
                     element={<ActivityResultModalPreviewPage />}
+                />
+
+                {/* Preview manual pra revisão de PR, sem login (VAR-47). */}
+                <Route
+                    path="/preview/multiple-choice"
+                    element={<MultipleChoicePreviewPage />}
                 />
             </Routes>
         </BrowserRouter>
