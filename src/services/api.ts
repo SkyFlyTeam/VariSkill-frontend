@@ -1,5 +1,5 @@
-
-const API_URL = import.meta.env.VITE_API_URL ?? "/api"
+// Mesmo domínio do Frontend: /api é encaminhado ao Django pelo proxy.
+const API_URL = "/api"
 
 const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"])
 
@@ -38,10 +38,8 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     const headers = new Headers(init.headers)
     headers.set("Content-Type", "application/json")
 
-    // MOCK-TEMP-ADJACENT: o backend ainda não expõe a cookie csrftoken em
-    // nenhuma resposta (sem @ensure_csrf_cookie nas views), então esse
-    // header vai sair vazio até isso ser adicionado lá. O código já fica
-    // pronto pro dia em que a cookie existir.
+    // O login Django cria/rotaciona csrftoken. Ler a cada chamada evita usar
+    // um token antigo depois da confirmação da senha atual.
     if (UNSAFE_METHODS.has(method)) {
         const csrfToken = getCookie("csrftoken")
         if (csrfToken) headers.set("X-CSRFToken", csrfToken)
@@ -62,5 +60,12 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
         )
     }
 
-    return response.status === 204 ? (undefined as T) : response.json()
+    if (response.status === 204) return undefined as T
+    if (!response.headers.get("content-type")?.includes("application/json")) {
+        if (path === "/auth/logout/") return undefined as T
+        throw new Error(
+            "A API retornou uma resposta inválida. Verifique a conexão com o backend.",
+        )
+    }
+    return response.json()
 }

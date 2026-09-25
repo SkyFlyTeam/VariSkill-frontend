@@ -10,8 +10,18 @@ import {
 import { useAuth } from "@/contexts/authContext"
 
 export function PrivateRoute() {
-    const { isAuthenticated } = useAuth()
-    const location = useLocation()
+    const { isAuthenticated, loading } = useAuth()
+
+    if (loading) {
+        return (
+            <main
+                className="flex min-h-screen items-center justify-center"
+                role="status"
+            >
+                Verificando sessão...
+            </main>
+        )
+    }
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />

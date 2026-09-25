@@ -1,34 +1,86 @@
-import { type ReactNode, createContext, useContext, useState } from "react"
+import {
+    type ReactNode,
+    createContext,
+    useContext,
+    useEffect,
+    useState,
+} from "react"
+
+import { ApiError } from "@/services/api"
+import {
+    type LoginData,
+    type UserProfile,
+    userService,
+} from "@/services/userService"
 
 type AuthContextType = {
+    user: UserProfile | null
     isAuthenticated: boolean
-    login: () => void
-    logout: () => void
+    loading: boolean
+    sessionError: string | null
+    login: (data: LoginData) => Promise<void>
+    logout: () => Promise<void>
+    clearSession: () => void
+    updateUser: (user: UserProfile) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-type AuthProviderProps = {
-    children: ReactNode
-}
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+    const [user, setUser] = useState<UserProfile | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [sessionError, setSessionError] = useState<string | null>(null)
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false)
+    useEffect(() => {
+        let active = true
+        userService
+            .getSession()
+            .then((profile) => {
+                if (active) setUser(profile)
+            })
+            .catch((error: unknown) => {
+                if (
+                    active &&
+                    !(
+                        error instanceof ApiError &&
+                        [401, 403].includes(error.status)
+                    )
+                ) {
+                    setSessionError(
+                        "Não foi possível conectar ao servidor. Tente entrar novamente.",
+                    )
+                }
+            })
+            .finally(() => {
+                if (active) setLoading(false)
+            })
+        return () => {
+            active = false
+        }
+    }, [])
 
-    const login = () => {
-        setIsAuthenticated(true)
+    async function login(data: LoginData) {
+        const profile = await userService.login(data)
+        setUser(profile)
+        setSessionError(null)
     }
 
-    const logout = () => {
-        setIsAuthenticated(false)
+    async function logout() {
+        await userService.logout()
+        setUser(null)
     }
 
     return (
         <AuthContext.Provider
             value={{
-                isAuthenticated,
+                user,
+                isAuthenticated: user !== null,
+                loading,
+                sessionError,
                 login,
                 logout,
+                clearSession: () => setUser(null),
+                updateUser: setUser,
             }}
         >
             {children}
@@ -38,10 +90,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
 export const useAuth = () => {
     const context = useContext(AuthContext)
-
-    if (!context) {
-        throw new Error("useAuth must be used within an AuthProvider")
-    }
-
+    if (!context) throw new Error("useAuth must be used within an AuthProvider")
     return context
 }

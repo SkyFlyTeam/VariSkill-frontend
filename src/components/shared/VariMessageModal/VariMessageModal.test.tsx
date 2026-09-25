@@ -1,8 +1,6 @@
 import { useState } from "react"
 
-import { fireEvent, screen } from "@testing-library/react"
-
-import { renderWithProviders } from "@/tests/utils"
+import { fireEvent, render, screen } from "@testing-library/react"
 
 import { VariMessageModal } from "./VariMessageModal"
 
@@ -27,13 +25,13 @@ function ControlledModal({
 
 describe("VariMessageModal", () => {
     it("não renderiza nada quando fechado", () => {
-        renderWithProviders(<ControlledModal defaultOpen={false} />)
+        render(<ControlledModal defaultOpen={false} />)
 
         expect(screen.queryByText("Seja bem-vindo!")).not.toBeInTheDocument()
     })
 
     it("exibe o mascote, o nome Vari e a mensagem quando aberto", () => {
-        renderWithProviders(<ControlledModal />)
+        render(<ControlledModal />)
 
         expect(
             screen.getByRole("img", { name: /vari, o mascote/i }),
@@ -47,7 +45,7 @@ describe("VariMessageModal", () => {
     })
 
     it("usa 'Entendi!' como rótulo padrão do botão de ação", () => {
-        renderWithProviders(<ControlledModal />)
+        render(<ControlledModal />)
 
         expect(
             screen.getByRole("button", { name: "Entendi!" }),
@@ -55,7 +53,7 @@ describe("VariMessageModal", () => {
     })
 
     it("aceita um título customizado", () => {
-        renderWithProviders(
+        render(
             <VariMessageModal
                 open
                 onOpenChange={() => {}}
@@ -71,7 +69,7 @@ describe("VariMessageModal", () => {
 
     it("fecha o modal e chama onAction ao clicar no botão", () => {
         const handleAction = jest.fn()
-        renderWithProviders(<ControlledModal onAction={handleAction} />)
+        render(<ControlledModal onAction={handleAction} />)
 
         fireEvent.click(screen.getByRole("button", { name: "Entendi!" }))
 
@@ -80,7 +78,7 @@ describe("VariMessageModal", () => {
     })
 
     it("tem overlay escurecendo o fundo", () => {
-        const { baseElement } = renderWithProviders(<ControlledModal />)
+        const { baseElement } = render(<ControlledModal />)
 
         expect(
             baseElement.querySelector('[data-slot="dialog-overlay"]'),
@@ -88,13 +86,13 @@ describe("VariMessageModal", () => {
     })
 
     it("não exibe dots de progresso nem ação secundária por padrão", () => {
-        renderWithProviders(<ControlledModal />)
+        render(<ControlledModal />)
 
         expect(screen.queryByRole("tab")).not.toBeInTheDocument()
     })
 
     it("exibe dots de progresso quando stepIndicator é informado", () => {
-        renderWithProviders(
+        render(
             <VariMessageModal
                 open
                 onOpenChange={() => {}}
@@ -111,7 +109,7 @@ describe("VariMessageModal", () => {
 
     it("exibe e aciona a ação secundária quando informada", () => {
         const handleSkip = jest.fn()
-        renderWithProviders(
+        render(
             <VariMessageModal
                 open
                 onOpenChange={() => {}}
