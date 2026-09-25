@@ -27,6 +27,12 @@ const purposeStyles: Record<ActivityPurpose, string> = {
     exam: "bg-[#ffb900] shadow-[0_5px_0_0_#fe9a00]",
 }
 
+const statusLabels: Record<ActivityStatus, string> = {
+    locked: "bloqueado",
+    in_progress: "em andamento",
+    completed: "concluído",
+}
+
 export function ActivityNode({
     title,
     purpose,
@@ -36,6 +42,7 @@ export function ActivityNode({
 }: ActivityNodeProps) {
     const PurposeIcon = purposeIcons[purpose]
     const isLocked = status === "locked"
+    const isInProgress = status === "in_progress"
     const isCompleted = status === "completed"
 
     function handleClick() {
@@ -50,24 +57,23 @@ export function ActivityNode({
         <button
             type="button"
             onClick={handleClick}
-            disabled={isLocked}
+            aria-disabled={isLocked}
+            aria-label={`${title}, ${statusLabels[status]}`}
             data-status={status}
             data-purpose={purpose}
             className={cn(
-                "relative flex aspect-[134/73] w-full max-w-[134px] min-w-[104px] flex-col items-center justify-center gap-2 rounded-lg px-2 py-2 text-center text-white transition-all sm:gap-3",
+                "relative flex aspect-[154/82] w-full max-w-[154px] min-w-[120px] flex-col items-center justify-center gap-2 rounded-[15px] border-4 border-transparent px-2 py-2 text-center text-[#f3f4f6] transition-all sm:gap-3",
                 purposeStyles[purpose],
                 isLocked
                     ? "cursor-not-allowed opacity-60"
                     : "cursor-pointer focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none active:translate-y-[3px] active:shadow-none",
+                isInProgress && "border-[#4bb8e0]",
                 className,
             )}
         >
-            <PurposeIcon
-                className="size-4 shrink-0 sm:size-[17px]"
-                aria-hidden="true"
-            />
+            <PurposeIcon className="size-[25px] shrink-0" aria-hidden="true" />
 
-            <span className="text-[10px] font-medium sm:text-xs">{title}</span>
+            <span className="text-[11px] font-medium">{title}</span>
 
             {isLocked && (
                 <Lock
