@@ -11,7 +11,9 @@ import { useAuth } from "@/contexts/authContext"
 import { ApiError } from "@/services/api"
 
 const inputClassName =
-    "h-10 rounded-md border-0 bg-neutral-200 px-3 text-sm shadow-none placeholder:text-neutral-400 focus-visible:ring-1"
+    "h-10 rounded-[10px] border border-[#cad5e2] bg-white px-3 text-sm shadow-none placeholder:text-neutral-400 focus-visible:ring-1"
+
+const labelClassName = "text-[14px] leading-[20px] font-medium text-[#101828]"
 
 export function LoginPage() {
     const { login } = useAuth()
@@ -36,16 +38,13 @@ export function LoginPage() {
     }
 
     return (
-        <AuthLayout
-            heading="Entrar"
-            slogan="Transforme curiosidade em habilidade."
-        >
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <AuthLayout slogan="Transforme curiosidade em habilidade.">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-[25px]">
+                <h1 className="font-poppins text-[24px] leading-[100%] font-bold tracking-normal text-[#101828]">
+                    Entrar
+                </h1>
                 <div className="space-y-1.5">
-                    <label
-                        htmlFor="email"
-                        className="text-xs font-medium text-neutral-600"
-                    >
+                    <label htmlFor="email" className={labelClassName}>
                         Email
                     </label>
 
@@ -62,10 +61,7 @@ export function LoginPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                    <label
-                        htmlFor="password"
-                        className="text-xs font-medium text-neutral-600"
-                    >
+                    <label htmlFor="password" className={labelClassName}>
                         Senha
                     </label>
 
@@ -109,17 +105,17 @@ export function LoginPage() {
                 <Button
                     type="submit"
                     variant="vari"
-                    className="h-11 w-full"
+                    className="h-auto w-full rounded-[10px] px-[35px] py-[20px] text-[16px] leading-[100%] font-bold"
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? "Entrando..." : "Entrar"}
                 </Button>
 
-                <p className="text-center text-xs text-neutral-600">
+                <p className="text-center text-[16px] leading-[100%] font-medium text-neutral-600">
                     Não tem uma conta ainda?{" "}
                     <Link
                         to="/registro"
-                        className="font-bold text-vari hover:underline"
+                        className="text-[16px] leading-[100%] font-bold text-vari hover:underline"
                     >
                         Cadastre-se
                     </Link>

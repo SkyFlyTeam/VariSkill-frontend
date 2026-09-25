@@ -30,6 +30,10 @@ export function register(payload: RegisterPayload) {
     })
 }
 
+export function logout() {
+    return http<void>("/api/logout/", { method: "POST" })
+}
+
 export function me() {
     return http<User>("/api/users/me/")
 }
