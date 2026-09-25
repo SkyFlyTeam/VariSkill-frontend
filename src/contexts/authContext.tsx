@@ -19,7 +19,7 @@ import type { RegisterPayload, User } from "@/services/authService"
 type AuthContextType = {
     user: User | null
     isAuthenticated: boolean
-    login: (apelido: string, password: string) => Promise<void>
+    login: (email: string, password: string) => Promise<void>
     register: (payload: RegisterPayload) => Promise<void>
 }
 
@@ -33,8 +33,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
     const [user, setUser] = useState<User | null>(null)
 
-    const login = async (apelido: string, password: string) => {
-        const loggedUser = await authService.login(apelido, password)
+    const login = async (email: string, password: string) => {
+        const loggedUser = await authService.login(email, password)
         setUser(loggedUser)
     }
 

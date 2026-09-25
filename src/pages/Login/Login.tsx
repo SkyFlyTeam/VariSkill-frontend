@@ -2,15 +2,22 @@ import { type FormEvent, useState } from "react"
 
 import { Link } from "react-router-dom"
 
+import { Eye, EyeOff } from "lucide-react"
+
+import { AuthLayout } from "@/components/shared/AuthLayout/AuthLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/authContext"
 import { ApiError } from "@/services/api"
 
+const inputClassName =
+    "h-10 rounded-md border-0 bg-neutral-200 px-3 text-sm shadow-none placeholder:text-neutral-400 focus-visible:ring-1"
+
 export function LoginPage() {
     const { login } = useAuth()
-    const [apelido, setApelido] = useState("")
+    const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -20,69 +27,104 @@ export function LoginPage() {
         setIsSubmitting(true)
 
         try {
-            await login(apelido, password)
+            await login(email, password)
         } catch {
-            setError("Apelido ou senha inválidos.")
+            setError("Email ou senha inválidos.")
         } finally {
             setIsSubmitting(false)
         }
     }
 
     return (
-        <main className="flex min-h-screen items-center justify-center p-4">
-            <form
-                onSubmit={handleSubmit}
-                className="w-full max-w-sm space-y-6 rounded-lg border p-6"
-            >
-                <div>
-                    <h1 className="text-2xl font-bold">Login</h1>
-                    <p className="text-sm text-muted-foreground">
-                        Entre para acessar o sistema.
-                    </p>
-                </div>
-                <div className="space-y-4">
-                    <Input
-                        value={apelido}
-                        onChange={(event) => setApelido(event.target.value)}
-                        placeholder="Seu apelido"
-                        autoComplete="username"
-                        required
-                    />
-
-                    <Input
-                        type="password"
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        placeholder="Sua senha"
-                        autoComplete="current-password"
-                        required
-                    />
-
-                    {error && (
-                        <p role="alert" className="text-sm text-destructive">
-                            {error}
-                        </p>
-                    )}
-
-                    <Button
-                        type="submit"
-                        className="w-full"
-                        disabled={isSubmitting}
+        <AuthLayout
+            heading="Entrar"
+            slogan="Transforme curiosidade em habilidade."
+        >
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                    <label
+                        htmlFor="email"
+                        className="text-xs font-medium text-neutral-600"
                     >
-                        {isSubmitting ? "Entrando..." : "Entrar"}
-                    </Button>
+                        Email
+                    </label>
+
+                    <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder="email@gmail.com"
+                        autoComplete="email"
+                        required
+                        className={inputClassName}
+                    />
                 </div>
 
-                <p className="text-center text-sm text-muted-foreground">
-                    Não tem uma conta?{" "}
+                <div className="space-y-1.5">
+                    <label
+                        htmlFor="password"
+                        className="text-xs font-medium text-neutral-600"
+                    >
+                        Senha
+                    </label>
+
+                    <div className="relative">
+                        <Input
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            value={password}
+                            onChange={(event) =>
+                                setPassword(event.target.value)
+                            }
+                            placeholder="**********"
+                            autoComplete="current-password"
+                            required
+                            className={`${inputClassName} pr-10`}
+                        />
+
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword((value) => !value)}
+                            aria-label={
+                                showPassword ? "Ocultar senha" : "Mostrar senha"
+                            }
+                            className="absolute inset-y-0 right-3 flex items-center text-neutral-500 hover:text-neutral-700"
+                        >
+                            {showPassword ? (
+                                <EyeOff className="size-4" />
+                            ) : (
+                                <Eye className="size-4" />
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                {error && (
+                    <p role="alert" className="text-sm text-destructive">
+                        {error}
+                    </p>
+                )}
+
+                <Button
+                    type="submit"
+                    variant="vari"
+                    className="h-11 w-full"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? "Entrando..." : "Entrar"}
+                </Button>
+
+                <p className="text-center text-xs text-neutral-600">
+                    Não tem uma conta ainda?{" "}
                     <Link
                         to="/registro"
-                        className="font-medium text-primary underline-offset-4 hover:underline"
+                        className="font-bold text-vari hover:underline"
                     >
                         Cadastre-se
                     </Link>
                 </p>
             </form>
-        </main>
+        </AuthLayout>
     )
 }

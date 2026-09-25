@@ -2,10 +2,11 @@ import { NavLink, useLocation } from "react-router-dom"
 
 import { Home, Medal, UserRound } from "lucide-react"
 
-import { useToast } from "@/components/shared/toast"
+import { SairButton } from "@/components/shared/SairButton/SairButton"
 import {
     Sidebar,
     SidebarContent,
+    SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
     SidebarHeader,
@@ -67,6 +68,14 @@ export function AppSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
+
+            <SidebarFooter className="px-3 pb-5">
+                <SidebarMenu>
+                    <SidebarMenuItem>
+                        <SairButton />
+                    </SidebarMenuItem>
+                </SidebarMenu>
+            </SidebarFooter>
         </Sidebar>
     )
 }

@@ -16,13 +16,15 @@ describe("RegistroPage", () => {
         renderWithProviders(<RegistroPage />)
 
         expect(
-            screen.getByRole("heading", { name: /criar conta/i }),
+            screen.getByRole("heading", { name: /cadastrar/i }),
         ).toBeInTheDocument()
 
-        expect(screen.getByPlaceholderText("Nome Completo")).toBeInTheDocument()
-        expect(screen.getByPlaceholderText("Apelido")).toBeInTheDocument()
-        expect(screen.getByPlaceholderText("Email")).toBeInTheDocument()
-        expect(screen.getByPlaceholderText("Senha")).toBeInTheDocument()
+        expect(screen.getByPlaceholderText("Joe Doe")).toBeInTheDocument()
+        expect(screen.getByPlaceholderText("joe.doe")).toBeInTheDocument()
+        expect(
+            screen.getByPlaceholderText("email@gmail.com"),
+        ).toBeInTheDocument()
+        expect(screen.getByPlaceholderText("**********")).toBeInTheDocument()
 
         expect(
             screen.getByRole("button", { name: /cadastrar/i }),
@@ -40,9 +42,9 @@ describe("RegistroPage", () => {
             status: 201,
             json: async () => ({
                 id: "1",
-                apelido: "alice",
-                nome: "Alice",
-                email: "alice@example.com",
+                apelido: "joe.doe",
+                nome: "Joe Doe",
+                email: "joe@example.com",
                 xp_total: 0,
                 streak_dias: 0,
             }),
@@ -53,13 +55,13 @@ describe("RegistroPage", () => {
 
         renderWithProviders(<RegistroPage />)
 
-        await user.type(screen.getByPlaceholderText("Nome Completo"), "Alice")
-        await user.type(screen.getByPlaceholderText("Apelido"), "alice")
+        await user.type(screen.getByPlaceholderText("Joe Doe"), "Joe Doe")
+        await user.type(screen.getByPlaceholderText("joe.doe"), "joe.doe")
         await user.type(
-            screen.getByPlaceholderText("Email"),
-            "alice@example.com",
+            screen.getByPlaceholderText("email@gmail.com"),
+            "joe@example.com",
         )
-        await user.type(screen.getByPlaceholderText("Senha"), "secret")
+        await user.type(screen.getByPlaceholderText("**********"), "secret")
         await user.click(screen.getByRole("button", { name: /cadastrar/i }))
 
         await waitFor(() => expect(fetchMock).toHaveBeenCalled())
@@ -72,9 +74,9 @@ describe("RegistroPage", () => {
             credentials: "include",
         })
         expect(JSON.parse(options.body as string)).toEqual({
-            nome: "Alice",
-            apelido: "alice",
-            email: "alice@example.com",
+            nome: "Joe Doe",
+            apelido: "joe.doe",
+            email: "joe@example.com",
             password: "secret",
         })
     })
@@ -93,13 +95,13 @@ describe("RegistroPage", () => {
 
         renderWithProviders(<RegistroPage />)
 
-        await user.type(screen.getByPlaceholderText("Nome Completo"), "Alice")
-        await user.type(screen.getByPlaceholderText("Apelido"), "alice")
+        await user.type(screen.getByPlaceholderText("Joe Doe"), "Joe Doe")
+        await user.type(screen.getByPlaceholderText("joe.doe"), "joe.doe")
         await user.type(
-            screen.getByPlaceholderText("Email"),
-            "alice@example.com",
+            screen.getByPlaceholderText("email@gmail.com"),
+            "joe@example.com",
         )
-        await user.type(screen.getByPlaceholderText("Senha"), "secret")
+        await user.type(screen.getByPlaceholderText("**********"), "secret")
         await user.click(screen.getByRole("button", { name: /cadastrar/i }))
 
         expect(await screen.findByRole("alert")).toBeInTheDocument()

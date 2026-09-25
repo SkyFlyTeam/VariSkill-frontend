@@ -20,22 +20,30 @@ describe("LoginPage", () => {
 
         expect(
             screen.getByRole("heading", {
-                name: /login/i,
+                name: /entrar/i,
             }),
         ).toBeInTheDocument()
 
-        expect(screen.getByPlaceholderText("Seu apelido")).toBeInTheDocument()
+        expect(
+            screen.getByPlaceholderText("email@gmail.com"),
+        ).toBeInTheDocument()
 
-        expect(screen.getByPlaceholderText("Sua senha")).toBeInTheDocument()
+        expect(screen.getByPlaceholderText("**********")).toBeInTheDocument()
 
         expect(
             screen.getByRole("button", {
                 name: /entrar/i,
             }),
         ).toBeInTheDocument()
+
+        expect(
+            screen.getByRole("link", {
+                name: /cadastre-se/i,
+            }),
+        ).toHaveAttribute("href", "/registro")
     })
 
-    it("deve enviar apelido e senha para a API ao entrar", async () => {
+    it("deve enviar email e senha para a API ao entrar", async () => {
         const fetchMock = jest.fn().mockResolvedValue({
             ok: true,
             status: 200,
@@ -54,8 +62,11 @@ describe("LoginPage", () => {
 
         renderWithProviders(<LoginPage />)
 
-        await user.type(screen.getByPlaceholderText("Seu apelido"), "alice")
-        await user.type(screen.getByPlaceholderText("Sua senha"), "secret")
+        await user.type(
+            screen.getByPlaceholderText("email@gmail.com"),
+            "alice@example.com",
+        )
+        await user.type(screen.getByPlaceholderText("**********"), "secret")
         await user.click(screen.getByRole("button", { name: /entrar/i }))
 
         await waitFor(() => expect(fetchMock).toHaveBeenCalled())
@@ -68,7 +79,7 @@ describe("LoginPage", () => {
             credentials: "include",
         })
         expect(JSON.parse(options.body as string)).toEqual({
-            apelido: "alice",
+            email: "alice@example.com",
             password: "secret",
         })
     })
@@ -85,12 +96,15 @@ describe("LoginPage", () => {
 
         renderWithProviders(<LoginPage />)
 
-        await user.type(screen.getByPlaceholderText("Seu apelido"), "alice")
-        await user.type(screen.getByPlaceholderText("Sua senha"), "wrong")
+        await user.type(
+            screen.getByPlaceholderText("email@gmail.com"),
+            "alice@example.com",
+        )
+        await user.type(screen.getByPlaceholderText("**********"), "wrong")
         await user.click(screen.getByRole("button", { name: /entrar/i }))
 
         expect(await screen.findByRole("alert")).toHaveTextContent(
-            /apelido ou senha inválidos/i,
+            /email ou senha inválidos/i,
         )
     })
 })
