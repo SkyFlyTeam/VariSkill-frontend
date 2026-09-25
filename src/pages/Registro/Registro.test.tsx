@@ -64,9 +64,15 @@ describe("RegistroPage", () => {
         await user.type(screen.getByPlaceholderText("**********"), "secret")
         await user.click(screen.getByRole("button", { name: /cadastrar/i }))
 
-        await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+        await waitFor(() =>
+            expect(
+                fetchMock.mock.calls.some(([url]) => url === "/api/register/"),
+            ).toBe(true),
+        )
 
-        const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit]
+        const [url, options] = fetchMock.mock.calls.find(
+            ([url]) => url === "/api/register/",
+        ) as [string, RequestInit]
 
         expect(url).toBe("/api/register/")
         expect(options).toMatchObject({
