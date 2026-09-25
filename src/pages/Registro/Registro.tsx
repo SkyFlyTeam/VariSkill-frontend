@@ -5,11 +5,12 @@ import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/authContext"
-import { ApiError } from "@/services/api"
 
-export function LoginPage() {
-    const { login } = useAuth()
+export function RegistroPage() {
+    const { register } = useAuth()
+    const [nome, setNome] = useState("")
     const [apelido, setApelido] = useState("")
+    const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -20,9 +21,9 @@ export function LoginPage() {
         setIsSubmitting(true)
 
         try {
-            await login(apelido, password)
+            await register({ nome, apelido, email, password })
         } catch {
-            setError("Apelido ou senha inválidos.")
+            setError("Não foi possível criar a conta. Verifique os dados.")
         } finally {
             setIsSubmitting(false)
         }
@@ -35,17 +36,36 @@ export function LoginPage() {
                 className="w-full max-w-sm space-y-6 rounded-lg border p-6"
             >
                 <div>
-                    <h1 className="text-2xl font-bold">Login</h1>
+                    <h1 className="text-2xl font-bold">Criar conta</h1>
+
                     <p className="text-sm text-muted-foreground">
-                        Entre para acessar o sistema.
+                        Preencha os dados para começar.
                     </p>
                 </div>
+
                 <div className="space-y-4">
+                    <Input
+                        value={nome}
+                        onChange={(event) => setNome(event.target.value)}
+                        placeholder="Nome Completo"
+                        autoComplete="name"
+                        required
+                    />
+
                     <Input
                         value={apelido}
                         onChange={(event) => setApelido(event.target.value)}
-                        placeholder="Seu apelido"
+                        placeholder="Apelido"
                         autoComplete="username"
+                        required
+                    />
+
+                    <Input
+                        type="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder="Email"
+                        autoComplete="email"
                         required
                     />
 
@@ -53,8 +73,8 @@ export function LoginPage() {
                         type="password"
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
-                        placeholder="Sua senha"
-                        autoComplete="current-password"
+                        placeholder="Senha"
+                        autoComplete="new-password"
                         required
                     />
 
@@ -69,17 +89,17 @@ export function LoginPage() {
                         className="w-full"
                         disabled={isSubmitting}
                     >
-                        {isSubmitting ? "Entrando..." : "Entrar"}
+                        {isSubmitting ? "Cadastrando..." : "Cadastrar"}
                     </Button>
                 </div>
 
                 <p className="text-center text-sm text-muted-foreground">
-                    Não tem uma conta?{" "}
+                    Já tem uma conta?{" "}
                     <Link
-                        to="/registro"
+                        to="/login"
                         className="font-medium text-primary underline-offset-4 hover:underline"
                     >
-                        Cadastre-se
+                        Entrar
                     </Link>
                 </p>
             </form>
