@@ -44,7 +44,7 @@ export function RegistroPage() {
                         htmlFor="nome"
                         className="text-xs font-medium text-neutral-600"
                     >
-                        Nome
+                        Nome Completo
                     </label>
 
                     <Input
