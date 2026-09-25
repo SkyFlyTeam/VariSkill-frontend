@@ -38,7 +38,7 @@ describe("ActivityNode", () => {
         expect(container.querySelector(".lucide-trophy")).toBeInTheDocument()
     })
 
-    it("deve mostrar o cadeado cinza e não responder a clique quando bloqueado", () => {
+    it("deve mostrar o cadeado e não responder a clique quando bloqueado", () => {
         const onClick = jest.fn()
 
         const { container } = render(
@@ -61,7 +61,7 @@ describe("ActivityNode", () => {
         expect(onClick).not.toHaveBeenCalled()
     })
 
-    it("deve mostrar o check verde quando concluído", () => {
+    it("deve mostrar o check quando concluído", () => {
         const { container } = render(
             <ActivityNode
                 title="Variáveis"
@@ -73,8 +73,8 @@ describe("ActivityNode", () => {
         expect(container.querySelector(".lucide-check")).toBeInTheDocument()
     })
 
-    it("deve destacar a borda quando em andamento", () => {
-        render(
+    it("deve aplicar o efeito 3D (camada de fundo) conforme o propósito", () => {
+        const { rerender } = render(
             <ActivityNode
                 title="Variáveis"
                 purpose="theoretical"
@@ -82,7 +82,65 @@ describe("ActivityNode", () => {
             />,
         )
 
-        expect(screen.getByRole("button")).toHaveClass("border-sky-500")
+        expect(screen.getByRole("button")).toHaveClass(
+            "shadow-[0_5px_0_0_#193cb8]",
+        )
+
+        rerender(
+            <ActivityNode
+                title="Complete o código"
+                purpose="practical"
+                status="in_progress"
+            />,
+        )
+
+        expect(screen.getByRole("button")).toHaveClass(
+            "shadow-[0_5px_0_0_#6e11b0]",
+        )
+
+        rerender(
+            <ActivityNode
+                title="Revisão da unidade"
+                purpose="exam"
+                status="in_progress"
+            />,
+        )
+
+        expect(screen.getByRole("button")).toHaveClass(
+            "shadow-[0_5px_0_0_#fe9a00]",
+        )
+    })
+
+    it("deve aplicar a cor de fundo conforme o propósito", () => {
+        const { rerender } = render(
+            <ActivityNode
+                title="Variáveis"
+                purpose="theoretical"
+                status="in_progress"
+            />,
+        )
+
+        expect(screen.getByRole("button")).toHaveClass("bg-[#155dfc]")
+
+        rerender(
+            <ActivityNode
+                title="Complete o código"
+                purpose="practical"
+                status="in_progress"
+            />,
+        )
+
+        expect(screen.getByRole("button")).toHaveClass("bg-[#9810fa]")
+
+        rerender(
+            <ActivityNode
+                title="Revisão da unidade"
+                purpose="exam"
+                status="in_progress"
+            />,
+        )
+
+        expect(screen.getByRole("button")).toHaveClass("bg-[#ffb900]")
     })
 
     it("deve chamar onClick quando a atividade está desbloqueada", () => {
