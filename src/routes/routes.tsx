@@ -7,7 +7,7 @@ import { HomePage } from "@/pages/Home/Home"
 import { LoginPage } from "@/pages/Login/Login"
 import { MultipleChoicePreviewPage } from "@/pages/MultipleChoicePreview/MultipleChoicePreview"
 import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
-import { ProfilePage } from "@/pages/Profile/Profile"
+import { RegistroPage } from "@/pages/Registro/Registro"
 import { TrackRoadmapPage } from "@/pages/TrackRoadmap/TrackRoadmap"
 import { VariMessageModalPreviewPage } from "@/pages/VariMessageModalPreview/VariMessageModalPreview"
 import { PrivateRoute } from "@/routes/privateRoute"
@@ -19,6 +19,7 @@ export const AppRoutes = () => {
             <Routes>
                 <Route element={<PublicRoute />}>
                     <Route path="/login" element={<LoginPage />} />
+                    <Route path="/registro" element={<RegistroPage />} />
                 </Route>
 
                 <Route element={<PrivateRoute />}>

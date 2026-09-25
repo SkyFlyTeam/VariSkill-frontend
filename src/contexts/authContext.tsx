@@ -13,15 +13,14 @@ import {
     userService,
 } from "@/services/userService"
 
+import * as authService from "@/services/authService"
+import type { RegisterPayload, User } from "@/services/authService"
+
 type AuthContextType = {
-    user: UserProfile | null
+    user: User | null
     isAuthenticated: boolean
-    loading: boolean
-    sessionError: string | null
-    login: (data: LoginData) => Promise<void>
-    logout: () => Promise<void>
-    clearSession: () => void
-    updateUser: (user: UserProfile) => void
+    login: (apelido: string, password: string) => Promise<void>
+    register: (payload: RegisterPayload) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -31,43 +30,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [loading, setLoading] = useState(true)
     const [sessionError, setSessionError] = useState<string | null>(null)
 
-    useEffect(() => {
-        let active = true
-        userService
-            .getSession()
-            .then((profile) => {
-                if (active) setUser(profile)
-            })
-            .catch((error: unknown) => {
-                if (
-                    active &&
-                    !(
-                        error instanceof ApiError &&
-                        [401, 403].includes(error.status)
-                    )
-                ) {
-                    setSessionError(
-                        "Não foi possível conectar ao servidor. Tente entrar novamente.",
-                    )
-                }
-            })
-            .finally(() => {
-                if (active) setLoading(false)
-            })
-        return () => {
-            active = false
-        }
-    }, [])
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+    const [user, setUser] = useState<User | null>(null)
 
-    async function login(data: LoginData) {
-        const profile = await userService.login(data)
-        setUser(profile)
-        setSessionError(null)
+    const login = async (apelido: string, password: string) => {
+        const loggedUser = await authService.login(apelido, password)
+        setUser(loggedUser)
     }
 
-    async function logout() {
-        await userService.logout()
-        setUser(null)
+    const register = async (payload: RegisterPayload) => {
+        const registeredUser = await authService.register(payload)
+        setUser(registeredUser)
     }
 
     return (
@@ -75,12 +48,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             value={{
                 user,
                 isAuthenticated: user !== null,
-                loading,
-                sessionError,
                 login,
-                logout,
-                clearSession: () => setUser(null),
-                updateUser: setUser,
+                register,
             }}
         >
             {children}

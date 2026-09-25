@@ -1,14 +1,11 @@
-import { useState } from "react"
+import { NavLink, useLocation } from "react-router-dom"
 
-import { NavLink, useLocation, useNavigate } from "react-router-dom"
-
-import { Home, LogOut, Medal, UserRound } from "lucide-react"
+import { Home, Medal, UserRound } from "lucide-react"
 
 import { useToast } from "@/components/shared/toast"
 import {
     Sidebar,
     SidebarContent,
-    SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
     SidebarHeader,
@@ -16,7 +13,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { useAuth } from "@/contexts/authContext"
 
 const navigationItems = [
     { label: "Home", href: "/", icon: Home },
@@ -25,23 +21,7 @@ const navigationItems = [
 ]
 
 export function AppSidebar() {
-    const { logout } = useAuth()
-    const toast = useToast()
-    const [leaving, setLeaving] = useState(false)
     const location = useLocation()
-    const navigate = useNavigate()
-
-    async function handleLogout() {
-        setLeaving(true)
-        try {
-            await logout()
-            navigate("/login")
-        } catch {
-            toast.error("Não foi possível encerrar a sessão. Tente novamente.")
-        } finally {
-            setLeaving(false)
-        }
-    }
 
     return (
         <Sidebar className="border-sidebar-border">
@@ -87,21 +67,6 @@ export function AppSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
             </SidebarContent>
-
-            <SidebarFooter className="px-3 pb-5">
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton
-                            onClick={handleLogout}
-                            disabled={leaving}
-                            className="h-9 px-2 text-xs font-medium text-[#e91743] hover:bg-[#9b123086] hover:text-[#ff4c70] cursor-pointer"
-                        >
-                            <LogOut />
-                            <span>{leaving ? "Saindo..." : "Sair"}</span>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarFooter>
         </Sidebar>
     )
 }
