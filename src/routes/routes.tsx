@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
+import { ActivityNodePreviewPage } from "@/pages/ActivityNodePreview/ActivityNodePreview"
 import { ActivityResultModalPreviewPage } from "@/pages/ActivityResultModalPreview/ActivityResultModalPreview"
 import { ChatPage } from "@/pages/Chat/Chat"
 import { HomePage } from "@/pages/Home/Home"
@@ -42,6 +43,12 @@ export const AppRoutes = () => {
                 <Route
                     path="/preview/multiple-choice"
                     element={<MultipleChoicePreviewPage />}
+                />
+
+                {/* Preview manual pra revisão de PR, sem login (VAR-51). */}
+                <Route
+                    path="/preview/activity-node"
+                    element={<ActivityNodePreviewPage />}
                 />
             </Routes>
         </BrowserRouter>
