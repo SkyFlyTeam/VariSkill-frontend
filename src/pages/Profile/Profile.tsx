@@ -11,6 +11,7 @@ import { Camera, Lock, Pencil, User } from "lucide-react"
 import { useToast } from "@/components/shared/toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useAuth } from "@/contexts/authContext"
 import { ChangePasswordDialog } from "@/pages/Profile/ChangePasswordDialog"
 import { useProfilePhoto } from "@/pages/Profile/useProfilePhoto"
 import { type UserProfile, userService } from "@/services/userService"
@@ -37,6 +38,7 @@ function Field({ id, label, children }: FieldProps) {
 
 export function ProfilePage() {
     const toast = useToast()
+    const { user, updateUser } = useAuth()
     const [profile, setProfile] = useState<UserProfile | null>(null)
     const [loading, setLoading] = useState(true)
     const [nome, setNome] = useState("")
@@ -56,23 +58,32 @@ export function ProfilePage() {
     }
 
     useEffect(() => {
+        if (!user?.id) return
+        let active = true
         userService
-            .getProfile()
+            .getProfile(user.id)
             .then((data) => {
+                if (!active) return
                 setProfile(data)
                 setNome(data.nome)
                 setApelido(data.apelido)
             })
-            .catch((error) =>
+            .catch((error) => {
+                if (!active) return
                 toast.error(
                     error instanceof Error
                         ? error.message
                         : "Não foi possível carregar o perfil.",
-                ),
-            )
-            .finally(() => setLoading(false))
+                )
+            })
+            .finally(() => {
+                if (active) setLoading(false)
+            })
+        return () => {
+            active = false
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [user?.id])
 
     const changed =
         profile !== null &&
@@ -80,6 +91,7 @@ export function ProfilePage() {
 
     async function handleSubmit(event: FormEvent) {
         event.preventDefault()
+        if (!profile) return
 
         if (!nome.trim() || !apelido.trim()) {
             toast.error("Nome e apelido não podem ficar vazios.")
@@ -88,11 +100,12 @@ export function ProfilePage() {
 
         setSaving(true)
         try {
-            const updated = await userService.updateProfile({
+            const updated = await userService.updateProfile(profile.id, {
                 nome: nome.trim(),
                 apelido: apelido.trim(),
             })
             setProfile(updated)
+            updateUser(updated)
             setNome(updated.nome)
             setApelido(updated.apelido)
             toast.success("Perfil atualizado com sucesso!")
@@ -259,7 +272,6 @@ export function ProfilePage() {
             <ChangePasswordDialog
                 open={passwordOpen}
                 onOpenChange={setPasswordOpen}
-                apelido={profile.apelido}
             />
         </main>
     )
