@@ -16,10 +16,10 @@ export type RegisterPayload = {
     password: string
 }
 
-export function login(apelido: string, password: string) {
+export function login(email: string, password: string) {
     return http<User>("/api/login/", {
         method: "POST",
-        body: JSON.stringify({ apelido, password }),
+        body: JSON.stringify({ email, password }),
     })
 }
 
