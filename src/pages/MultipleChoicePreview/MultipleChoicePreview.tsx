@@ -1,13 +1,14 @@
 import { useState } from "react"
 import {
+    ActivityResultModal,
+    type ActivitySubmissionResult,
+} from "@/components/shared/ActivityResultModal/ActivityResultModal"
+import {
     MultipleChoiceQuestion,
     type MultipleChoiceOption,
 } from "@/components/shared/MultipleChoiceQuestion/MultipleChoiceQuestion"
 import { Button } from "@/components/ui/button"
 
-/**
- * Contrato de Tipos idêntico à modelagem do Backend Django
- */
 export interface BackendQuestionOpcao {
     id: string
     texto_opcao: string
@@ -19,7 +20,7 @@ export interface BackendQuestion {
     tipo_exercicio: "MULTIPLA_ESCOLHA" | "COMPLETE_CODIGO" | "ORDENAR_BLOCOS"
     enunciado: string
     codigo_snippet?: string | null
-    gabarito_esperado: string // Ex: "opt-86-1002" ou o identificador/texto da opcao esperada no backend
+    gabarito_esperado: string
     explicacao: string
     ordem_questao: number
     opcoes: BackendQuestionOpcao[]
@@ -36,7 +37,6 @@ export interface BackendAtividade {
     questoes: BackendQuestion[]
 }
 
-// Mock da Atividade com Gabarito Esperado ("opt-86-1002" que corresponde ao valor "6")
 const MOCK_BACKEND_ACTIVITY: BackendAtividade = {
     id: "act-47-uuid-example",
     titulo: "Variáveis e Funções em JavaScript",
@@ -51,7 +51,7 @@ const MOCK_BACKEND_ACTIVITY: BackendAtividade = {
             tipo_exercicio: "MULTIPLA_ESCOLHA",
             enunciado: "3 - Qual será a saída desse código?",
             codigo_snippet: `const SUM_VALUE = 2;\nfunction updateCount(value) {\n    let newValue = value;\n    newValue += SUM_VALUE;\n    return newValue;\n}\nconst result = updateCount(4);\nconsole.log("O resultado é: ", result);`,
-            gabarito_esperado: "opt-86-1002", // ID da opção "6"
+            gabarito_esperado: "opt-86-1002", // "6"
             explicacao: "A função updateCount recebe 4 e soma com SUM_VALUE (2), resultando em 6.",
             ordem_questao: 1,
             opcoes: [
@@ -64,49 +64,60 @@ const MOCK_BACKEND_ACTIVITY: BackendAtividade = {
     ],
 }
 
-/**
- * Validador client-side reproduzindo a mesma estratégia de validação do Backend:
- * `MultipleChoiceValidator` em `grading/validators.py`
- */
-function validateMultipleChoiceAnswer(questao: BackendQuestion, optionId: string): boolean {
-    return optionId === questao.gabarito_esperado
-}
-
 export function MultipleChoicePreviewPage() {
     const activity = MOCK_BACKEND_ACTIVITY
     const currentQuestion = activity.questoes[0]
 
-    // Mapeamento das opções para o componente <MultipleChoiceQuestion />
     const optionsForComponent: MultipleChoiceOption[] = currentQuestion.opcoes.map((op) => ({
         id: op.id,
         label: op.texto_opcao,
     }))
 
     const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
-    const [evaluationResult, setEvaluationResult] = useState<{
-        correta: boolean
-        payload: object
-        explicacao: string
-    } | null>(null)
+    const [submissionResult, setSubmissionResult] = useState<ActivitySubmissionResult | null>(null)
+    const [userXp, setUserXp] = useState<number>(4500)
 
     function handleVerify() {
         if (!selectedOptionId) return
 
-        // 1. Monta o payload exatamente como o frontend envia no POST /api/atividades/{id}/submeter/
-        const payload = {
-            respostas: {
-                [currentQuestion.id]: [selectedOptionId],
-            },
+        const isCorrect = selectedOptionId === currentQuestion.gabarito_esperado
+        const taxaAcerto = isCorrect ? 100 : 0
+        const xpConcedido = isCorrect ? activity.xp_recompensa : 0
+        const novoXpTotal = userXp + xpConcedido
+
+        if (isCorrect) {
+            setUserXp(novoXpTotal)
         }
 
-        // 2. Executa a lógica de checagem contra o gabarito_esperado
-        const isCorrect = validateMultipleChoiceAnswer(currentQuestion, selectedOptionId)
+        // Monta o payload idêntico ao retornado por POST /api/atividades/{id}/submeter/
+        const result: ActivitySubmissionResult = {
+            execucao_id: "exec-" + Math.random().toString(36).substring(7),
+            aprovado: isCorrect,
+            taxa_acerto: taxaAcerto,
+            pontuacao_obtida: isCorrect ? 100 : 0,
+            xp_concedido: xpConcedido,
+            novo_xp_total: novoXpTotal,
+            executado_em: new Date().toISOString(),
+            questoes_feedback: [
+                {
+                    questao_id: currentQuestion.id,
+                    correta: isCorrect,
+                    explicacao: currentQuestion.explicacao,
+                },
+            ],
+        }
 
-        setEvaluationResult({
-            correta: isCorrect,
-            payload: payload,
-            explicacao: currentQuestion.explicacao,
-        })
+        setSubmissionResult(result)
+    }
+
+    function handleRetry() {
+        setSubmissionResult(null)
+        setSelectedOptionId(null)
+    }
+
+    function handleContinue() {
+        setSubmissionResult(null)
+        setSelectedOptionId(null)
     }
 
     return (
@@ -119,9 +130,14 @@ export function MultipleChoicePreviewPage() {
                         </span>
                         <h1 className="text-xl font-bold text-foreground">{activity.titulo}</h1>
                     </div>
-                    <span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">
-                        +{activity.xp_recompensa} XP
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-bold text-sky-600 dark:text-sky-400">
+                            XP Atual: {userXp}
+                        </span>
+                        <span className="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">
+                            +{activity.xp_recompensa} XP
+                        </span>
+                    </div>
                 </div>
 
                 {/* Snippet de Código */}
@@ -136,10 +152,7 @@ export function MultipleChoicePreviewPage() {
                     questionText={currentQuestion.enunciado}
                     options={optionsForComponent}
                     selectedOptionId={selectedOptionId}
-                    onSelectOption={(id) => {
-                        setSelectedOptionId(id)
-                        setEvaluationResult(null) // limpa avaliacao ao mudar opcao
-                    }}
+                    onSelectOption={setSelectedOptionId}
                 />
 
                 <div className="flex flex-col items-center justify-between gap-4 border-t pt-4 sm:flex-row">
@@ -159,33 +172,20 @@ export function MultipleChoicePreviewPage() {
                         onClick={handleVerify}
                         className="w-full sm:w-auto"
                     >
-                        Verificar
+                        Verificar Resposta
                     </Button>
                 </div>
-
-                {/* Feedback da Avaliação com base no gabarito_esperado */}
-                {evaluationResult && (
-                    <div
-                        className={`space-y-3 rounded-2xl p-4 text-sm font-medium transition-all ${
-                            evaluationResult.correta
-                                ? "bg-emerald-500/10 border-2 border-emerald-500/40 text-emerald-700 dark:text-emerald-300"
-                                : "bg-destructive/10 border-2 border-destructive/40 text-destructive"
-                        }`}
-                    >
-                        <div className="flex items-center gap-2 font-bold text-base">
-                            {evaluationResult.correta ? "✅ Resposta Correta!" : "❌ Resposta Incorreta"}
-                        </div>
-                        <p className="text-xs text-muted-foreground">{evaluationResult.explicacao}</p>
-
-                        <div className="border-t border-current/20 pt-2 text-xs font-mono">
-                            <p className="font-sans font-semibold mb-1">Payload enviado:</p>
-                            <pre className="rounded bg-background/60 p-2 text-foreground overflow-x-auto">
-                                {JSON.stringify(evaluationResult.payload, null, 2)}
-                            </pre>
-                        </div>
-                    </div>
-                )}
             </div>
+
+            {/* Integração com o ActivityResultModal (VAR-69) */}
+            {submissionResult && (
+                <ActivityResultModal
+                    open
+                    result={submissionResult}
+                    onContinue={handleContinue}
+                    onRetry={handleRetry}
+                />
+            )}
         </main>
     )
 }
