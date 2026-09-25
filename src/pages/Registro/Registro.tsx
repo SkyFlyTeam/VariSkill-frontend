@@ -10,7 +10,9 @@ import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/authContext"
 
 const inputClassName =
-    "h-10 rounded-md border-0 bg-neutral-200 px-3 text-sm shadow-none placeholder:text-neutral-400 focus-visible:ring-1"
+    "h-10 rounded-[10px] border border-[#cad5e2] bg-white px-3 text-sm shadow-none placeholder:text-neutral-400 focus-visible:ring-1"
+
+const labelClassName = "text-[14px] leading-[20px] font-medium text-[#101828]"
 
 export function RegistroPage() {
     const { register } = useAuth()
@@ -37,13 +39,13 @@ export function RegistroPage() {
     }
 
     return (
-        <AuthLayout heading="Cadastrar">
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <AuthLayout>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-[25px]">
+                <h1 className="font-poppins text-[24px] leading-[100%] font-bold tracking-normal text-[#101828]">
+                    Cadastrar
+                </h1>
                 <div className="space-y-1.5">
-                    <label
-                        htmlFor="nome"
-                        className="text-xs font-medium text-neutral-600"
-                    >
+                    <label htmlFor="nome" className={labelClassName}>
                         Nome Completo
                     </label>
 
@@ -59,10 +61,7 @@ export function RegistroPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                    <label
-                        htmlFor="apelido"
-                        className="text-xs font-medium text-neutral-600"
-                    >
+                    <label htmlFor="apelido" className={labelClassName}>
                         Apelido
                     </label>
 
@@ -78,10 +77,7 @@ export function RegistroPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                    <label
-                        htmlFor="email"
-                        className="text-xs font-medium text-neutral-600"
-                    >
+                    <label htmlFor="email" className={labelClassName}>
                         Email
                     </label>
 
@@ -98,10 +94,7 @@ export function RegistroPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                    <label
-                        htmlFor="password"
-                        className="text-xs font-medium text-neutral-600"
-                    >
+                    <label htmlFor="password" className={labelClassName}>
                         Senha
                     </label>
 
@@ -145,17 +138,17 @@ export function RegistroPage() {
                 <Button
                     type="submit"
                     variant="vari"
-                    className="h-11 w-full"
+                    className="h-auto w-full rounded-[10px] px-[35px] py-[20px] text-[16px] leading-[100%] font-bold"
                     disabled={isSubmitting}
                 >
                     {isSubmitting ? "Cadastrando..." : "Cadastrar"}
                 </Button>
 
-                <p className="text-center text-xs text-neutral-600">
+                <p className="text-center text-[16px] leading-[100%] font-medium text-neutral-600">
                     Já tem uma conta?{" "}
                     <Link
                         to="/login"
-                        className="font-bold text-vari hover:underline"
+                        className="text-[16px] leading-[100%] font-bold text-vari hover:underline"
                     >
                         Entrar
                     </Link>

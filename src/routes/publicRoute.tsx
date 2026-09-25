@@ -4,17 +4,10 @@ import { useAuth } from "@/contexts/authContext"
 import { isOnboardingCompleted } from "@/utils/onboarding"
 
 export function PublicRoute() {
-    const { isAuthenticated, loading } = useAuth()
+    const { isAuthenticated, isLoading } = useAuth()
 
-    if (loading) {
-        return (
-            <main
-                className="flex min-h-screen items-center justify-center"
-                role="status"
-            >
-                Verificando sessão...
-            </main>
-        )
+    if (isLoading) {
+        return null
     }
 
     if (isAuthenticated) {

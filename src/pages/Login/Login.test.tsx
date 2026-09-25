@@ -69,9 +69,15 @@ describe("LoginPage", () => {
         await user.type(screen.getByPlaceholderText("**********"), "secret")
         await user.click(screen.getByRole("button", { name: /entrar/i }))
 
-        await waitFor(() => expect(fetchMock).toHaveBeenCalled())
+        await waitFor(() =>
+            expect(
+                fetchMock.mock.calls.some(([url]) => url === "/api/login/"),
+            ).toBe(true),
+        )
 
-        const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit]
+        const [url, options] = fetchMock.mock.calls.find(
+            ([url]) => url === "/api/login/",
+        ) as [string, RequestInit]
 
         expect(url).toBe("/api/login/")
         expect(options).toMatchObject({

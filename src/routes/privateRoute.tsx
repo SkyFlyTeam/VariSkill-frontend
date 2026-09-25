@@ -10,18 +10,11 @@ import {
 import { useAuth } from "@/contexts/authContext"
 
 export function PrivateRoute() {
-    const { isAuthenticated, loading } = useAuth()
+    const { isAuthenticated, isLoading } = useAuth()
     const location = useLocation()
 
-    if (loading) {
-        return (
-            <main
-                className="flex min-h-screen items-center justify-center"
-                role="status"
-            >
-                Verificando sessão...
-            </main>
-        )
+    if (isLoading) {
+        return null
     }
 
     if (!isAuthenticated) {
