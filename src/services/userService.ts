@@ -1,91 +1,65 @@
 import { ApiError, api } from "@/services/api"
-// MOCK-TEMP: só existe enquanto o backend não expõe estes dados. Ver o topo
-// de mockProfile.ts para o que falta no backend, e remover junto com ele.
-import { getMockProfile, updateMockProfile } from "@/services/mockProfile"
 
+// Contrato de userManagement.serializers.UserSerializer.
 export type UserProfile = {
     id: string
     nome: string
     apelido: string
     email: string
-    dataCadastro: string
-    xpTotal: number
-    diasOfensiva: number
+    xp_total: number
+    streak_dias: number
+    // Existe no modelo Django, mas ainda não é exposto pelo serializer atual.
+    criado_em?: string
 }
 
 export type UpdateProfileData = Pick<UserProfile, "nome" | "apelido">
-
-export type ChangePasswordData = {
-    senhaAtual: string
-    novaSenha: string
-}
-
-// MOCK-TEMP: o login atual não cria sessão no backend. Em desenvolvimento,
-// também usamos o mock quando falta sessão/endpoint ou o servidor/proxy falha.
-function shouldUseMock(error: unknown) {
-    if (!import.meta.env.DEV) return false
-    if (!(error instanceof ApiError)) return true
-
-    return (
-        error.status === 401 ||
-        error.status === 403 ||
-        error.status === 404 ||
-        (error.status >= 500 && error.status < 600)
-    )
-}
-
-// MOCK-TEMP
-function warnMock(message: string) {
-    console.warn(
-        `[mock dev] ${message} API indisponível ou sessão/endpoint ausente — remova src/services/mockProfile.ts quando a API real estiver pronta.`,
-    )
-}
+export type LoginData = { apelido: string; password: string }
+export type ChangePasswordData = { senhaAtual: string; novaSenha: string }
 
 export const userService = {
-    getProfile: async (): Promise<UserProfile> => {
-        try {
-            return await api<UserProfile>("/users/me")
-        } catch (error) {
-            // MOCK-TEMP
-            if (shouldUseMock(error)) {
-                warnMock("Usando perfil fake.")
-                return getMockProfile()
-            }
-            throw error
-        }
-    },
+    login: (data: LoginData) =>
+        api<UserProfile>("/login/", {
+            method: "POST",
+            body: JSON.stringify(data),
+        }),
 
-    updateProfile: async (data: UpdateProfileData): Promise<UserProfile> => {
+    // Esta action já existe no Backend local e identifica a sessão atual.
+    getSession: () => api<UserProfile>("/users/me/"),
+
+    getProfile: (id: string) =>
+        api<UserProfile>(`/users/${encodeURIComponent(id)}/`),
+
+    updateProfile: (id: string, data: UpdateProfileData) =>
+        api<UserProfile>(`/users/${encodeURIComponent(id)}/`, {
+            method: "PATCH",
+            body: JSON.stringify(data),
+        }),
+
+    changePassword: async ({
+        senhaAtual,
+        novaSenha,
+    }: ChangePasswordData): Promise<void> => {
+        // O PATCH só recebe password. Confirmar a senha pelo login real antes
+        // de alterar o usuário identificado pela sessão, sem confiar no formulário.
+        const current = await userService.getSession()
         try {
-            return await api<UserProfile>("/users/me", {
-                method: "PUT",
-                body: JSON.stringify(data),
+            await userService.login({
+                apelido: current.apelido,
+                password: senhaAtual,
             })
         } catch (error) {
-            // MOCK-TEMP
-            if (shouldUseMock(error)) {
-                warnMock("Perfil 'salvo' apenas localmente.")
-                return updateMockProfile(data)
+            if (error instanceof ApiError && error.status === 400) {
+                throw new ApiError("Senha atual incorreta.", 400)
             }
             throw error
         }
+        await api<UserProfile>(`/users/${encodeURIComponent(current.id)}/`, {
+            method: "PATCH",
+            body: JSON.stringify({ password: novaSenha }),
+        })
+        // set_password invalida a sessão no Django. A UI pede um novo login.
     },
 
-    changePassword: async (data: ChangePasswordData): Promise<void> => {
-        try {
-            await api<void>("/users/me/password", {
-                method: "PUT",
-                body: JSON.stringify(data),
-            })
-        } catch (error) {
-            // MOCK-TEMP
-            if (shouldUseMock(error)) {
-                warnMock(
-                    "Senha 'alterada' apenas localmente (nenhuma validação real).",
-                )
-                return
-            }
-            throw error
-        }
-    },
+    // Rota do DRF incluída em settings/urls.py; responde com HTML/redirect.
+    logout: () => api<void>("/auth/logout/", { method: "POST" }),
 }
