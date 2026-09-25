@@ -1,12 +1,11 @@
-import { screen } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import { ChatPage } from "@/pages/Chat/Chat"
-import { renderWithProviders } from "@/tests/utils"
 
 describe("ChatPage", () => {
     it("deve renderizar o cabeçalho e a mensagem inicial", () => {
-        renderWithProviders(<ChatPage />)
+        render(<ChatPage />)
 
         expect(
             screen.getByRole("heading", {
@@ -18,12 +17,14 @@ describe("ChatPage", () => {
         expect(
             screen.getByText("Olá, em instantes irei te ajudar!"),
         ).toBeInTheDocument()
-        expect(screen.getByPlaceholderText("Digite sua dúvida...")).toBeInTheDocument()
+        expect(
+            screen.getByPlaceholderText("Digite sua dúvida..."),
+        ).toBeInTheDocument()
     })
 
     it("deve adicionar uma mensagem enviada pelo usuário", async () => {
         const user = userEvent.setup()
-        renderWithProviders(<ChatPage />)
+        render(<ChatPage />)
 
         const messageInput = screen.getByPlaceholderText("Digite sua dúvida...")
         const sendButton = screen.getByRole("button", {

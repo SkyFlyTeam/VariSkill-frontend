@@ -1,6 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react"
-
-import { renderWithProviders } from "@/tests/utils"
+import { fireEvent, render, screen, within } from "@testing-library/react"
 
 import {
     ActivityResultModal,
@@ -35,7 +33,7 @@ function renderModal(
     result: ActivitySubmissionResult,
     handlers: { onContinue?: () => void; onRetry?: () => void } = {},
 ) {
-    return renderWithProviders(
+    return render(
         <ActivityResultModal
             open
             result={result}
