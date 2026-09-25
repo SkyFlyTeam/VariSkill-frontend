@@ -5,20 +5,20 @@ import { Dialog } from "@base-ui/react/dialog"
 import { useToast } from "@/components/shared/toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useAuth } from "@/contexts/authContext"
 import { userService } from "@/services/userService"
 
 type ChangePasswordDialogProps = {
     open: boolean
     onOpenChange: (open: boolean) => void
-    apelido: string
 }
 
 export function ChangePasswordDialog({
     open,
     onOpenChange,
-    apelido,
 }: ChangePasswordDialogProps) {
     const toast = useToast()
+    const { clearSession } = useAuth()
     const [senhaAtual, setSenhaAtual] = useState("")
     const [novaSenha, setNovaSenha] = useState("")
     const [confirmacao, setConfirmacao] = useState("")
@@ -48,9 +48,10 @@ export function ChangePasswordDialog({
 
         setSaving(true)
         try {
-            await userService.changePassword({ apelido, senhaAtual, novaSenha })
-            toast.success("Senha alterada com sucesso!")
+            await userService.changePassword({ senhaAtual, novaSenha })
+            toast.success("Senha alterada. Entre novamente com a nova senha.")
             handleOpenChange(false)
+            clearSession()
         } catch (error) {
             toast.error(
                 error instanceof Error
