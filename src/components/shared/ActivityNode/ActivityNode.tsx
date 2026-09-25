@@ -21,6 +21,12 @@ const purposeIcons: Record<ActivityPurpose, LucideIcon> = {
     exam: Trophy,
 }
 
+const purposeStyles: Record<ActivityPurpose, string> = {
+    theoretical: "bg-[#155dfc] shadow-[0_5px_0_0_#193cb8]",
+    practical: "bg-[#9810fa] shadow-[0_5px_0_0_#6e11b0]",
+    exam: "bg-[#ffb900] shadow-[0_5px_0_0_#fe9a00]",
+}
+
 export function ActivityNode({
     title,
     purpose,
@@ -30,7 +36,6 @@ export function ActivityNode({
 }: ActivityNodeProps) {
     const PurposeIcon = purposeIcons[purpose]
     const isLocked = status === "locked"
-    const isInProgress = status === "in_progress"
     const isCompleted = status === "completed"
 
     function handleClick() {
@@ -49,33 +54,31 @@ export function ActivityNode({
             data-status={status}
             data-purpose={purpose}
             className={cn(
-                "relative flex aspect-[134/73] w-full max-w-[134px] min-w-[104px] flex-col items-center justify-center gap-2 rounded-lg border-2 border-transparent bg-neutral-200 px-2 py-2 text-center transition-colors sm:gap-3",
+                "relative flex aspect-[134/73] w-full max-w-[134px] min-w-[104px] flex-col items-center justify-center gap-2 rounded-lg px-2 py-2 text-center text-white transition-all sm:gap-3",
+                purposeStyles[purpose],
                 isLocked
                     ? "cursor-not-allowed opacity-60"
-                    : "cursor-pointer hover:bg-neutral-300 focus-visible:border-sky-500 focus-visible:outline-none",
-                isInProgress && "border-sky-500",
+                    : "cursor-pointer focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none active:translate-y-[3px] active:shadow-none",
                 className,
             )}
         >
             <PurposeIcon
-                className="size-4 shrink-0 text-black sm:size-[17px]"
+                className="size-4 shrink-0 sm:size-[17px]"
                 aria-hidden="true"
             />
 
-            <span className="text-[10px] font-medium text-neutral-800 sm:text-xs">
-                {title}
-            </span>
+            <span className="text-[10px] font-medium sm:text-xs">{title}</span>
 
             {isLocked && (
                 <Lock
-                    className="absolute top-1.5 right-1.5 size-3 text-slate-400 sm:top-2 sm:right-2 sm:size-4"
+                    className="absolute top-1.5 right-1.5 size-3 sm:top-2 sm:right-2 sm:size-4"
                     aria-hidden="true"
                 />
             )}
 
             {isCompleted && (
                 <Check
-                    className="absolute top-1.5 right-1.5 size-3 text-emerald-500 sm:top-2 sm:right-2 sm:size-4"
+                    className="absolute top-1.5 right-1.5 size-3 sm:top-2 sm:right-2 sm:size-4"
                     aria-hidden="true"
                 />
             )}
