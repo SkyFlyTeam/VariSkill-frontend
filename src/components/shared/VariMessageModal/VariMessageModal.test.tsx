@@ -123,7 +123,7 @@ describe("VariMessageModal", () => {
         expect(handleSkip).toHaveBeenCalledTimes(1)
     })
     it("usa o mascote padrão e não renderiza conteúdo extra por padrão", () => {
-        renderWithProviders(<ControlledModal />)
+        render(<ControlledModal />)
 
         expect(
             screen.getByRole("img", { name: /vari, o mascote/i }),
@@ -131,7 +131,7 @@ describe("VariMessageModal", () => {
     })
 
     it("aceita uma arte customizada do mascote", () => {
-        renderWithProviders(
+        render(
             <VariMessageModal
                 open
                 onOpenChange={() => {}}
@@ -149,7 +149,7 @@ describe("VariMessageModal", () => {
     })
 
     it("renderiza children entre o texto e o botão de ação", () => {
-        renderWithProviders(
+        render(
             <VariMessageModal open onOpenChange={() => {}} message="Texto">
                 <p>Conteúdo extra</p>
             </VariMessageModal>,

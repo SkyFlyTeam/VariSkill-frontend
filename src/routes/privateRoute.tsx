@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/authContext"
 
 export function PrivateRoute() {
     const { isAuthenticated, loading } = useAuth()
+    const location = useLocation()
 
     if (loading) {
         return (
