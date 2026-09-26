@@ -8,7 +8,8 @@ import { AuthLayout } from "@/components/shared/AuthLayout/AuthLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/authContext"
-import { ApiError } from "@/services/api"
+import { ApiError } from "@/services/http"
+import { validateLogin } from "@/utils/validation"
 
 const inputClassName =
     "h-10 rounded-[10px] border border-[#cad5e2] bg-white px-3 text-sm shadow-none placeholder:text-neutral-400 focus-visible:ring-1"
@@ -20,18 +21,34 @@ export function LoginPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
         setError(null)
+
+        const validationErrors = validateLogin({ email, password })
+        setFieldErrors(validationErrors)
+
+        if (Object.keys(validationErrors).length > 0) {
+            return
+        }
+
         setIsSubmitting(true)
 
         try {
             await login(email, password)
-        } catch {
-            setError("Email ou senha inválidos.")
+        } catch (requestError) {
+            if (
+                requestError instanceof ApiError &&
+                requestError.status === 400
+            ) {
+                setError("Email ou senha inválidos.")
+            } else {
+                setError("Não foi possível entrar. Tente novamente.")
+            }
         } finally {
             setIsSubmitting(false)
         }
@@ -39,7 +56,11 @@ export function LoginPage() {
 
     return (
         <AuthLayout slogan="Transforme curiosidade em habilidade.">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-[25px]">
+            <form
+                noValidate
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-[25px]"
+            >
                 <h1 className="font-poppins text-[24px] leading-[100%] font-bold tracking-normal text-[#101828]">
                     Entrar
                 </h1>
@@ -56,8 +77,15 @@ export function LoginPage() {
                         placeholder="email@gmail.com"
                         autoComplete="email"
                         required
+                        aria-invalid={Boolean(fieldErrors.email)}
                         className={inputClassName}
                     />
+
+                    {fieldErrors.email && (
+                        <p role="alert" className="text-xs text-destructive">
+                            {fieldErrors.email}
+                        </p>
+                    )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -76,6 +104,7 @@ export function LoginPage() {
                             placeholder="**********"
                             autoComplete="current-password"
                             required
+                            aria-invalid={Boolean(fieldErrors.password)}
                             className={`${inputClassName} pr-10`}
                         />
 
@@ -94,6 +123,12 @@ export function LoginPage() {
                             )}
                         </button>
                     </div>
+
+                    {fieldErrors.password && (
+                        <p role="alert" className="text-xs text-destructive">
+                            {fieldErrors.password}
+                        </p>
+                    )}
                 </div>
 
                 {error && (

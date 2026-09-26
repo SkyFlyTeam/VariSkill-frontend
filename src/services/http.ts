@@ -10,6 +10,32 @@ export class ApiError extends Error {
     }
 }
 
+export function getFieldErrors(error: unknown): Record<string, string> {
+    if (!(error instanceof ApiError) || error.status !== 400) {
+        return {}
+    }
+
+    const data = error.data
+
+    if (!data || typeof data !== "object") {
+        return {}
+    }
+
+    const result: Record<string, string> = {}
+
+    for (const [field, value] of Object.entries(
+        data as Record<string, unknown>,
+    )) {
+        if (Array.isArray(value) && value.length > 0) {
+            result[field] = String(value[0])
+        } else if (typeof value === "string") {
+            result[field] = value
+        }
+    }
+
+    return result
+}
+
 function getCookie(name: string): string | null {
     const match = document.cookie.match(new RegExp(`(^|;\\s*)${name}=([^;]*)`))
     return match ? decodeURIComponent(match[2]) : null

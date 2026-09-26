@@ -8,6 +8,8 @@ import { AuthLayout } from "@/components/shared/AuthLayout/AuthLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/authContext"
+import { getFieldErrors } from "@/services/http"
+import { validateRegister } from "@/utils/validation"
 
 const inputClassName =
     "h-10 rounded-[10px] border border-[#cad5e2] bg-white px-3 text-sm shadow-none placeholder:text-neutral-400 focus-visible:ring-1"
@@ -21,18 +23,38 @@ export function RegistroPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
         setError(null)
+
+        const validationErrors = validateRegister({
+            nome,
+            apelido,
+            email,
+            password,
+        })
+        setFieldErrors(validationErrors)
+
+        if (Object.keys(validationErrors).length > 0) {
+            return
+        }
+
         setIsSubmitting(true)
 
         try {
             await register({ nome, apelido, email, password })
-        } catch {
-            setError("Não foi possível criar a conta. Verifique os dados.")
+        } catch (requestError) {
+            const apiFieldErrors = getFieldErrors(requestError)
+
+            if (Object.keys(apiFieldErrors).length > 0) {
+                setFieldErrors(apiFieldErrors)
+            } else {
+                setError("Não foi possível criar a conta. Tente novamente.")
+            }
         } finally {
             setIsSubmitting(false)
         }
@@ -40,7 +62,11 @@ export function RegistroPage() {
 
     return (
         <AuthLayout>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-[25px]">
+            <form
+                noValidate
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-[25px]"
+            >
                 <h1 className="font-poppins text-[24px] leading-[100%] font-bold tracking-normal text-[#101828]">
                     Cadastrar
                 </h1>
@@ -56,8 +82,15 @@ export function RegistroPage() {
                         placeholder="Joe Doe"
                         autoComplete="name"
                         required
+                        aria-invalid={Boolean(fieldErrors.nome)}
                         className={inputClassName}
                     />
+
+                    {fieldErrors.nome && (
+                        <p role="alert" className="text-xs text-destructive">
+                            {fieldErrors.nome}
+                        </p>
+                    )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -72,8 +105,15 @@ export function RegistroPage() {
                         placeholder="joe.doe"
                         autoComplete="username"
                         required
+                        aria-invalid={Boolean(fieldErrors.apelido)}
                         className={inputClassName}
                     />
+
+                    {fieldErrors.apelido && (
+                        <p role="alert" className="text-xs text-destructive">
+                            {fieldErrors.apelido}
+                        </p>
+                    )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -89,8 +129,15 @@ export function RegistroPage() {
                         placeholder="email@gmail.com"
                         autoComplete="email"
                         required
+                        aria-invalid={Boolean(fieldErrors.email)}
                         className={inputClassName}
                     />
+
+                    {fieldErrors.email && (
+                        <p role="alert" className="text-xs text-destructive">
+                            {fieldErrors.email}
+                        </p>
+                    )}
                 </div>
 
                 <div className="space-y-1.5">
@@ -109,6 +156,7 @@ export function RegistroPage() {
                             placeholder="**********"
                             autoComplete="new-password"
                             required
+                            aria-invalid={Boolean(fieldErrors.password)}
                             className={`${inputClassName} pr-10`}
                         />
 
@@ -127,6 +175,12 @@ export function RegistroPage() {
                             )}
                         </button>
                     </div>
+
+                    {fieldErrors.password && (
+                        <p role="alert" className="text-xs text-destructive">
+                            {fieldErrors.password}
+                        </p>
+                    )}
                 </div>
 
                 {error && (

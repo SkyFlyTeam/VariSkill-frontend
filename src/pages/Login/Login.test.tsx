@@ -113,4 +113,49 @@ describe("LoginPage", () => {
             /email ou senha inválidos/i,
         )
     })
+
+    it("não deve chamar a API quando o email é inválido", async () => {
+        const fetchMock = jest.fn()
+        globalThis.fetch = fetchMock as unknown as typeof fetch
+
+        const user = userEvent.setup()
+
+        renderWithProviders(<LoginPage />)
+
+        await user.type(
+            screen.getByPlaceholderText("email@gmail.com"),
+            "nao-e-email",
+        )
+        await user.type(screen.getByPlaceholderText("**********"), "secret")
+        await user.click(screen.getByRole("button", { name: /entrar/i }))
+
+        expect(await screen.findByText("Email inválido.")).toBeInTheDocument()
+        expect(
+            fetchMock.mock.calls.some(([url]) => url === "/api/login/"),
+        ).toBe(false)
+    })
+
+    it("deve mostrar mensagem de servidor quando a API falha", async () => {
+        const fetchMock = jest.fn().mockResolvedValue({
+            ok: false,
+            status: 500,
+            json: async () => ({ detail: "boom" }),
+        })
+        globalThis.fetch = fetchMock as unknown as typeof fetch
+
+        const user = userEvent.setup()
+
+        renderWithProviders(<LoginPage />)
+
+        await user.type(
+            screen.getByPlaceholderText("email@gmail.com"),
+            "alice@example.com",
+        )
+        await user.type(screen.getByPlaceholderText("**********"), "secret")
+        await user.click(screen.getByRole("button", { name: /entrar/i }))
+
+        expect(await screen.findByRole("alert")).toHaveTextContent(
+            /tente novamente/i,
+        )
+    })
 })
