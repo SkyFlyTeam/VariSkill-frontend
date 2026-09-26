@@ -1,10 +1,7 @@
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
-import { useAuth } from "@/contexts/authContext"
 import { LoginPage } from "@/pages/Login/Login"
-import { ApiError } from "@/services/api"
-import { userService } from "@/services/userService"
 import { renderWithProviders } from "@/tests/utils"
 
 const originalFetch = globalThis.fetch
