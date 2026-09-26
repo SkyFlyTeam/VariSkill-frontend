@@ -7,7 +7,7 @@ export type User = {
     email: string
     xp_total: number
     streak_dias: number
-    is_primeiro_acesso: boolean
+    is_primeiro_acesso?: boolean
 }
 
 export type RegisterPayload = {

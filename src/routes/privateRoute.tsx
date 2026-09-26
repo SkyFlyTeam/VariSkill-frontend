@@ -10,7 +10,7 @@ import {
 import { useAuth } from "@/contexts/authContext"
 
 export function PrivateRoute() {
-    const { isAuthenticated, isLoading } = useAuth()
+    const { isAuthenticated, isLoading, user } = useAuth()
     const location = useLocation()
 
     if (isLoading) {
@@ -19,6 +19,11 @@ export function PrivateRoute() {
 
     if (!isAuthenticated) {
         return <Navigate to="/login" replace />
+    }
+
+    // 1º acesso: força passar pelo onboarding antes de qualquer rota privada.
+    if (user?.is_primeiro_acesso && location.pathname !== "/onboarding") {
+        return <Navigate to="/onboarding" replace />
     }
 
     return (
