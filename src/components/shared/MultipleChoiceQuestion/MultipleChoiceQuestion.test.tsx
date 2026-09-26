@@ -1,4 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
+
 import { MultipleChoiceQuestion } from "./MultipleChoiceQuestion"
 
 const MOCK_OPTIONS = [
@@ -14,11 +15,11 @@ describe("MultipleChoiceQuestion Component", () => {
             <MultipleChoiceQuestion
                 questionText="Qual será a saída desse código?"
                 options={MOCK_OPTIONS}
-            />
+            />,
         )
 
         expect(
-            screen.getByText("Qual será a saída desse código?")
+            screen.getByText("Qual será a saída desse código?"),
         ).toBeInTheDocument()
 
         expect(screen.getByText("Alternativa 45")).toBeInTheDocument()
@@ -35,7 +36,7 @@ describe("MultipleChoiceQuestion Component", () => {
                 questionText="Qual será a saída desse código?"
                 options={MOCK_OPTIONS}
                 onSelectOption={handleSelectOption}
-            />
+            />,
         )
 
         const optionB = screen.getByRole("radio", { name: /B Alternativa 56/i })
@@ -51,7 +52,7 @@ describe("MultipleChoiceQuestion Component", () => {
                 questionText="Qual será a saída desse código?"
                 options={MOCK_OPTIONS}
                 selectedOptionId="opt-3"
-            />
+            />,
         )
 
         const optionA = screen.getByRole("radio", { name: /A Alternativa 45/i })
@@ -70,7 +71,7 @@ describe("MultipleChoiceQuestion Component", () => {
                 options={MOCK_OPTIONS}
                 onSelectOption={handleSelectOption}
                 disabled
-            />
+            />,
         )
 
         const optionA = screen.getByRole("radio", { name: /A Alternativa 45/i })

@@ -1,11 +1,12 @@
 import { useState } from "react"
+
 import {
     ActivityResultModal,
     type ActivitySubmissionResult,
 } from "@/components/shared/ActivityResultModal/ActivityResultModal"
 import {
-    MultipleChoiceQuestion,
     type MultipleChoiceOption,
+    MultipleChoiceQuestion,
 } from "@/components/shared/MultipleChoiceQuestion/MultipleChoiceQuestion"
 import { Button } from "@/components/ui/button"
 
@@ -40,7 +41,8 @@ export interface BackendAtividade {
 const MOCK_BACKEND_ACTIVITY: BackendAtividade = {
     id: "act-47-uuid-example",
     titulo: "Variáveis e Funções em JavaScript",
-    descricao: "Teste seus conhecimentos sobre escopo, hoisting e retorno de funções",
+    descricao:
+        "Teste seus conhecimentos sobre escopo, hoisting e retorno de funções",
     contexto_avaliacao: "CODIGO",
     xp_recompensa: 50,
     ordem_atividade: 1,
@@ -52,7 +54,8 @@ const MOCK_BACKEND_ACTIVITY: BackendAtividade = {
             enunciado: "3 - Qual será a saída desse código?",
             codigo_snippet: `const SUM_VALUE = 2;\nfunction updateCount(value) {\n    let newValue = value;\n    newValue += SUM_VALUE;\n    return newValue;\n}\nconst result = updateCount(4);\nconsole.log("O resultado é: ", result);`,
             gabarito_esperado: "opt-86-1002", // "6"
-            explicacao: "A função updateCount recebe 4 e soma com SUM_VALUE (2), resultando em 6.",
+            explicacao:
+                "A função updateCount recebe 4 e soma com SUM_VALUE (2), resultando em 6.",
             ordem_questao: 1,
             opcoes: [
                 { id: "opt-86-1001", texto_opcao: "4", ordem: 1 },
@@ -68,13 +71,17 @@ export function MultipleChoicePreviewPage() {
     const activity = MOCK_BACKEND_ACTIVITY
     const currentQuestion = activity.questoes[0]
 
-    const optionsForComponent: MultipleChoiceOption[] = currentQuestion.opcoes.map((op) => ({
-        id: op.id,
-        label: op.texto_opcao,
-    }))
+    const optionsForComponent: MultipleChoiceOption[] =
+        currentQuestion.opcoes.map((op) => ({
+            id: op.id,
+            label: op.texto_opcao,
+        }))
 
-    const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null)
-    const [submissionResult, setSubmissionResult] = useState<ActivitySubmissionResult | null>(null)
+    const [selectedOptionId, setSelectedOptionId] = useState<string | null>(
+        null,
+    )
+    const [submissionResult, setSubmissionResult] =
+        useState<ActivitySubmissionResult | null>(null)
     const [userXp, setUserXp] = useState<number>(4500)
 
     function handleVerify() {
@@ -128,7 +135,9 @@ export function MultipleChoicePreviewPage() {
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                             Atividade Múltipla Escolha (VAR-47)
                         </span>
-                        <h1 className="text-xl font-bold text-foreground">{activity.titulo}</h1>
+                        <h1 className="text-xl font-bold text-foreground">
+                            {activity.titulo}
+                        </h1>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="rounded-full bg-sky-500/10 px-3 py-1 text-xs font-bold text-sky-600 dark:text-sky-400">
@@ -160,7 +169,9 @@ export function MultipleChoicePreviewPage() {
                         Opção selecionada:{" "}
                         <strong className="text-foreground">
                             {selectedOptionId
-                                ? currentQuestion.opcoes.find((o) => o.id === selectedOptionId)?.texto_opcao
+                                ? currentQuestion.opcoes.find(
+                                      (o) => o.id === selectedOptionId,
+                                  )?.texto_opcao
                                 : "Nenhuma"}
                         </strong>
                     </p>

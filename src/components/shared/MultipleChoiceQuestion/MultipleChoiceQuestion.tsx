@@ -1,4 +1,5 @@
 import React from "react"
+
 import { cn } from "cn"
 
 export interface MultipleChoiceOption {
@@ -61,7 +62,7 @@ export const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
                                 "cursor-pointer disabled:cursor-not-allowed disabled:opacity-60",
                                 isSelected
                                     ? "border-[#46b6e1] bg-[#46b6e1]/10 text-foreground shadow-sm"
-                                    : "border-border bg-card hover:border-[#46b6e1]/50 hover:bg-muted/50 text-foreground"
+                                    : "border-border bg-card hover:border-[#46b6e1]/50 hover:bg-muted/50 text-foreground",
                             )}
                         >
                             {/* Prefix Badge (A, B, C, D) */}
@@ -70,7 +71,7 @@ export const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
                                     "flex size-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold transition-colors",
                                     isSelected
                                         ? "bg-[#46b6e1] text-white"
-                                        : "bg-muted text-muted-foreground group-hover:bg-[#46b6e1]/20 group-hover:text-foreground"
+                                        : "bg-muted text-muted-foreground group-hover:bg-[#46b6e1]/20 group-hover:text-foreground",
                                 )}
                             >
                                 {prefix}
