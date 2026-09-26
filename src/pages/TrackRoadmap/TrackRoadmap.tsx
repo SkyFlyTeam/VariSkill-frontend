@@ -8,7 +8,6 @@ import {
     type ActivityStatus,
 } from "@/components/shared/ActivityNode/ActivityNode"
 import { RadialProgress } from "@/components/shared/RadialProgress"
-import { cn } from "@/lib/utils"
 import { ApiError, api } from "@/services/api"
 
 type RoadmapActivity = {
@@ -39,14 +38,12 @@ type Roadmap = {
     } | null
 }
 
-// Padrão de alinhamento horizontal dos nós (zigue-zague "estilo Duolingo").
+// Deslocamento horizontal sutil dos nós (zigue-zague "estilo Duolingo").
 const ZIGZAG = [
-    "justify-center",
-    "justify-end",
-    "justify-center",
-    "justify-start",
-    "justify-center",
-    "justify-end",
+    "translate-x-0",
+    "translate-x-12",
+    "translate-x-0",
+    "-translate-x-12",
 ] as const
 
 function toActivityStatus(status: string): ActivityStatus {
@@ -104,7 +101,7 @@ export function TrackRoadmapPage() {
 
     return (
         <main className="min-h-screen bg-[#e8ebef] px-4 py-6 text-slate-900 sm:px-7 sm:py-8">
-            <div className="mx-auto max-w-[1210px]">
+            <div className="mx-auto max-w-[720px]">
                 {loading && (
                     <p className="py-20 text-center text-sm text-slate-600">
                         Carregando trilha...
@@ -144,7 +141,7 @@ export function TrackRoadmapPage() {
                                     aria-label={modulo.titulo}
                                 >
                                     <div className="flex items-center gap-3">
-                                        <span className="h-px flex-1 bg-main-blue-dark/30" />
+                                        <span className="h-px w-8 shrink-0 bg-main-blue-dark/30" />
                                         <span className="whitespace-nowrap text-xs font-semibold text-main-blue-dark sm:text-sm">
                                             {modulo.titulo}
                                         </span>
@@ -156,15 +153,15 @@ export function TrackRoadmapPage() {
                                             (atividade, index) => (
                                                 <div
                                                     key={atividade.id}
-                                                    className={cn(
-                                                        "flex w-full",
-                                                        ZIGZAG[
-                                                            index %
-                                                                ZIGZAG.length
-                                                        ],
-                                                    )}
+                                                    className="flex w-full justify-center"
                                                 >
                                                     <ActivityNode
+                                                        className={
+                                                            ZIGZAG[
+                                                                index %
+                                                                    ZIGZAG.length
+                                                            ]
+                                                        }
                                                         title={atividade.titulo}
                                                         purpose={toActivityPurpose(
                                                             atividade.contexto_avaliacao,
