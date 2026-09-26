@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from "react"
 
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 import { Eye, EyeOff } from "lucide-react"
 
@@ -18,6 +18,7 @@ const labelClassName = "text-[14px] leading-[20px] font-medium text-[#101828]"
 
 export function LoginPage() {
     const { login } = useAuth()
+    const navigate = useNavigate()
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
@@ -40,6 +41,8 @@ export function LoginPage() {
 
         try {
             await login(email, password)
+            // Provisório: leva direto pro preview da tela de lição (VAR-68).
+            navigate("/preview/licao")
         } catch (requestError) {
             if (
                 requestError instanceof ApiError &&

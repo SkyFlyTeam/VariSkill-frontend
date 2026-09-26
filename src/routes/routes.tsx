@@ -4,6 +4,8 @@ import { ActivityNodePreviewPage } from "@/pages/ActivityNodePreview/ActivityNod
 import { ActivityResultModalPreviewPage } from "@/pages/ActivityResultModalPreview/ActivityResultModalPreview"
 import { ChatPage } from "@/pages/Chat/Chat"
 import { HomePage } from "@/pages/Home/Home"
+import { LessonPage } from "@/pages/Lesson/Lesson"
+import { LessonPreviewPage } from "@/pages/LessonPreview/LessonPreview"
 import { LoginPage } from "@/pages/Login/Login"
 import { MultipleChoicePreviewPage } from "@/pages/MultipleChoicePreview/MultipleChoicePreview"
 import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
@@ -26,6 +28,10 @@ export const AppRoutes = () => {
                 <Route element={<PrivateRoute />}>
                     <Route path="/" element={<HomePage />} />
                     <Route path="/trilhas/:id" element={<TrackRoadmapPage />} />
+                    <Route
+                        path="/trilhas/:trilhaId/licao/:atividadeId"
+                        element={<LessonPage />}
+                    />
                     <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route path="/chat" element={<ChatPage />} />
                     <Route path="/perfil" element={<ProfilePage />} />
@@ -54,6 +60,9 @@ export const AppRoutes = () => {
                     path="/preview/activity-node"
                     element={<ActivityNodePreviewPage />}
                 />
+
+                {/* Preview manual pra revisão de PR, sem login (VAR-68). */}
+                <Route path="/preview/licao" element={<LessonPreviewPage />} />
             </Routes>
         </BrowserRouter>
     )
