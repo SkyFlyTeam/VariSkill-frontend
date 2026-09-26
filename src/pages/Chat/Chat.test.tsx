@@ -18,7 +18,9 @@ describe("ChatPage", () => {
         expect(
             screen.getByText("Olá, em instantes irei te ajudar!"),
         ).toBeInTheDocument()
-        expect(screen.getByPlaceholderText("Digite sua dúvida...")).toBeInTheDocument()
+        expect(
+            screen.getByPlaceholderText("Digite sua dúvida..."),
+        ).toBeInTheDocument()
     })
 
     it("deve adicionar uma mensagem enviada pelo usuário", async () => {
