@@ -17,16 +17,13 @@ type AuthContextType = {
     register: (payload: RegisterPayload) => Promise<void>
     logout: () => Promise<void>
     completeOnboarding: () => Promise<void>
+    updateUser: (user: User) => void
+    clearSession: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<UserProfile | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [sessionError, setSessionError] = useState<string | null>(null)
-
-export const AuthProvider = ({ children }: AuthProviderProps) => {
     const [user, setUser] = useState<User | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
@@ -89,6 +86,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 register,
                 logout,
                 completeOnboarding,
+                updateUser: setUser,
+                clearSession: () => setUser(null),
             }}
         >
             {children}
