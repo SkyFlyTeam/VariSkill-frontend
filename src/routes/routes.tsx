@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { ActivityNodePreviewPage } from "@/pages/ActivityNodePreview/ActivityNodePreview"
 import { ActivityResultModalPreviewPage } from "@/pages/ActivityResultModalPreview/ActivityResultModalPreview"
 import { ChatPage } from "@/pages/Chat/Chat"
+import { ExercisePage } from "@/pages/Exercise/Exercise"
+import { ExercisePreviewPage } from "@/pages/ExercisePreview/ExercisePreview"
 import { HomePage } from "@/pages/Home/Home"
 import { LessonPage } from "@/pages/Lesson/Lesson"
 import { LessonPreviewPage } from "@/pages/LessonPreview/LessonPreview"
@@ -31,6 +33,10 @@ export const AppRoutes = () => {
                     <Route
                         path="/trilhas/:trilhaId/licao/:atividadeId"
                         element={<LessonPage />}
+                    />
+                    <Route
+                        path="/trilhas/:trilhaId/atividade/:atividadeId"
+                        element={<ExercisePage />}
                     />
                     <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route path="/chat" element={<ChatPage />} />
@@ -63,6 +69,12 @@ export const AppRoutes = () => {
 
                 {/* Preview manual pra revisão de PR, sem login (VAR-68). */}
                 <Route path="/preview/licao" element={<LessonPreviewPage />} />
+
+                {/* Preview manual pra revisão de PR, sem login (VAR-48). */}
+                <Route
+                    path="/preview/atividade"
+                    element={<ExercisePreviewPage />}
+                />
             </Routes>
         </BrowserRouter>
     )
