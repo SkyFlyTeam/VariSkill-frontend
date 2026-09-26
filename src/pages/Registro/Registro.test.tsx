@@ -112,4 +112,51 @@ describe("RegistroPage", () => {
 
         expect(await screen.findByRole("alert")).toBeInTheDocument()
     })
+
+    it("deve validar os campos obrigatórios antes de enviar", async () => {
+        const fetchMock = jest.fn()
+        globalThis.fetch = fetchMock as unknown as typeof fetch
+
+        const user = userEvent.setup()
+
+        renderWithProviders(<RegistroPage />)
+
+        await user.click(screen.getByRole("button", { name: /cadastrar/i }))
+
+        expect(
+            await screen.findByText("Informe o nome completo."),
+        ).toBeInTheDocument()
+        expect(screen.getByText("Informe o apelido.")).toBeInTheDocument()
+        expect(screen.getByText("Informe o email.")).toBeInTheDocument()
+        expect(screen.getByText("Informe a senha.")).toBeInTheDocument()
+        expect(
+            fetchMock.mock.calls.some(([url]) => url === "/api/register/"),
+        ).toBe(false)
+    })
+
+    it("deve mostrar os erros por campo devolvidos pelo backend", async () => {
+        const fetchMock = jest.fn().mockResolvedValue({
+            ok: false,
+            status: 400,
+            json: async () => ({
+                apelido: ["user with this apelido already exists."],
+            }),
+        })
+        globalThis.fetch = fetchMock as unknown as typeof fetch
+
+        const user = userEvent.setup()
+
+        renderWithProviders(<RegistroPage />)
+
+        await user.type(screen.getByPlaceholderText("Joe Doe"), "Joe Doe")
+        await user.type(screen.getByPlaceholderText("joe.doe"), "joe.doe")
+        await user.type(
+            screen.getByPlaceholderText("email@gmail.com"),
+            "joe@example.com",
+        )
+        await user.type(screen.getByPlaceholderText("**********"), "secret")
+        await user.click(screen.getByRole("button", { name: /cadastrar/i }))
+
+        expect(await screen.findByText(/already exists/i)).toBeInTheDocument()
+    })
 })
