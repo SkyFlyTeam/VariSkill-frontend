@@ -16,6 +16,7 @@ type AuthContextType = {
     login: (email: string, password: string) => Promise<void>
     register: (payload: RegisterPayload) => Promise<void>
     logout: () => Promise<void>
+    completeOnboarding: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -73,6 +74,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
     }
 
+    const completeOnboarding = async () => {
+        const updatedUser = await authService.completeOnboarding()
+        setUser(updatedUser)
+    }
+
     return (
         <AuthContext.Provider
             value={{
@@ -82,6 +88,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 login,
                 register,
                 logout,
+                completeOnboarding,
             }}
         >
             {children}

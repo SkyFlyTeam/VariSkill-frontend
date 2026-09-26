@@ -3,10 +3,7 @@ import { useState } from "react"
 import { Navigate } from "react-router-dom"
 
 import { VariMessageModal } from "@/components/shared/VariMessageModal/VariMessageModal"
-import {
-    isOnboardingCompleted,
-    setOnboardingCompleted,
-} from "@/utils/onboarding"
+import { useAuth } from "@/contexts/authContext"
 
 const TRAILS_CATALOG_ROUTE = "/"
 
@@ -38,16 +35,16 @@ const ONBOARDING_STEPS = [
 ] as const
 
 export function OnboardingPage() {
-    const [alreadyCompleted] = useState(() => isOnboardingCompleted())
+    const { user, completeOnboarding } = useAuth()
     const [stepIndex, setStepIndex] = useState(0)
     const [finished, setFinished] = useState(false)
 
-    if (alreadyCompleted || finished) {
+    if (finished || (user !== null && !user.is_primeiro_acesso)) {
         return <Navigate to={TRAILS_CATALOG_ROUTE} replace />
     }
 
-    function finishOnboarding() {
-        setOnboardingCompleted()
+    async function finishOnboarding() {
+        await completeOnboarding()
         setFinished(true)
     }
 
@@ -55,7 +52,7 @@ export function OnboardingPage() {
         const isLastStep = stepIndex === ONBOARDING_STEPS.length - 1
 
         if (isLastStep) {
-            finishOnboarding()
+            void finishOnboarding()
             return
         }
 
