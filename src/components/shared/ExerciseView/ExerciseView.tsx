@@ -11,6 +11,10 @@ export type ExerciseViewProps = {
     progress?: number
     /** Texto do botão de ação */
     submitLabel?: string
+    /** Desabilita o botão de ação (ex.: exercício ainda incompleto) */
+    submitDisabled?: boolean
+    /** Texto exibido enquanto a submissão está em andamento */
+    submitting?: boolean
     onClose?: () => void
     onSubmit?: () => void
     /**
@@ -28,7 +32,9 @@ export type ExerciseViewProps = {
 export function ExerciseView({
     enunciado,
     progress = 0,
-    submitLabel = "Próximo",
+    submitLabel = "Verificar",
+    submitDisabled = false,
+    submitting = false,
     onClose,
     onSubmit,
     children,
@@ -66,9 +72,10 @@ export function ExerciseView({
                         <button
                             type="button"
                             onClick={onSubmit}
-                            className="h-auto min-w-[260px] cursor-pointer rounded-[10px] bg-main-blue px-[35px] py-[16px] text-[15px] leading-[100%] font-bold text-white transition-colors hover:bg-main-blue/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-main-blue"
+                            disabled={submitDisabled || submitting}
+                            className="h-auto min-w-[260px] cursor-pointer rounded-[10px] bg-main-blue px-[35px] py-[16px] text-[15px] leading-[100%] font-bold text-white transition-colors hover:bg-main-blue/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-main-blue disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            {submitLabel}
+                            {submitting ? "Enviando..." : submitLabel}
                         </button>
                     </div>
                 </section>

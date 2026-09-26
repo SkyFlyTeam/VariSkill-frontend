@@ -7,7 +7,6 @@ import { ExercisePage } from "@/pages/Exercise/Exercise"
 import { ExercisePreviewPage } from "@/pages/ExercisePreview/ExercisePreview"
 import { HomePage } from "@/pages/Home/Home"
 import { LessonPage } from "@/pages/Lesson/Lesson"
-import { LessonPreviewPage } from "@/pages/LessonPreview/LessonPreview"
 import { LoginPage } from "@/pages/Login/Login"
 import { MultipleChoicePreviewPage } from "@/pages/MultipleChoicePreview/MultipleChoicePreview"
 import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
@@ -66,9 +65,6 @@ export const AppRoutes = () => {
                     path="/preview/activity-node"
                     element={<ActivityNodePreviewPage />}
                 />
-
-                {/* Preview manual pra revisão de PR, sem login (VAR-68). */}
-                <Route path="/preview/licao" element={<LessonPreviewPage />} />
 
                 {/* Preview manual pra revisão de PR, sem login (VAR-48). */}
                 <Route
