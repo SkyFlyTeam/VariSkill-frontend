@@ -49,8 +49,10 @@ const infoCards = [
 ] as const
 
 // Dados de demonstração até a integração com a API de trilhas.
-const enrolledTracks = Array.from({ length: 6 }, (_, index) => ({
-    id: `javascript-${index + 1}`,
+const VAR52_TRILHA_ID = "10fa2c10-bb8e-4322-b8d0-c5a955e3842f"
+
+const enrolledTracks = Array.from({ length: 6 }, () => ({
+    id: VAR52_TRILHA_ID,
     title: "Javascript",
     totalModules: 12,
     completedModules: 10,
