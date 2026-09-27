@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom"
 
-import { Home, Medal, UserRound } from "lucide-react"
+import { Home, UserRound } from "lucide-react"
 
 import { SairButton } from "@/components/shared/SairButton/SairButton"
 import {
@@ -18,7 +18,6 @@ import {
 const navigationItems = [
     { label: "Home", href: "/", icon: Home },
     { label: "Perfil", href: "/perfil", icon: UserRound },
-    { label: "Conquistas", href: "/conquistas", icon: Medal },
 ]
 
 export function AppSidebar() {

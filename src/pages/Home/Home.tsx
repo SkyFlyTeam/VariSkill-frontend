@@ -6,7 +6,6 @@ import {
     FlaskConical,
     ListChecks,
     RefreshCw,
-    Trophy,
 } from "lucide-react"
 
 import { TrackCard } from "@/components/shared/TrackCard/TrackCard"
@@ -121,13 +120,6 @@ export function HomePage() {
             color: "text-violet-700",
         },
         {
-            label: "Conquistas",
-            value: "0",
-            description: "ganhas",
-            icon: Trophy,
-            color: "text-amber-400",
-        },
-        {
             label: "Em andamento",
             value: String(emAndamentoCount),
             description: "trilhas",
@@ -154,7 +146,7 @@ export function HomePage() {
 
                 <section
                     aria-label="Resumo do seu progresso"
-                    className="flex gap-3 overflow-x-auto px-0.5 pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-5"
+                    className="flex gap-3 overflow-x-auto px-0.5 pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4"
                 >
                     {infoCards.map((card) => (
                         <div
