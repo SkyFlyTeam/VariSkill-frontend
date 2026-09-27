@@ -96,9 +96,12 @@ export function LessonPage() {
     }
 
     function handleNext() {
-        navigate(`/trilhas/${encodeURIComponent(trilhaId ?? "")}`, {
-            replace: true,
-        })
+        navigate(
+            `/trilhas/${encodeURIComponent(trilhaId ?? "")}/atividade/${encodeURIComponent(
+                atividadeId ?? "",
+            )}`,
+            { replace: true },
+        )
     }
 
     if (loading) {
