@@ -42,8 +42,8 @@ export const FillCodeBlankQuestion: React.FC<FillCodeBlankQuestionProps> = ({
     submitButtonText = "Verificar Resposta",
     disabled = false,
     hideSubmitButton = false,
-    fileName = "exercise.js",
-    language = "JavaScript",
+    fileName,
+    language,
     className,
 }) => {
     // Extrai todos os índices de lacunas esperados do template

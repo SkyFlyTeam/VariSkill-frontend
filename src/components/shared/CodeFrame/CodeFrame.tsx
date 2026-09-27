@@ -13,8 +13,8 @@ export interface CodeFrameProps {
 export const CodeFrame: React.FC<CodeFrameProps> = ({
     lines,
     renderLine,
-    fileName = "exercise.js",
-    language = "JavaScript",
+    fileName,
+    language,
     className,
 }) => {
     return (
@@ -24,18 +24,22 @@ export const CodeFrame: React.FC<CodeFrameProps> = ({
                 className,
             )}
         >
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-2 text-xs font-semibold text-white/80">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-2.5 text-xs font-semibold text-white/80">
                 <div className="flex items-center gap-2">
                     <span className="size-2.5 rounded-full bg-red-500/80" />
                     <span className="size-2.5 rounded-full bg-yellow-500/80" />
                     <span className="size-2.5 rounded-full bg-green-500/80" />
-                    <span className="ml-2 font-mono text-white/70">
-                        {fileName}
-                    </span>
+                    {fileName && (
+                        <span className="ml-2 font-mono text-white/70">
+                            {fileName}
+                        </span>
+                    )}
                 </div>
-                <span className="font-mono text-[10px] uppercase text-white/50">
-                    {language}
-                </span>
+                {language && (
+                    <span className="font-mono text-[10px] uppercase text-white/50">
+                        {language}
+                    </span>
+                )}
             </div>
 
             <div className="flex">
