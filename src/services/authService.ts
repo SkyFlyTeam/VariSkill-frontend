@@ -1,4 +1,4 @@
-import { http } from "@/services/http"
+import { api } from "@/services/api"
 
 export type User = {
     id: string
@@ -18,29 +18,29 @@ export type RegisterPayload = {
 }
 
 export function login(email: string, password: string) {
-    return http<User>("/api/login/", {
+    return api<User>("/login/", {
         method: "POST",
         body: JSON.stringify({ email, password }),
     })
 }
 
 export function register(payload: RegisterPayload) {
-    return http<User>("/api/register/", {
+    return api<User>("/register/", {
         method: "POST",
         body: JSON.stringify(payload),
     })
 }
 
 export function logout() {
-    return http<void>("/api/logout/", { method: "POST" })
+    return api<void>("/logout/", { method: "POST" })
 }
 
 export function me() {
-    return http<User>("/api/users/me/")
+    return api<User>("/users/me/")
 }
 
 export function completeOnboarding() {
-    return http<User>("/api/users/me/", {
+    return api<User>("/users/me/", {
         method: "PATCH",
         body: JSON.stringify({ is_primeiro_acesso: false }),
     })

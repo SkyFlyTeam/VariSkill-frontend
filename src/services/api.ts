@@ -5,11 +5,41 @@ const UNSAFE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"])
 
 export class ApiError extends Error {
     status: number
+    data: unknown
 
-    constructor(message: string, status: number) {
+    constructor(message: string, status: number, data: unknown = null) {
         super(message)
+        this.name = "ApiError"
         this.status = status
+        this.data = data
     }
+}
+
+/** Erros por campo devolvidos pelo backend (HTTP 400). */
+export function getFieldErrors(error: unknown): Record<string, string> {
+    if (!(error instanceof ApiError) || error.status !== 400) {
+        return {}
+    }
+
+    const data = error.data
+
+    if (!data || typeof data !== "object") {
+        return {}
+    }
+
+    const result: Record<string, string> = {}
+
+    for (const [field, value] of Object.entries(
+        data as Record<string, unknown>,
+    )) {
+        if (Array.isArray(value) && value.length > 0) {
+            result[field] = String(value[0])
+        } else if (typeof value === "string") {
+            result[field] = value
+        }
+    }
+
+    return result
 }
 
 function getCookie(name: string): string | null {
@@ -57,15 +87,19 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
         throw new ApiError(
             extractMessage(body) ?? "Ocorreu um erro inesperado.",
             response.status,
+            body,
         )
     }
 
     if (response.status === 204) return undefined as T
-    if (!response.headers.get("content-type")?.includes("application/json")) {
+
+    const contentType = response.headers?.get("content-type")
+    if (contentType && !contentType.includes("application/json")) {
         if (path === "/auth/logout/") return undefined as T
         throw new Error(
             "A API retornou uma resposta inválida. Verifique a conexão com o backend.",
         )
     }
+
     return response.json()
 }
