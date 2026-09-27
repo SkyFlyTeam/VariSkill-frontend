@@ -93,10 +93,10 @@ export function TrackRoadmapPage() {
         }
     }, [id])
 
-    function handleActivityClick(activityId: string) {
-        navigate(
-            `/trilhas/${encodeURIComponent(id ?? "")}/atividade/${activityId}`,
-        )
+    function handleActivityClick(activity: RoadmapActivity) {
+        const trilhaId = encodeURIComponent(id ?? "")
+        const rota = activity.conteudo_teorico ? "licao" : "atividade"
+        navigate(`/trilhas/${trilhaId}/${rota}/${activity.id}`)
     }
 
     return (
@@ -171,7 +171,7 @@ export function TrackRoadmapPage() {
                                                         )}
                                                         onClick={() =>
                                                             handleActivityClick(
-                                                                atividade.id,
+                                                                atividade,
                                                             )
                                                         }
                                                     />
