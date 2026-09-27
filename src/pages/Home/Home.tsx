@@ -98,11 +98,11 @@ export function HomePage() {
 
     const matriculadasIds = new Set(matriculas.map((m) => m.trilha_id))
     const trilhasDisponiveis = trilhas.filter((t) => !matriculadasIds.has(t.id))
-    const emAndamentoCount = matriculas.filter(
-        (m) => m.status === "EM_ANDAMENTO",
-    ).length
     const concluidasCount = matriculas.filter(
-        (m) => m.status === "CONCLUIDO",
+        (m) => m.status === "CONCLUIDO" || (trilhaProgresso[m.trilha_id] ?? 0) >= 100,
+    ).length
+    const emAndamentoCount = matriculas.filter(
+        (m) => m.status === "EM_ANDAMENTO" && (trilhaProgresso[m.trilha_id] ?? 0) < 100,
     ).length
 
     const infoCards = [
