@@ -85,10 +85,11 @@ export function LessonPage() {
                     )
                     if (currentModule && currentModule.atividades.length > 0) {
                         const total = currentModule.atividades.length
-                        const concluidas = currentModule.atividades.filter(
-                            (a) => a.status === "CONCLUIDO",
-                        ).length
-                        setProgress(Math.round((concluidas / total) * 100))
+                        const currentIndex = currentModule.atividades.findIndex(
+                            (a) => a.id === atividadeId,
+                        )
+                        const step = currentIndex >= 0 ? currentIndex + 1 : 1
+                        setProgress(Math.round((step / total) * 100))
                     } else {
                         setProgress(loadedRoadmap.percentual_conclusao)
                     }
