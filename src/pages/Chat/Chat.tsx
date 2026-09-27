@@ -9,14 +9,22 @@ import {
 import { api } from "@/services/api"
 
 type SessaoResponse = {
-    id: string
-    mensagem_inicial?: string
+    sessao_id: string
+    mensagem_inicial?: {
+        id: string
+        remetente: string
+        conteudo: string
+        sugestoes_rapidas?: { id: string; titulo: string }[]
+        criada_em: string
+    }
 }
 
 type EnviarMensagemResponse = {
-    resposta: string
-    intencao?: string
-    opcoes_trilhas?: { id: string; titulo: string }[]
+    id: string
+    remetente: string
+    conteudo: string
+    sugestoes_rapidas?: { id: string; titulo: string }[]
+    criada_em: string
 }
 
 export function ChatPage() {
@@ -29,15 +37,18 @@ export function ChatPage() {
 
         api<SessaoResponse>("/chat/sessao/iniciar/", { method: "POST" })
             .then((sessao) => {
+                console.log("Sessão response:", sessao)
+                console.log("mensagem_inicial:", sessao.mensagem_inicial)
                 if (!active) return
-                setSessaoId(sessao.id)
+                setSessaoId(sessao.sessao_id)
                 setMessages([
                     {
                         id: `assistant-${Date.now()}`,
                         content:
-                            sessao.mensagem_inicial ||
+                            sessao.mensagem_inicial?.conteudo ||
                             "Olá! Sou a Vari, sua assistente virtual no VariSkill. Como posso te ajudar hoje?",
                         sender: "assistant",
+                        options: sessao.mensagem_inicial?.sugestoes_rapidas,
                     },
                 ])
             })
@@ -79,13 +90,17 @@ export function ChatPage() {
                 },
             )
 
+            console.log("API Response:", resp)
+            console.log("conteudo:", resp.conteudo)
+            console.log("sugestoes_rapidas:", resp.sugestoes_rapidas)
+
             setMessages((curr) => [
                 ...curr,
                 {
                     id: `assistant-${Date.now()}`,
-                    content: resp.resposta,
+                    content: resp.conteudo,
                     sender: "assistant",
-                    options: resp.opcoes_trilhas,
+                    options: resp.sugestoes_rapidas,
                 },
             ])
         } catch {
