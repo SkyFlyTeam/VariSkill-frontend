@@ -89,6 +89,16 @@ export function ExercisePage() {
         if (!atividadeId) return
         let active = true
 
+        // Limpa estado anterior (modal de resultado, respostas, dicas) ao trocar de atividade
+        setResult(null)
+        setSelectedOptionId(null)
+        setSlotAssignments({})
+        setBlankValues({})
+        setSubmitError(null)
+        setHintModalOpen(false)
+        setHintText(null)
+        setLoading(true)
+
         Promise.all([
             api<Atividade>(`/atividades/${atividadeId}/`),
             trilhaId
@@ -105,10 +115,11 @@ export function ExercisePage() {
                     )
                     if (currentModule && currentModule.atividades.length > 0) {
                         const total = currentModule.atividades.length
-                        const concluidas = currentModule.atividades.filter(
-                            (a) => a.status === "CONCLUIDO",
-                        ).length
-                        setProgress(Math.round((concluidas / total) * 100))
+                        const currentIndex = currentModule.atividades.findIndex(
+                            (a) => a.id === atividadeId,
+                        )
+                        const step = currentIndex >= 0 ? currentIndex + 1 : 1
+                        setProgress(Math.round((step / total) * 100))
                     } else {
                         setProgress(loadedRoadmap.percentual_conclusao)
                     }
@@ -145,16 +156,32 @@ export function ExercisePage() {
             : []
 
         switch (questao.tipo_exercicio) {
-            case "MULTIPLA_ESCOLHA":
+            case "MULTIPLA_ESCOLHA": {
+                // Embaralha as alternativas usando o ID da questão como semente determinística
+                // para que as opções não fiquem sempre na ordem estática do banco (onde a correta vinha sempre em 'A')
+                let seed = 0
+                for (let i = 0; i < questao.id.length; i++) {
+                    seed = (seed * 31 + questao.id.charCodeAt(i)) & 0xffffffff
+                }
+                const shuffledOptions = [...blocks]
+                for (let i = shuffledOptions.length - 1; i > 0; i--) {
+                    seed = (seed * 1664525 + 1013904223) & 0xffffffff
+                    const j = Math.abs(seed) % (i + 1)
+                    const temp = shuffledOptions[i]
+                    shuffledOptions[i] = shuffledOptions[j]
+                    shuffledOptions[j] = temp
+                }
+
                 return {
                     tipo: "MULTIPLA_ESCOLHA",
                     question: {
                         questionText: "",
-                        options: blocks,
+                        options: shuffledOptions,
                         selectedOptionId,
                         onSelectOption: setSelectedOptionId,
                     },
                 }
+            }
             case "ORDENAR_BLOCOS":
                 return {
                     tipo: "ORDENAR_BLOCOS",
@@ -267,6 +294,7 @@ export function ExercisePage() {
     }
 
     function handleNext() {
+        setResult(null)
         if (!trilhaId || !roadmap) {
             handleClose()
             return
