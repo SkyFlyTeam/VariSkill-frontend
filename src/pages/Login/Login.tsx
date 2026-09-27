@@ -8,7 +8,7 @@ import { AuthLayout } from "@/components/shared/AuthLayout/AuthLayout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/authContext"
-import { ApiError } from "@/services/http"
+import { ApiError } from "@/services/api"
 import { validateLogin } from "@/utils/validation"
 
 const inputClassName =
