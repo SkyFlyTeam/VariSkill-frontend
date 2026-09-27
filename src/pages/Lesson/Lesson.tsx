@@ -21,6 +21,7 @@ type Atividade = {
 type RoadmapActivity = {
     id: string
     titulo: string
+    status: string
     conteudo_teorico: { id: string; titulo: string } | null
 }
 
@@ -79,7 +80,18 @@ export function LessonPage() {
                 setAtividade(loadedAtividade)
                 if (loadedRoadmap) {
                     setRoadmap(loadedRoadmap)
-                    setProgress(loadedRoadmap.percentual_conclusao)
+                    const currentModule = loadedRoadmap.modulos.find((m) =>
+                        m.atividades.some((a) => a.id === atividadeId),
+                    )
+                    if (currentModule && currentModule.atividades.length > 0) {
+                        const total = currentModule.atividades.length
+                        const concluidas = currentModule.atividades.filter(
+                            (a) => a.status === "CONCLUIDO",
+                        ).length
+                        setProgress(Math.round((concluidas / total) * 100))
+                    } else {
+                        setProgress(loadedRoadmap.percentual_conclusao)
+                    }
                 }
             })
             .catch((requestError: unknown) => {
