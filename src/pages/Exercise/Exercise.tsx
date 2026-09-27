@@ -83,6 +83,7 @@ export function ExercisePage() {
     const [hintLoading, setHintLoading] = useState(false)
     const [hintModalOpen, setHintModalOpen] = useState(false)
     const [hintText, setHintText] = useState<string | null>(null)
+    const [sessaoId, setSessaoId] = useState<string | null>(null)
 
     useEffect(() => {
         if (!atividadeId) return
@@ -320,22 +321,44 @@ export function ExercisePage() {
         if (!atividade || !questao) return
         setHintLoading(true)
         try {
-            const sessao = await api<{ id: string }>("/chat/sessao/iniciar/", {
-                method: "POST",
-            })
-            const resp = await api<{ resposta: string }>(
+            let currentSessaoId = sessaoId
+            if (!currentSessaoId) {
+                const sessao = await api<{
+                    sessao_id: string
+                    mensagem_inicial?: {
+                        id: string
+                        remetente: string
+                        conteudo: string
+                        sugestoes_rapidas?: { id: string; titulo: string }[]
+                        criada_em: string
+                    }
+                }>("/chat/sessao/iniciar/", {
+                    method: "POST",
+                })
+                console.log("Full session response:", sessao)
+                currentSessaoId = sessao.sessao_id
+                setSessaoId(sessao.sessao_id)
+                console.log("Session created:", sessao.sessao_id)
+            }
+
+            const requestBody = {
+                sessao_id: currentSessaoId,
+                questao_id: questao.id,
+                pergunta: "Como resolver este exercício?",
+            }
+            console.log("Request body:", requestBody)
+
+            const resp = await api<{ resposta_coach: string }>(
                 `/atividades/${encodeURIComponent(atividade.id)}/pedir-dica/`,
                 {
                     method: "POST",
-                    body: JSON.stringify({
-                        sessao_id: sessao.id,
-                        questao_id: questao.id,
-                        pergunta: "Como resolver este exercício?",
-                    }),
+                    body: JSON.stringify(requestBody),
                 },
             )
-            setHintText(resp.resposta)
-        } catch {
+            console.log("Hint response:", resp)
+            setHintText(resp.resposta_coach)
+        } catch (error) {
+            console.error("Hint request error:", error)
             setHintText("Não foi possível obter a dica no momento. Tente analisar as opções atentamente!")
         } finally {
             setHintLoading(false)
