@@ -18,8 +18,21 @@ type Atividade = {
     conteudo_teorico: ConteudoTeorico | null
 }
 
+type RoadmapActivity = {
+    id: string
+    titulo: string
+    conteudo_teorico: { id: string; titulo: string } | null
+}
+
+type RoadmapModule = {
+    id: string
+    titulo: string
+    atividades: RoadmapActivity[]
+}
+
 type Roadmap = {
     percentual_conclusao: number
+    modulos: RoadmapModule[]
 }
 
 function extractCodeExamples(texto: string): {
@@ -45,6 +58,7 @@ export function LessonPage() {
     const navigate = useNavigate()
     const [atividade, setAtividade] = useState<Atividade | null>(null)
     const [progress, setProgress] = useState(0)
+    const [roadmap, setRoadmap] = useState<Roadmap | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
@@ -64,6 +78,7 @@ export function LessonPage() {
                 if (!active) return
                 setAtividade(loadedAtividade)
                 if (loadedRoadmap) {
+                    setRoadmap(loadedRoadmap)
                     setProgress(loadedRoadmap.percentual_conclusao)
                 }
             })
@@ -95,13 +110,39 @@ export function LessonPage() {
         }
     }
 
-    function handleNext() {
-        navigate(
-            `/trilhas/${encodeURIComponent(trilhaId ?? "")}/atividade/${encodeURIComponent(
-                atividadeId ?? "",
-            )}`,
-            { replace: true },
-        )
+    async function handleNext() {
+        if (!trilhaId || !roadmap) {
+            handleClose()
+            return
+        }
+
+        // Marca a lição teórica atual como concluída no backend
+        if (atividadeId) {
+            try {
+                await api(`/atividades/${encodeURIComponent(atividadeId)}/concluir/`, {
+                    method: "POST",
+                })
+            } catch {
+                // Se der erro de rede, continua a navegação
+            }
+        }
+
+        // Procura a próxima atividade na sequência do roadmap
+        const todasAtividades = roadmap.modulos.flatMap((m) => m.atividades)
+        const currentIndex = todasAtividades.findIndex((a) => a.id === atividadeId)
+
+        if (currentIndex !== -1 && currentIndex + 1 < todasAtividades.length) {
+            const nextAtiv = todasAtividades[currentIndex + 1]
+            const rota = nextAtiv.conteudo_teorico ? "licao" : "atividade"
+            navigate(
+                `/trilhas/${encodeURIComponent(trilhaId)}/${rota}/${encodeURIComponent(nextAtiv.id)}`,
+                { replace: true },
+            )
+        } else {
+            navigate(`/trilhas/${encodeURIComponent(trilhaId)}`, {
+                replace: true,
+            })
+        }
     }
 
     if (loading) {
