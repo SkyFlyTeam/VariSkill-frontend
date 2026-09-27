@@ -11,6 +11,7 @@ import {
     Question,
     type QuestionProps,
 } from "@/components/shared/Question/Question"
+import { useAuth } from "@/contexts/authContext"
 import { ApiError, api } from "@/services/api"
 
 type QuestaoOpcao = {
@@ -34,8 +35,21 @@ type Atividade = {
     questoes: Questao[]
 }
 
+type RoadmapActivity = {
+    id: string
+    titulo: string
+    conteudo_teorico: { id: string; titulo: string } | null
+}
+
+type RoadmapModule = {
+    id: string
+    titulo: string
+    atividades: RoadmapActivity[]
+}
+
 type Roadmap = {
     percentual_conclusao: number
+    modulos: RoadmapModule[]
 }
 
 export function ExercisePage() {
@@ -44,8 +58,10 @@ export function ExercisePage() {
         atividadeId: string
     }>()
     const navigate = useNavigate()
+    const { user, updateUser } = useAuth()
 
     const [atividade, setAtividade] = useState<Atividade | null>(null)
+    const [roadmap, setRoadmap] = useState<Roadmap | null>(null)
     const [progress, setProgress] = useState(0)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -63,6 +79,10 @@ export function ExercisePage() {
     const [submitting, setSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState<string | null>(null)
 
+    const [hintLoading, setHintLoading] = useState(false)
+    const [hintModalOpen, setHintModalOpen] = useState(false)
+    const [hintText, setHintText] = useState<string | null>(null)
+
     useEffect(() => {
         if (!atividadeId) return
         let active = true
@@ -77,6 +97,7 @@ export function ExercisePage() {
                 if (!active) return
                 setAtividade(loadedAtividade)
                 if (loadedRoadmap) {
+                    setRoadmap(loadedRoadmap)
                     setProgress(loadedRoadmap.percentual_conclusao)
                 }
             })
@@ -210,6 +231,9 @@ export function ExercisePage() {
                 },
             )
             setResult(submission)
+            if (user && typeof submission.novo_xp_total === "number") {
+                updateUser({ ...user, xp_total: submission.novo_xp_total })
+            }
         } catch (requestError: unknown) {
             setSubmitError(
                 requestError instanceof ApiError
@@ -226,6 +250,30 @@ export function ExercisePage() {
             navigate(`/trilhas/${trilhaId}`, { replace: true })
         } else {
             navigate(-1)
+        }
+    }
+
+    function handleNext() {
+        if (!trilhaId || !roadmap) {
+            handleClose()
+            return
+        }
+
+        // Procura a próxima atividade na sequência do roadmap
+        const todasAtividades = roadmap.modulos.flatMap((m) => m.atividades)
+        const currentIndex = todasAtividades.findIndex((a) => a.id === atividadeId)
+
+        if (currentIndex !== -1 && currentIndex + 1 < todasAtividades.length) {
+            const nextAtiv = todasAtividades[currentIndex + 1]
+            const rota = nextAtiv.conteudo_teorico ? "licao" : "atividade"
+            navigate(
+                `/trilhas/${encodeURIComponent(trilhaId)}/${rota}/${encodeURIComponent(nextAtiv.id)}`,
+                { replace: true },
+            )
+        } else {
+            navigate(`/trilhas/${encodeURIComponent(trilhaId)}`, {
+                replace: true,
+            })
         }
     }
 
@@ -256,6 +304,32 @@ export function ExercisePage() {
         )
     }
 
+    async function handleRequestHint() {
+        if (!atividade || !questao) return
+        setHintLoading(true)
+        try {
+            const sessao = await api<{ id: string }>("/chat/sessao/iniciar/", {
+                method: "POST",
+            })
+            const resp = await api<{ resposta: string }>(
+                `/atividades/${encodeURIComponent(atividade.id)}/pedir-dica/`,
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        sessao_id: sessao.id,
+                        questao_id: questao.id,
+                        pergunta: "Como resolver este exercício?",
+                    }),
+                },
+            )
+            setHintText(resp.resposta)
+        } catch {
+            setHintText("Não foi possível obter a dica no momento. Tente analisar as opções atentamente!")
+        } finally {
+            setHintLoading(false)
+        }
+    }
+
     return (
         <>
             <ExerciseView
@@ -283,13 +357,46 @@ export function ExercisePage() {
                             : "Esta atividade não possui exercícios."}
                     </p>
                 )}
+
+                <div className="mt-6 flex flex-col items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setHintModalOpen(true)
+                            if (!hintText) handleRequestHint()
+                        }}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-main-blue hover:underline"
+                    >
+                        💡 Precisa de uma dica da Vari?
+                    </button>
+
+                    {hintModalOpen && (
+                        <div className="w-full max-w-md rounded-xl border border-sky-100 bg-sky-50/80 p-4 text-left shadow-sm">
+                            <div className="flex items-center justify-between pb-2">
+                                <span className="text-xs font-bold text-sky-900">Vari (Dica pedagógica):</span>
+                                <button
+                                    type="button"
+                                    onClick={() => setHintModalOpen(false)}
+                                    className="text-xs text-slate-400 hover:text-slate-600"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                            {hintLoading ? (
+                                <p className="text-xs text-slate-500 animate-pulse">Vari está pensando na dica...</p>
+                            ) : (
+                                <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-wrap">{hintText}</p>
+                            )}
+                        </div>
+                    )}
+                </div>
             </ExerciseView>
 
             {result && (
                 <ActivityResultModal
                     open
                     result={result}
-                    onContinue={handleClose}
+                    onContinue={handleNext}
                     onRetry={handleRetry}
                 />
             )}
