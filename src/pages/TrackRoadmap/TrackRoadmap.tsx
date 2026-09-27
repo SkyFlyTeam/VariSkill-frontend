@@ -52,9 +52,12 @@ function toActivityStatus(status: string): ActivityStatus {
     return "locked"
 }
 
-function toActivityPurpose(contexto: string): ActivityPurpose {
-    if (contexto.includes("DIAGNOSTICO")) return "exam"
-    if (contexto.includes("CODIGO") || contexto.includes("COMPLETE")) {
+function toActivityPurpose(activity: RoadmapActivity): ActivityPurpose {
+    const title = activity.titulo.toLowerCase()
+    if (activity.contexto_avaliacao.includes("DIAGNOSTICO") || title.includes("desafio")) {
+        return "exam"
+    }
+    if (!activity.conteudo_teorico || title.includes("exercicio") || activity.contexto_avaliacao.includes("CODIGO")) {
         return "practical"
     }
     return "theoretical"
@@ -94,6 +97,7 @@ export function TrackRoadmapPage() {
     }, [id])
 
     function handleActivityClick(activity: RoadmapActivity) {
+        if (activity.status === "BLOQUEADO") return
         const trilhaId = encodeURIComponent(id ?? "")
         const rota = activity.conteudo_teorico ? "licao" : "atividade"
         navigate(`/trilhas/${trilhaId}/${rota}/${activity.id}`)
@@ -124,7 +128,9 @@ export function TrackRoadmapPage() {
                                 {roadmap.trilha.titulo}
                             </h1>
                             <p className="truncate text-center text-[11px] font-medium text-white/90 sm:text-sm">
-                                {roadmap.modulos[0]?.titulo ?? ""}
+                                {roadmap.modulos.find((m) => m.status === "EM_ANDAMENTO")?.titulo ??
+                                    roadmap.modulos[0]?.titulo ??
+                                    ""}
                             </p>
                             <div className="justify-self-end">
                                 <RadialProgress
@@ -164,7 +170,7 @@ export function TrackRoadmapPage() {
                                                         }
                                                         title={atividade.titulo}
                                                         purpose={toActivityPurpose(
-                                                            atividade.contexto_avaliacao,
+                                                            atividade,
                                                         )}
                                                         status={toActivityStatus(
                                                             atividade.status,

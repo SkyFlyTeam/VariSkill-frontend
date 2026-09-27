@@ -10,12 +10,13 @@ type TrackCardBaseProps = {
     category?: string
     image: ReactNode
     totalModules: number
+    onStart?: (id: string, e: React.MouseEvent) => void
 }
 
 export type TrackCardProps = TrackCardBaseProps &
     (
-        | { variant: "in-progress"; completedModules: number }
-        | { variant: "available"; completedModules?: never }
+        | { variant: "in-progress"; completedModules: number; progressPercent?: number }
+        | { variant: "available"; completedModules?: never; progressPercent?: never }
     )
 
 function normalizeCount(value: number) {
@@ -23,21 +24,26 @@ function normalizeCount(value: number) {
 }
 
 export function TrackCard(props: TrackCardProps) {
-    const { id, title, category = "Tecnologia", image } = props
+    const { id, title, category = "Tecnologia", image, onStart } = props
     const descriptionId = useId()
     const total = normalizeCount(props.totalModules)
     const completed =
         props.variant === "in-progress"
             ? Math.min(total, normalizeCount(props.completedModules))
             : 0
-    const progress = total > 0 ? Math.round((completed / total) * 100) : 0
+    const progress =
+        props.variant === "in-progress" && typeof props.progressPercent === "number"
+            ? Math.min(100, Math.max(0, Math.round(props.progressPercent)))
+            : total > 0
+              ? Math.round((completed / total) * 100)
+              : 0
     const moduleLabel = total === 1 ? "módulo" : "módulos"
     const inProgress = props.variant === "in-progress"
 
     return (
         <Link
             to={`/trilhas/${encodeURIComponent(id)}`}
-            aria-label={`${inProgress ? "Continuar" : "Começar"} trilha ${title}`}
+            aria-label={`${inProgress ? "Continuar" : "Visualizar"} trilha ${title}`}
             aria-describedby={descriptionId}
             className="group flex min-h-20 min-w-0 items-center gap-3 rounded-xl bg-white px-3.5 py-3 shadow-[0_3px_8px_rgba(15,23,42,0.08)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-700 motion-reduce:transform-none motion-reduce:transition-none"
         >
@@ -67,9 +73,19 @@ export function TrackCard(props: TrackCardProps) {
             {inProgress ? (
                 <RadialProgress value={progress} />
             ) : (
-                <span className="shrink-0 rounded-lg bg-main-blue-dark px-3 py-2 text-xs font-semibold text-white transition-colors group-hover:bg-sky-800 group-focus-visible:bg-sky-800 motion-reduce:transition-none">
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        if (onStart) {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            onStart(id, e)
+                        }
+                    }}
+                    className="shrink-0 rounded-lg bg-main-blue-dark px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-sky-800 focus-visible:bg-sky-800 motion-reduce:transition-none cursor-pointer"
+                >
                     Começar
-                </span>
+                </button>
             )}
         </Link>
     )
