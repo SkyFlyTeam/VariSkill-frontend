@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom"
+
 import { ChatAvatar } from "@/pages/Chat/components/ChatAvatar"
 
 export type ChatOption = {
@@ -6,18 +7,29 @@ export type ChatOption = {
     titulo: string
 }
 
+export type ChatAction = {
+    label: string
+    href: string
+}
+
 export type ChatMessage = {
     id: string
     content: string
     sender: "assistant" | "user"
     options?: ChatOption[]
+    suggestions?: string[]
+    action?: ChatAction
 }
 
 type MessageBubbleProps = {
     message: ChatMessage
+    onSuggestionClick?: (suggestion: string) => void
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({
+    message,
+    onSuggestionClick,
+}: MessageBubbleProps) {
     const isAssistant = message.sender === "assistant"
     const navigate = useNavigate()
 
@@ -26,7 +38,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             <div className="flex items-end gap-2.5">
                 <ChatAvatar size="sm" />
                 <div className="flex flex-col gap-2 max-w-[85%] sm:max-w-[70%]">
-                    <p className="relative rounded-2xl rounded-bl-sm bg-[#e91a36] px-4 py-2.5 text-sm leading-relaxed text-white shadow-sm whitespace-pre-line">
+                    <p className="relative rounded-2xl rounded-bl-sm bg-[#e91a36] px-4 py-2.5 text-sm leading-relaxed text-white shadow-sm whitespace-pre-wrap break-words">
                         {message.content}
                     </p>
                     {message.options && message.options.length > 0 && (
@@ -35,10 +47,42 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                                 <button
                                     key={opt.id}
                                     type="button"
-                                    onClick={() => navigate(`/trilhas/${encodeURIComponent(opt.id)}`)}
+                                    onClick={() =>
+                                        navigate(
+                                            `/trilhas/${encodeURIComponent(opt.id)}`,
+                                        )
+                                    }
                                     className="rounded-lg bg-white border border-rose-200 px-3 py-1.5 text-xs font-semibold text-[#e91a36] shadow-sm hover:bg-rose-50 transition-colors"
                                 >
                                     🎯 {opt.titulo}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                    {message.action && (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                            <button
+                                type="button"
+                                onClick={() => navigate(message.action!.href)}
+                                className="rounded-lg bg-[#e91a36] px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-[#c9142d] transition-colors"
+                            >
+                                {message.action.label}
+                            </button>
+                        </div>
+                    )}
+                    {message.suggestions && message.suggestions.length > 0 && (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                            {message.suggestions.map((suggestion) => (
+                                <button
+                                    key={suggestion}
+                                    type="button"
+                                    disabled={!onSuggestionClick}
+                                    onClick={() =>
+                                        onSuggestionClick?.(suggestion)
+                                    }
+                                    className="rounded-lg bg-white border border-rose-200 px-3 py-1.5 text-xs font-semibold text-[#e91a36] shadow-sm hover:bg-rose-50 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {suggestion}
                                 </button>
                             ))}
                         </div>
