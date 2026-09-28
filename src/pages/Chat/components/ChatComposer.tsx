@@ -5,11 +5,13 @@ import { SendHorizonal } from "lucide-react"
 type ChatComposerProps = {
     onSend: (content: string) => void
     placeholder?: string
+    disabled?: boolean
 }
 
 export function ChatComposer({
     onSend,
     placeholder = "Digite sua dúvida...",
+    disabled = false,
 }: ChatComposerProps) {
     const [value, setValue] = useState("")
 
@@ -17,7 +19,7 @@ export function ChatComposer({
         event.preventDefault()
         const content = value.trim()
 
-        if (!content) return
+        if (!content || disabled) return
 
         onSend(content)
         setValue("")
@@ -49,7 +51,7 @@ export function ChatComposer({
                 type="submit"
                 aria-label="Enviar mensagem"
                 className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[#48b7de] text-white transition-colors hover:bg-[#319fc7] disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!value.trim()}
+                disabled={disabled || !value.trim()}
             >
                 <SendHorizonal className="size-5" />
             </button>
