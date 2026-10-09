@@ -21,6 +21,10 @@ export interface ActivitySubmissionResult {
     pontuacao_obtida: number
     xp_concedido: number
     novo_xp_total: number
+    /** Progressão de nível (VAR-88). Opcionais enquanto o backend não os envia em todos os ambientes. */
+    level_up?: boolean
+    nivel_anterior?: number
+    novo_nivel?: number
     executado_em: string
     questoes_feedback: QuestionFeedback[]
 }
