@@ -15,6 +15,42 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Animações de celebração (LevelUpModal) */
+@theme {
+    /* Duas ondas de confete (~5s) e depois param. */
+    --animate-confetti-fall: confetti-fall 2.4s ease-in 2 both;
+    --animate-level-pop: level-pop 0.6s ease-out 0.2s both;
+
+    @keyframes confetti-fall {
+        0% {
+            transform: translateY(-2rem) rotate(0deg);
+            opacity: 0;
+        }
+        8% {
+            opacity: 1;
+        }
+        85% {
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(24rem) rotate(600deg);
+            opacity: 0;
+        }
+    }
+
+    @keyframes level-pop {
+        0% {
+            transform: scale(0.6);
+        }
+        60% {
+            transform: scale(1.1);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+}
+
 @theme inline {
     --color-brand-navy: #001b41;
     --color-brand-blue: #2599c8;

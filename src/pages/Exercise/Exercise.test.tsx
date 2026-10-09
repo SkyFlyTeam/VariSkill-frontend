@@ -17,6 +17,10 @@ jest.mock("@/services/api", () => ({
     },
 }))
 
+jest.mock("@/contexts/authContext", () => ({
+    useAuth: () => ({ user: null, updateUser: jest.fn() }),
+}))
+
 const mockedApi = api as jest.MockedFunction<typeof api>
 
 const ATIVIDADE = {
@@ -50,16 +54,16 @@ const RESULTADO = {
     ],
 }
 
-function mockApi() {
+function mockApi(resultado: Record<string, unknown> = RESULTADO) {
     mockedApi.mockImplementation((path: string) => {
         if (path === "/atividades/ativ-1/") {
             return Promise.resolve(ATIVIDADE)
         }
         if (path === "/trilhas/trilha-1/roadmap/") {
-            return Promise.resolve({ percentual_conclusao: 30 })
+            return Promise.resolve({ percentual_conclusao: 30, modulos: [] })
         }
         if (path === "/atividades/ativ-1/submeter/") {
-            return Promise.resolve(RESULTADO)
+            return Promise.resolve(resultado)
         }
         return Promise.reject(new Error(`Rota inesperada: ${path}`))
     })
@@ -121,6 +125,65 @@ describe("ExercisePage", () => {
                     }),
                 }),
             ),
+        )
+
+        expect(
+            await screen.findByText("Parabéns, você foi aprovado!"),
+        ).toBeInTheDocument()
+    })
+
+    async function submitExercise() {
+        renderExercise()
+
+        await screen.findByText(
+            "1 - Arraste os blocos para completar o código:",
+        )
+        fireEvent.click(screen.getByText("let"))
+
+        const verifyButton = screen.getByRole("button", { name: "Verificar" })
+        await waitFor(() => expect(verifyButton).toBeEnabled())
+        fireEvent.click(verifyButton)
+    }
+
+    it("não exibe o modal de level up quando level_up é falso", async () => {
+        mockApi({
+            ...RESULTADO,
+            level_up: false,
+            nivel_anterior: 1,
+            novo_nivel: 1,
+        })
+
+        await submitExercise()
+
+        expect(
+            await screen.findByText("Parabéns, você foi aprovado!"),
+        ).toBeInTheDocument()
+        expect(
+            screen.queryByRole("button", { name: "Continuar Aprendendo" }),
+        ).not.toBeInTheDocument()
+    })
+
+    it("exibe o level up antes do resultado e segue o fluxo ao fechar", async () => {
+        mockApi({
+            ...RESULTADO,
+            level_up: true,
+            nivel_anterior: 1,
+            novo_nivel: 2,
+        })
+
+        await submitExercise()
+
+        expect(
+            await screen.findByRole("heading", {
+                name: "Parabéns! Você alcançou o Nível 2!",
+            }),
+        ).toBeInTheDocument()
+        expect(
+            screen.queryByText("Parabéns, você foi aprovado!"),
+        ).not.toBeInTheDocument()
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Continuar Aprendendo" }),
         )
 
         expect(

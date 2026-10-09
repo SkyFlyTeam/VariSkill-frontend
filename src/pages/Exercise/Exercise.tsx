@@ -7,6 +7,7 @@ import {
     type ActivitySubmissionResult,
 } from "@/components/shared/ActivityResultModal/ActivityResultModal"
 import { ExerciseView } from "@/components/shared/ExerciseView/ExerciseView"
+import { LevelUpModal } from "@/components/shared/LevelUpModal/LevelUpModal"
 import {
     Question,
     type QuestionProps,
@@ -77,6 +78,8 @@ export function ExercisePage() {
     const [blankValues, setBlankValues] = useState<Record<number, string>>({})
 
     const [result, setResult] = useState<ActivitySubmissionResult | null>(null)
+    // Level up é exibido antes do modal de resultado; ao fechar, o fluxo segue normalmente.
+    const [levelUpOpen, setLevelUpOpen] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -91,6 +94,7 @@ export function ExercisePage() {
 
         // Limpa estado anterior (modal de resultado, respostas, dicas) ao trocar de atividade
         setResult(null)
+        setLevelUpOpen(false)
         setSelectedOptionId(null)
         setSlotAssignments({})
         setBlankValues({})
@@ -271,6 +275,10 @@ export function ExercisePage() {
                 },
             )
             setResult(submission)
+            setLevelUpOpen(
+                submission.level_up === true &&
+                    typeof submission.novo_nivel === "number",
+            )
             if (user && typeof submission.novo_xp_total === "number") {
                 updateUser({ ...user, xp_total: submission.novo_xp_total })
             }
@@ -455,7 +463,16 @@ export function ExercisePage() {
                 </div>
             </ExerciseView>
 
-            {result && (
+            {result && levelUpOpen && result.novo_nivel !== undefined && (
+                <LevelUpModal
+                    open
+                    level={result.novo_nivel}
+                    previousLevel={result.nivel_anterior}
+                    onClose={() => setLevelUpOpen(false)}
+                />
+            )}
+
+            {result && !levelUpOpen && (
                 <ActivityResultModal
                     open
                     result={result}
