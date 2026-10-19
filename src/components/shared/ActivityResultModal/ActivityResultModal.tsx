@@ -13,7 +13,6 @@ export interface QuestionFeedback {
     explicacao: string
 }
 
-/** Response de `POST /api/atividades/{id}/submeter/` (VAR-41), com os nomes literais da API. */
 export interface ActivitySubmissionResult {
     execucao_id: string
     aprovado: boolean
@@ -21,7 +20,6 @@ export interface ActivitySubmissionResult {
     pontuacao_obtida: number
     xp_concedido: number
     novo_xp_total: number
-    /** Progressão de nível (VAR-88). Opcionais enquanto o backend não os envia em todos os ambientes. */
     level_up?: boolean
     nivel_anterior?: number
     novo_nivel?: number

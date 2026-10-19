@@ -54,16 +54,33 @@ const RESULTADO = {
     ],
 }
 
-function mockApi(resultado: Record<string, unknown> = RESULTADO) {
+const ATIVIDADE_MULTIPLA = {
+    ...ATIVIDADE,
+    questoes: [
+        ...ATIVIDADE.questoes,
+        {
+            id: "q-2",
+            tipo_exercicio: "MULTIPLA_ESCOLHA",
+            enunciado: "2 - Qual função converte '42' em inteiro?",
+            codigo_snippet: "",
+            opcoes: [
+                { id: "opcao-1", texto_opcao: "int('42')", ordem: 1 },
+                { id: "opcao-2", texto_opcao: "str('42')", ordem: 2 },
+            ],
+        },
+    ],
+}
+
+function mockApi(atividade = ATIVIDADE) {
     mockedApi.mockImplementation((path: string) => {
         if (path === "/atividades/ativ-1/") {
-            return Promise.resolve(ATIVIDADE)
+            return Promise.resolve(atividade)
         }
         if (path === "/trilhas/trilha-1/roadmap/") {
             return Promise.resolve({ percentual_conclusao: 30, modulos: [] })
         }
         if (path === "/atividades/ativ-1/submeter/") {
-            return Promise.resolve(resultado)
+            return Promise.resolve(RESULTADO)
         }
         return Promise.reject(new Error(`Rota inesperada: ${path}`))
     })
@@ -84,6 +101,7 @@ function renderExercise() {
 }
 
 beforeEach(() => {
+    localStorage.clear()
     mockedApi.mockReset()
     mockApi()
 })
@@ -132,62 +150,150 @@ describe("ExercisePage", () => {
         ).toBeInTheDocument()
     })
 
-    async function submitExercise() {
+    it("exibe uma questão por vez e só submete todas as respostas ao final", async () => {
+        mockApi(ATIVIDADE_MULTIPLA)
         renderExercise()
 
-        await screen.findByText(
-            "1 - Arraste os blocos para completar o código:",
-        )
-        fireEvent.click(screen.getByText("let"))
+        expect(await screen.findByText("Questão 1 de 2")).toBeInTheDocument()
+        const nextButton = screen.getByRole("button", { name: "Próxima" })
+        expect(nextButton).toBeDisabled()
 
+        fireEvent.click(screen.getByText("let"))
+        await waitFor(() => expect(nextButton).toBeEnabled())
+        fireEvent.click(nextButton)
+
+        expect(await screen.findByText("Questão 2 de 2")).toBeInTheDocument()
+        expect(
+            screen.getByText("2 - Qual função converte '42' em inteiro?"),
+        ).toBeInTheDocument()
+        expect(screen.getByRole("progressbar")).toHaveAttribute(
+            "aria-valuenow",
+            "50",
+        )
+        expect(mockedApi).not.toHaveBeenCalledWith(
+            "/atividades/ativ-1/submeter/",
+            expect.anything(),
+        )
+
+        fireEvent.click(screen.getByText("int('42')"))
         const verifyButton = screen.getByRole("button", { name: "Verificar" })
         await waitFor(() => expect(verifyButton).toBeEnabled())
         fireEvent.click(verifyButton)
-    }
 
-    it("não exibe o modal de level up quando level_up é falso", async () => {
-        mockApi({
-            ...RESULTADO,
-            level_up: false,
-            nivel_anterior: 1,
-            novo_nivel: 1,
-        })
-
-        await submitExercise()
-
+        await waitFor(() =>
+            expect(mockedApi).toHaveBeenCalledWith(
+                "/atividades/ativ-1/submeter/",
+                expect.objectContaining({
+                    body: JSON.stringify({
+                        respostas: {
+                            "q-1": ["bloco-1"],
+                            "q-2": ["opcao-1"],
+                        },
+                    }),
+                }),
+            ),
+        )
         expect(
             await screen.findByText("Parabéns, você foi aprovado!"),
         ).toBeInTheDocument()
-        expect(
-            screen.queryByRole("button", { name: "Continuar Aprendendo" }),
-        ).not.toBeInTheDocument()
+        expect(localStorage.length).toBe(0)
     })
 
-    it("exibe o level up antes do resultado e segue o fluxo ao fechar", async () => {
-        mockApi({
-            ...RESULTADO,
-            level_up: true,
-            nivel_anterior: 1,
-            novo_nivel: 2,
-        })
+    it("ao tentar novamente, refaz apenas as questões erradas", async () => {
+        mockApi(ATIVIDADE_MULTIPLA)
+        const submitResponses = [
+            {
+                ...RESULTADO,
+                aprovado: false,
+                taxa_acerto: 50,
+                questoes_feedback: [
+                    { questao_id: "q-1", correta: true, explicacao: "" },
+                    { questao_id: "q-2", correta: false, explicacao: "" },
+                ],
+            },
+            RESULTADO,
+        ]
+        const defaultImpl = mockedApi.getMockImplementation()!
+        mockedApi.mockImplementation((path: string, ...rest) =>
+            path === "/atividades/ativ-1/submeter/"
+                ? Promise.resolve(submitResponses.shift())
+                : defaultImpl(path, ...rest),
+        )
+        renderExercise()
 
-        await submitExercise()
-
-        expect(
-            await screen.findByRole("heading", {
-                name: "Parabéns! Você alcançou o Nível 2!",
-            }),
-        ).toBeInTheDocument()
-        expect(
-            screen.queryByText("Parabéns, você foi aprovado!"),
-        ).not.toBeInTheDocument()
+        await screen.findByText("Questão 1 de 2")
+        fireEvent.click(screen.getByText("let"))
+        fireEvent.click(screen.getByRole("button", { name: "Próxima" }))
+        await screen.findByText("Questão 2 de 2")
+        fireEvent.click(screen.getByText("str('42')"))
+        fireEvent.click(screen.getByRole("button", { name: "Verificar" }))
 
         fireEvent.click(
-            screen.getByRole("button", { name: "Continuar Aprendendo" }),
+            await screen.findByRole("button", { name: /Tentar Novamente/i }),
         )
 
         expect(
+            await screen.findByText("Revisão: questão 1 de 1"),
+        ).toBeInTheDocument()
+        expect(
+            screen.getByText("2 - Qual função converte '42' em inteiro?"),
+        ).toBeInTheDocument()
+        expect(screen.getByRole("progressbar")).toHaveAttribute(
+            "aria-valuenow",
+            "0",
+        )
+        expect(
+            screen.queryByRole("button", { name: "Anterior" }),
+        ).not.toBeInTheDocument()
+        const verifyButton = screen.getByRole("button", { name: "Verificar" })
+        expect(verifyButton).toBeDisabled()
+
+        fireEvent.click(screen.getByText("int('42')"))
+        expect(screen.getByRole("progressbar")).toHaveAttribute(
+            "aria-valuenow",
+            "100",
+        )
+        await waitFor(() => expect(verifyButton).toBeEnabled())
+        fireEvent.click(verifyButton)
+
+        await waitFor(() =>
+            expect(mockedApi).toHaveBeenLastCalledWith(
+                "/atividades/ativ-1/submeter/",
+                expect.objectContaining({
+                    body: JSON.stringify({
+                        respostas: {
+                            "q-1": ["bloco-1"],
+                            "q-2": ["opcao-1"],
+                        },
+                    }),
+                }),
+            ),
+        )
+        expect(
             await screen.findByText("Parabéns, você foi aprovado!"),
         ).toBeInTheDocument()
+    })
+
+    it("restaura a questão atual e as respostas salvas no localStorage", async () => {
+        mockApi(ATIVIDADE_MULTIPLA)
+        const { unmount } = renderExercise()
+
+        await screen.findByText("Questão 1 de 2")
+        fireEvent.click(screen.getByText("let"))
+        fireEvent.click(screen.getByRole("button", { name: "Próxima" }))
+        await screen.findByText("Questão 2 de 2")
+        unmount()
+
+        renderExercise()
+
+        expect(await screen.findByText("Questão 2 de 2")).toBeInTheDocument()
+        expect(screen.getByRole("progressbar")).toHaveAttribute(
+            "aria-valuenow",
+            "50",
+        )
+
+        fireEvent.click(screen.getByRole("button", { name: "Anterior" }))
+        expect(await screen.findByText("Questão 1 de 2")).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Próxima" })).toBeEnabled()
     })
 })

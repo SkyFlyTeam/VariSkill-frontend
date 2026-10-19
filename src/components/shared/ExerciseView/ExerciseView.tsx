@@ -7,6 +7,8 @@ import { ProgressBar } from "@/components/shared/ProgressBar/ProgressBar"
 export type ExerciseViewProps = {
     /** Enunciado em destaque (ex.: "1 - Arraste os blocos ...") */
     enunciado: string
+    /** Indicador da etapa atual (ex.: "Questão 2 de 5") exibido acima do enunciado */
+    stepLabel?: string
     /** Progresso (0..100) da barra no topo */
     progress?: number
     /** Texto do botão de ação */
@@ -17,6 +19,10 @@ export type ExerciseViewProps = {
     submitting?: boolean
     onClose?: () => void
     onSubmit?: () => void
+    /** Texto do botão secundário de voltar */
+    backLabel?: string
+    /** Quando informado, exibe o botão de voltar ao lado do botão de ação */
+    onBack?: () => void
     /**
      * Área do exercício (editor de código + pílulas).
      * Vai receber o `<CodeBlocksQuestion />` da VAR-46 (ou outro tipo de questão).
@@ -31,12 +37,15 @@ export type ExerciseViewProps = {
  */
 export function ExerciseView({
     enunciado,
+    stepLabel,
     progress = 0,
     submitLabel = "Verificar",
     submitDisabled = false,
     submitting = false,
     onClose,
     onSubmit,
+    backLabel = "Anterior",
+    onBack,
     children,
 }: ExerciseViewProps) {
     return (
@@ -55,6 +64,11 @@ export function ExerciseView({
                 </header>
 
                 <section className="rounded-2xl bg-white px-6 py-8 shadow-sm sm:px-10 sm:py-10">
+                    {stepLabel && (
+                        <p className="mb-2 text-center text-xs font-semibold tracking-wide text-slate-500 uppercase">
+                            {stepLabel}
+                        </p>
+                    )}
                     <h1 className="text-center text-sm font-bold sm:text-base">
                         {enunciado}
                     </h1>
@@ -68,7 +82,17 @@ export function ExerciseView({
                         )}
                     </div>
 
-                    <div className="mt-10 flex justify-center">
+                    <div className="mt-10 flex flex-col-reverse items-center justify-center gap-3 sm:flex-row">
+                        {onBack && (
+                            <button
+                                type="button"
+                                onClick={onBack}
+                                disabled={submitting}
+                                className="h-auto min-w-40 cursor-pointer rounded-[10px] border border-main-blue px-[35px] py-[15px] text-[15px] leading-[100%] font-bold text-main-blue transition-colors hover:bg-main-blue/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-main-blue disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                {backLabel}
+                            </button>
+                        )}
                         <button
                             type="button"
                             onClick={onSubmit}
