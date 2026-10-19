@@ -8,26 +8,21 @@ import {
 } from "@/components/shared/ActivityResultModal/ActivityResultModal"
 import { ExerciseView } from "@/components/shared/ExerciseView/ExerciseView"
 import { LevelUpModal } from "@/components/shared/LevelUpModal/LevelUpModal"
-import {
-    Question,
-    type QuestionProps,
-} from "@/components/shared/Question/Question"
+import { Question } from "@/components/shared/Question/Question"
 import { useAuth } from "@/contexts/authContext"
 import { ApiError, api } from "@/services/api"
 
-type QuestaoOpcao = {
-    id: string
-    texto_opcao: string
-    ordem: number
-}
-
-type Questao = {
-    id: string
-    tipo_exercicio: string
-    enunciado: string
-    codigo_snippet: string
-    opcoes: QuestaoOpcao[]
-}
+import {
+    EMPTY_ANSWER,
+    type Questao,
+    buildQuestionProps,
+    isAnswerComplete,
+    serializeAnswer,
+} from "./questionAnswer"
+import {
+    getExerciseStorageKey,
+    useExerciseProgress,
+} from "./useExerciseProgress"
 
 type Atividade = {
     id: string
@@ -60,48 +55,30 @@ export function ExercisePage() {
         atividadeId: string
     }>()
     const navigate = useNavigate()
-    const { user, updateUser } = useAuth()
 
-    const [atividade, setAtividade] = useState<Atividade | null>(null)
-    const [roadmap, setRoadmap] = useState<Roadmap | null>(null)
-    const [progress, setProgress] = useState(0)
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
+    const [loadResult, setLoadResult] = useState<
+        | { atividadeId: string; atividade: Atividade; roadmap: Roadmap | null }
+        | { atividadeId: string; error: string }
+        | null
+    >(null)
 
-    // Resposta do aluno, por tipo de questão.
-    const [selectedOptionId, setSelectedOptionId] = useState<string | null>(
-        null,
-    )
-    const [slotAssignments, setSlotAssignments] = useState<
-        Record<number, string>
-    >({})
-    const [blankValues, setBlankValues] = useState<Record<number, string>>({})
-
-    const [result, setResult] = useState<ActivitySubmissionResult | null>(null)
-    // Level up é exibido antes do modal de resultado; ao fechar, o fluxo segue normalmente.
-    const [levelUpOpen, setLevelUpOpen] = useState(false)
-    const [submitting, setSubmitting] = useState(false)
-    const [submitError, setSubmitError] = useState<string | null>(null)
-
-    const [hintLoading, setHintLoading] = useState(false)
-    const [hintModalOpen, setHintModalOpen] = useState(false)
-    const [hintText, setHintText] = useState<string | null>(null)
-    const [sessaoId, setSessaoId] = useState<string | null>(null)
+    const currentResult =
+        loadResult?.atividadeId === atividadeId ? loadResult : null
+    const loading = !currentResult
+    const atividade =
+        currentResult && "atividade" in currentResult
+            ? currentResult.atividade
+            : null
+    const roadmap =
+        currentResult && "roadmap" in currentResult
+            ? currentResult.roadmap
+            : null
+    const error =
+        currentResult && "error" in currentResult ? currentResult.error : null
 
     useEffect(() => {
         if (!atividadeId) return
         let active = true
-
-        // Limpa estado anterior (modal de resultado, respostas, dicas) ao trocar de atividade
-        setResult(null)
-        setLevelUpOpen(false)
-        setSelectedOptionId(null)
-        setSlotAssignments({})
-        setBlankValues({})
-        setSubmitError(null)
-        setHintModalOpen(false)
-        setHintText(null)
-        setLoading(true)
 
         Promise.all([
             api<Atividade>(`/atividades/${atividadeId}/`),
@@ -111,187 +88,27 @@ export function ExercisePage() {
         ])
             .then(([loadedAtividade, loadedRoadmap]) => {
                 if (!active) return
-                setAtividade(loadedAtividade)
-                if (loadedRoadmap) {
-                    setRoadmap(loadedRoadmap)
-                    const currentModule = loadedRoadmap.modulos.find((m) =>
-                        m.atividades.some((a) => a.id === atividadeId),
-                    )
-                    if (currentModule && currentModule.atividades.length > 0) {
-                        const total = currentModule.atividades.length
-                        const currentIndex = currentModule.atividades.findIndex(
-                            (a) => a.id === atividadeId,
-                        )
-                        const step = currentIndex >= 0 ? currentIndex + 1 : 1
-                        setProgress(Math.round((step / total) * 100))
-                    } else {
-                        setProgress(loadedRoadmap.percentual_conclusao)
-                    }
-                }
+                setLoadResult({
+                    atividadeId,
+                    atividade: loadedAtividade,
+                    roadmap: loadedRoadmap,
+                })
             })
             .catch((requestError: unknown) => {
                 if (!active) return
-                setError(
-                    requestError instanceof ApiError
-                        ? requestError.message
-                        : "Não foi possível carregar a atividade.",
-                )
-            })
-            .finally(() => {
-                if (active) setLoading(false)
+                setLoadResult({
+                    atividadeId,
+                    error:
+                        requestError instanceof ApiError
+                            ? requestError.message
+                            : "Não foi possível carregar a atividade.",
+                })
             })
 
         return () => {
             active = false
         }
     }, [atividadeId, trilhaId])
-
-    const questao = atividade?.questoes[0]
-
-    const question = useMemo<QuestionProps | null>(() => {
-        if (!questao) return null
-
-        const blocks = questao.opcoes
-            .slice()
-            .sort((a, b) => a.ordem - b.ordem)
-            .map((opcao) => ({ id: opcao.id, label: opcao.texto_opcao }))
-        const codeTemplate = questao.codigo_snippet
-            ? questao.codigo_snippet.split("\n")
-            : []
-
-        switch (questao.tipo_exercicio) {
-            case "MULTIPLA_ESCOLHA": {
-                // Embaralha as alternativas usando o ID da questão como semente determinística
-                // para que as opções não fiquem sempre na ordem estática do banco (onde a correta vinha sempre em 'A')
-                let seed = 0
-                for (let i = 0; i < questao.id.length; i++) {
-                    seed = (seed * 31 + questao.id.charCodeAt(i)) & 0xffffffff
-                }
-                const shuffledOptions = [...blocks]
-                for (let i = shuffledOptions.length - 1; i > 0; i--) {
-                    seed = (seed * 1664525 + 1013904223) & 0xffffffff
-                    const j = Math.abs(seed) % (i + 1)
-                    const temp = shuffledOptions[i]
-                    shuffledOptions[i] = shuffledOptions[j]
-                    shuffledOptions[j] = temp
-                }
-
-                return {
-                    tipo: "MULTIPLA_ESCOLHA",
-                    question: {
-                        questionText: "",
-                        options: shuffledOptions,
-                        selectedOptionId,
-                        onSelectOption: setSelectedOptionId,
-                    },
-                }
-            }
-            case "ORDENAR_BLOCOS":
-                return {
-                    tipo: "ORDENAR_BLOCOS",
-                    question: {
-                        questionText: "",
-                        codeTemplate,
-                        availableBlocks: blocks,
-                        slotAssignments,
-                        onChangeSlotAssignments: setSlotAssignments,
-                    },
-                }
-            case "COMPLETE_CODIGO":
-                return {
-                    tipo: "COMPLETE_CODIGO",
-                    question: {
-                        questionText: "",
-                        codeTemplate,
-                        blankValues,
-                        onChangeBlankValues: setBlankValues,
-                        hideSubmitButton: true,
-                    },
-                }
-            default:
-                return null
-        }
-    }, [questao, selectedOptionId, slotAssignments, blankValues])
-
-    const isComplete = useMemo(() => {
-        if (!questao) return false
-        switch (questao.tipo_exercicio) {
-            case "MULTIPLA_ESCOLHA":
-                return selectedOptionId !== null
-            case "ORDENAR_BLOCOS": {
-                const slotCount = questao.codigo_snippet
-                    .split("\n")
-                    .reduce(
-                        (total, line) =>
-                            total + (line.match(/__SLOT_\d+__/g)?.length ?? 0),
-                        0,
-                    )
-                return (
-                    slotCount > 0 &&
-                    Object.keys(slotAssignments).length === slotCount
-                )
-            }
-            case "COMPLETE_CODIGO":
-                return Object.values(blankValues).some(
-                    (value) => value.trim() !== "",
-                )
-            default:
-                return false
-        }
-    }, [questao, selectedOptionId, slotAssignments, blankValues])
-
-    function buildAnswer(): string[] {
-        if (!questao) return []
-        switch (questao.tipo_exercicio) {
-            case "MULTIPLA_ESCOLHA":
-                return selectedOptionId ? [selectedOptionId] : []
-            case "ORDENAR_BLOCOS":
-                return Object.keys(slotAssignments)
-                    .map(Number)
-                    .sort((a, b) => a - b)
-                    .map((slot) => slotAssignments[slot])
-            case "COMPLETE_CODIGO":
-                return Object.keys(blankValues)
-                    .map(Number)
-                    .sort((a, b) => a - b)
-                    .map((blank) => blankValues[blank])
-            default:
-                return []
-        }
-    }
-
-    async function handleSubmit() {
-        if (!atividade || !questao) return
-        setSubmitting(true)
-        setSubmitError(null)
-        try {
-            const submission = await api<ActivitySubmissionResult>(
-                `/atividades/${atividade.id}/submeter/`,
-                {
-                    method: "POST",
-                    body: JSON.stringify({
-                        respostas: { [questao.id]: buildAnswer() },
-                    }),
-                },
-            )
-            setResult(submission)
-            setLevelUpOpen(
-                submission.level_up === true &&
-                    typeof submission.novo_nivel === "number",
-            )
-            if (user && typeof submission.novo_xp_total === "number") {
-                updateUser({ ...user, xp_total: submission.novo_xp_total })
-            }
-        } catch (requestError: unknown) {
-            setSubmitError(
-                requestError instanceof ApiError
-                    ? requestError.message
-                    : "Não foi possível enviar a resposta. Tente novamente.",
-            )
-        } finally {
-            setSubmitting(false)
-        }
-    }
 
     function handleClose() {
         if (trilhaId) {
@@ -301,16 +118,16 @@ export function ExercisePage() {
         }
     }
 
-    function handleNext() {
-        setResult(null)
+    function handleNextActivity() {
         if (!trilhaId || !roadmap) {
             handleClose()
             return
         }
 
-        // Procura a próxima atividade na sequência do roadmap
         const todasAtividades = roadmap.modulos.flatMap((m) => m.atividades)
-        const currentIndex = todasAtividades.findIndex((a) => a.id === atividadeId)
+        const currentIndex = todasAtividades.findIndex(
+            (a) => a.id === atividadeId,
+        )
 
         if (currentIndex !== -1 && currentIndex + 1 < todasAtividades.length) {
             const nextAtiv = todasAtividades[currentIndex + 1]
@@ -324,13 +141,6 @@ export function ExercisePage() {
                 replace: true,
             })
         }
-    }
-
-    function handleRetry() {
-        setResult(null)
-        setSelectedOptionId(null)
-        setSlotAssignments({})
-        setBlankValues({})
     }
 
     if (loading) {
@@ -353,49 +163,198 @@ export function ExercisePage() {
         )
     }
 
+    return (
+        <ExerciseSession
+            key={atividade.id}
+            atividade={atividade}
+            onClose={handleClose}
+            onContinue={handleNextActivity}
+        />
+    )
+}
+
+type ExerciseSessionProps = {
+    atividade: Atividade
+    onClose: () => void
+    onContinue: () => void
+}
+
+function ExerciseSession({
+    atividade,
+    onClose,
+    onContinue,
+}: ExerciseSessionProps) {
+    const { user, updateUser } = useAuth()
+    const { questoes } = atividade
+
+    const {
+        activeQuestoes,
+        isRetry,
+        currentIndex,
+        answers,
+        setAnswer,
+        goTo,
+        startRetry,
+        clearStorage,
+    } = useExerciseProgress(
+        getExerciseStorageKey(atividade.id, user?.id),
+        questoes,
+    )
+
+    const [result, setResult] = useState<ActivitySubmissionResult | null>(null)
+    const [submitting, setSubmitting] = useState(false)
+    const [submitError, setSubmitError] = useState<string | null>(null)
+    const [levelUpOpen, setLevelUpOpen] = useState(false)
+
+    const [hintLoading, setHintLoading] = useState(false)
+    const [hintModalOpen, setHintModalOpen] = useState(false)
+    const [hints, setHints] = useState<Record<string, string>>({})
+    const [sessaoId, setSessaoId] = useState<string | null>(null)
+
+    const totalQuestions = activeQuestoes.length
+    const questao = activeQuestoes[currentIndex]
+    const currentAnswer = (questao && answers[questao.id]) ?? EMPTY_ANSWER
+    const isLastQuestion = currentIndex === totalQuestions - 1
+    const hintText = questao ? hints[questao.id] : undefined
+
+    const question = useMemo(
+        () =>
+            questao
+                ? buildQuestionProps(questao, currentAnswer, (answer) =>
+                      setAnswer(questao.id, answer),
+                  )
+                : null,
+        [questao, currentAnswer, setAnswer],
+    )
+
+    const answeredCount = useMemo(
+        () =>
+            activeQuestoes.filter((q) =>
+                isAnswerComplete(q, answers[q.id] ?? EMPTY_ANSWER),
+            ).length,
+        [activeQuestoes, answers],
+    )
+    const progress =
+        totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0
+
+    const isCurrentComplete = questao
+        ? isAnswerComplete(questao, currentAnswer)
+        : false
+    const allComplete = useMemo(
+        () =>
+            questoes.length > 0 &&
+            questoes.every((q) =>
+                isAnswerComplete(q, answers[q.id] ?? EMPTY_ANSWER),
+            ),
+        [questoes, answers],
+    )
+
+    function changeQuestion(index: number) {
+        setHintModalOpen(false)
+        setSubmitError(null)
+        goTo(index)
+    }
+
+    function handlePrimaryAction() {
+        if (isLastQuestion) {
+            void handleSubmit()
+        } else {
+            changeQuestion(currentIndex + 1)
+        }
+    }
+
+    async function handleSubmit() {
+        if (!allComplete) return
+        setSubmitting(true)
+        setSubmitError(null)
+        try {
+            const respostas = Object.fromEntries(
+                questoes.map((q) => [
+                    q.id,
+                    serializeAnswer(q, answers[q.id] ?? EMPTY_ANSWER),
+                ]),
+            )
+            const submission = await api<ActivitySubmissionResult>(
+                `/atividades/${atividade.id}/submeter/`,
+                {
+                    method: "POST",
+                    body: JSON.stringify({ respostas }),
+                },
+            )
+            clearStorage()
+            setResult(submission)
+            setLevelUpOpen(
+                submission.level_up === true &&
+                    typeof submission.novo_nivel === "number",
+            )
+            if (user && typeof submission.novo_xp_total === "number") {
+                updateUser({ ...user, xp_total: submission.novo_xp_total })
+            }
+        } catch (requestError: unknown) {
+            setSubmitError(
+                requestError instanceof ApiError
+                    ? requestError.message
+                    : "Não foi possível enviar as respostas. Tente novamente.",
+            )
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    function handleContinue() {
+        setResult(null)
+        onContinue()
+    }
+
+    function handleRetry() {
+        const wrongQuestionIds =
+            result?.questoes_feedback
+                .filter((feedback) => !feedback.correta)
+                .map((feedback) => feedback.questao_id) ?? []
+        setResult(null)
+        setLevelUpOpen(false)
+        setHintModalOpen(false)
+        setSubmitError(null)
+        startRetry(wrongQuestionIds)
+    }
+
     async function handleRequestHint() {
-        if (!atividade || !questao) return
+        if (!questao) return
+        const questaoId = questao.id
         setHintLoading(true)
         try {
             let currentSessaoId = sessaoId
             if (!currentSessaoId) {
-                const sessao = await api<{
-                    sessao_id: string
-                    mensagem_inicial?: {
-                        id: string
-                        remetente: string
-                        conteudo: string
-                        sugestoes_rapidas?: { id: string; titulo: string }[]
-                        criada_em: string
-                    }
-                }>("/chat/sessao/iniciar/", {
-                    method: "POST",
-                })
-                console.log("Full session response:", sessao)
+                const sessao = await api<{ sessao_id: string }>(
+                    "/chat/sessao/iniciar/",
+                    { method: "POST" },
+                )
                 currentSessaoId = sessao.sessao_id
                 setSessaoId(sessao.sessao_id)
-                console.log("Session created:", sessao.sessao_id)
             }
-
-            const requestBody = {
-                sessao_id: currentSessaoId,
-                questao_id: questao.id,
-                pergunta: "Como resolver este exercício?",
-            }
-            console.log("Request body:", requestBody)
 
             const resp = await api<{ resposta_coach: string }>(
                 `/atividades/${encodeURIComponent(atividade.id)}/pedir-dica/`,
                 {
                     method: "POST",
-                    body: JSON.stringify(requestBody),
+                    body: JSON.stringify({
+                        sessao_id: currentSessaoId,
+                        questao_id: questaoId,
+                        pergunta: "Como resolver este exercício?",
+                    }),
                 },
             )
-            console.log("Hint response:", resp)
-            setHintText(resp.resposta_coach)
+            setHints((previous) => ({
+                ...previous,
+                [questaoId]: resp.resposta_coach,
+            }))
         } catch (error) {
             console.error("Hint request error:", error)
-            setHintText("Não foi possível obter a dica no momento. Tente analisar as opções atentamente!")
+            setHints((previous) => ({
+                ...previous,
+                [questaoId]:
+                    "Não foi possível obter a dica no momento. Tente analisar as opções atentamente!",
+            }))
         } finally {
             setHintLoading(false)
         }
@@ -405,11 +364,26 @@ export function ExercisePage() {
         <>
             <ExerciseView
                 enunciado={questao?.enunciado ?? atividade.titulo}
+                stepLabel={
+                    isRetry
+                        ? `Revisão: questão ${currentIndex + 1} de ${totalQuestions}`
+                        : totalQuestions > 1
+                          ? `Questão ${currentIndex + 1} de ${totalQuestions}`
+                          : undefined
+                }
                 progress={progress}
-                submitDisabled={!isComplete}
+                submitLabel={isLastQuestion ? "Verificar" : "Próxima"}
+                submitDisabled={
+                    isLastQuestion ? !allComplete : !isCurrentComplete
+                }
                 submitting={submitting}
-                onClose={handleClose}
-                onSubmit={handleSubmit}
+                onClose={onClose}
+                onSubmit={handlePrimaryAction}
+                onBack={
+                    currentIndex > 0
+                        ? () => changeQuestion(currentIndex - 1)
+                        : undefined
+                }
             >
                 {submitError && (
                     <p
@@ -429,38 +403,48 @@ export function ExercisePage() {
                     </p>
                 )}
 
-                <div className="mt-6 flex flex-col items-center gap-3">
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setHintModalOpen(true)
-                            if (!hintText) handleRequestHint()
-                        }}
-                        className="flex items-center gap-1.5 text-xs font-semibold text-main-blue hover:underline"
-                    >
-                        💡 Precisa de uma dica da Vari?
-                    </button>
+                {questao && (
+                    <div className="mt-6 flex flex-col items-center gap-3">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setHintModalOpen(true)
+                                if (!hintText && !hintLoading)
+                                    void handleRequestHint()
+                            }}
+                            className="flex items-center gap-1.5 text-xs font-semibold text-main-blue hover:underline"
+                        >
+                            💡 Precisa de uma dica da Vari?
+                        </button>
 
-                    {hintModalOpen && (
-                        <div className="w-full max-w-md rounded-xl border border-sky-100 bg-sky-50/80 p-4 text-left shadow-sm">
-                            <div className="flex items-center justify-between pb-2">
-                                <span className="text-xs font-bold text-sky-900">Vari (Dica pedagógica):</span>
-                                <button
-                                    type="button"
-                                    onClick={() => setHintModalOpen(false)}
-                                    className="text-xs text-slate-400 hover:text-slate-600"
-                                >
-                                    ✕
-                                </button>
+                        {hintModalOpen && (
+                            <div className="w-full max-w-md rounded-xl border border-sky-100 bg-sky-50/80 p-4 text-left shadow-sm">
+                                <div className="flex items-center justify-between pb-2">
+                                    <span className="text-xs font-bold text-sky-900">
+                                        Vari (Dica pedagógica):
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setHintModalOpen(false)}
+                                        aria-label="Fechar dica"
+                                        className="text-xs text-slate-400 hover:text-slate-600"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                                {hintLoading && !hintText ? (
+                                    <p className="animate-pulse text-xs text-slate-500">
+                                        Vari está pensando na dica...
+                                    </p>
+                                ) : (
+                                    <p className="text-xs leading-relaxed whitespace-pre-wrap text-slate-700">
+                                        {hintText}
+                                    </p>
+                                )}
                             </div>
-                            {hintLoading ? (
-                                <p className="text-xs text-slate-500 animate-pulse">Vari está pensando na dica...</p>
-                            ) : (
-                                <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-wrap">{hintText}</p>
-                            )}
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
             </ExerciseView>
 
             {result && levelUpOpen && result.novo_nivel !== undefined && (
@@ -476,7 +460,7 @@ export function ExercisePage() {
                 <ActivityResultModal
                     open
                     result={result}
-                    onContinue={handleNext}
+                    onContinue={handleContinue}
                     onRetry={handleRetry}
                 />
             )}

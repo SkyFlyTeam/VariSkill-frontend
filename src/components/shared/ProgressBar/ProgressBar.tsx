@@ -23,7 +23,7 @@ export function ProgressBar({ value, className, ...props }: ProgressBarProps) {
         >
             <div
                 data-slot="progress-fill"
-                className="h-full rounded-full bg-[#b8b8b8] transition-[width] duration-500 ease-out"
+                className="h-full rounded-full bg-main-blue transition-[width] duration-500 ease-out"
                 style={{ width: `${clamped}%` }}
             />
         </div>
