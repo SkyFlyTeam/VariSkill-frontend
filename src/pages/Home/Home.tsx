@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 
 import { TrackCard } from "@/components/shared/TrackCard/TrackCard"
+import { UserLevelBar } from "@/components/shared/UserLevelBar/UserLevelBar"
 import { useAuth } from "@/contexts/authContext"
 import { InfoCard } from "@/pages/Home/components/InfoCard"
 import { api } from "@/services/api"
@@ -138,10 +139,11 @@ export function HomePage() {
     return (
         <main className="min-h-screen bg-[#e8ebef] px-4 py-6 text-slate-900 sm:px-7 sm:py-8">
             <div className="mx-auto max-w-[1210px]">
-                <header className="mb-6">
+                <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
                         Olá, {user?.nome || user?.apelido || "Estudante"}!
                     </h1>
+                    <UserLevelBar className="w-full sm:max-w-md" />
                 </header>
 
                 <section

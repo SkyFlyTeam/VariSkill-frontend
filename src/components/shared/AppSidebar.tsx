@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom"
 import { Home, UserRound } from "lucide-react"
 
 import { SairButton } from "@/components/shared/SairButton/SairButton"
+import { UserLevelBar } from "@/components/shared/UserLevelBar/UserLevelBar"
 import {
     Sidebar,
     SidebarContent,
@@ -36,6 +37,7 @@ export function AppSidebar() {
                         VariSkill
                     </span>
                 </div>
+                <UserLevelBar compact tone="dark" className="mt-4" />
             </SidebarHeader>
 
             <SidebarContent className="px-3">

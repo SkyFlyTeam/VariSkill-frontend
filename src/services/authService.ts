@@ -1,5 +1,14 @@
 import { api } from "@/services/api"
 
+export type ProgressoNivel = {
+    nivel: number
+    xp_atual: number
+    xp_min_faixa: number
+    xp_proximo_nivel: number
+    xp_restante: number
+    progresso_pct: number
+}
+
 export type User = {
     id: string
     apelido: string
@@ -11,6 +20,8 @@ export type User = {
     sexo?: "M" | "F" | null
     idade?: number | null
     interesses?: { id: string; nome: string }[]
+    nivel?: number
+    progresso_nivel?: ProgressoNivel
 }
 
 export type RegisterPayload = {
