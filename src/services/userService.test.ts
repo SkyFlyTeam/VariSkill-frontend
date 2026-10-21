@@ -9,6 +9,9 @@ const profile = {
     email: "ana@example.com",
     xp_total: 120,
     streak_dias: 3,
+    sexo: null,
+    idade: null,
+    interesses: [],
 }
 const fetchMock = jest.fn<ReturnType<typeof fetch>, Parameters<typeof fetch>>()
 const originalFetch = globalThis.fetch
@@ -42,12 +45,28 @@ it("lê o perfil pelo ID com campos literais do serializer", async () => {
     )
 })
 
-it("atualiza nome e apelido com PATCH e token CSRF", async () => {
-    const changes = { nome: "Ana Silva", apelido: "ana-silva" }
+it("carrega os interesses ativos", async () => {
+    const interesses = [{ id: "interesse-1", nome: "Python" }]
+    fetchMock.mockResolvedValue(json(interesses))
+    await expect(userService.getInterests()).resolves.toEqual(interesses)
+    expect(fetchMock).toHaveBeenCalledWith(
+        "/api/interesses/",
+        expect.objectContaining({ method: "GET", credentials: "include" }),
+    )
+})
+
+it("atualiza o perfil com PATCH em /users/me/ e token CSRF", async () => {
+    const changes = {
+        nome: "Ana Silva",
+        apelido: "ana-silva",
+        sexo: null,
+        idade: 25,
+        interesses_ids: ["interesse-1"],
+    }
     fetchMock.mockResolvedValue(json({ ...profile, ...changes }))
-    await userService.updateProfile(profile.id, changes)
+    await userService.updateProfile(changes)
     const [url, options] = fetchMock.mock.calls[0]
-    expect(url).toBe("/api/users/user-123/")
+    expect(url).toBe("/api/users/me/")
     expect(options).toMatchObject({
         method: "PATCH",
         body: JSON.stringify(changes),
@@ -105,9 +124,12 @@ it("propaga erro de validação do backend", async () => {
         json({ apelido: ["Este apelido já existe."] }, 400),
     )
     await expect(
-        userService.updateProfile(profile.id, {
+        userService.updateProfile({
             nome: "Ana",
             apelido: "duplicado",
+            sexo: null,
+            idade: null,
+            interesses_ids: [],
         }),
     ).rejects.toThrow("Este apelido já existe.")
 })
@@ -125,7 +147,13 @@ it.each([401, 403, 404, 500])(
 it("propaga falhas de rede sem simular sucesso", async () => {
     fetchMock.mockRejectedValue(new TypeError("Failed to fetch"))
     await expect(
-        userService.updateProfile(profile.id, { nome: "Ana", apelido: "ana" }),
+        userService.updateProfile({
+            nome: "Ana",
+            apelido: "ana",
+            sexo: null,
+            idade: null,
+            interesses_ids: [],
+        }),
     ).rejects.toThrow("Failed to fetch")
 })
 

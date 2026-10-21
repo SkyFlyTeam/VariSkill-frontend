@@ -8,6 +8,9 @@ export type User = {
     xp_total: number
     streak_dias: number
     is_primeiro_acesso?: boolean
+    sexo?: "M" | "F" | null
+    idade?: number | null
+    interesses?: { id: string; nome: string }[]
 }
 
 export type RegisterPayload = {
