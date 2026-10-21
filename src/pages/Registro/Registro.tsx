@@ -23,6 +23,7 @@ export function RegistroPage() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
+    const [aceiteTermos, setAceiteTermos] = useState(false)
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -37,6 +38,12 @@ export function RegistroPage() {
             email,
             password,
         })
+
+        if (!aceiteTermos) {
+            validationErrors.aceite_termos =
+                "Para se cadastrar, aceite os termos de uso."
+        }
+
         setFieldErrors(validationErrors)
 
         if (Object.keys(validationErrors).length > 0) {
@@ -46,7 +53,13 @@ export function RegistroPage() {
         setIsSubmitting(true)
 
         try {
-            await register({ nome, apelido, email, password })
+            await register({
+                nome,
+                apelido,
+                email,
+                password,
+                aceite_termos: aceiteTermos,
+            })
         } catch (requestError) {
             const apiFieldErrors = getFieldErrors(requestError)
 
@@ -179,6 +192,51 @@ export function RegistroPage() {
                     {fieldErrors.password && (
                         <p role="alert" className="text-xs text-destructive">
                             {fieldErrors.password}
+                        </p>
+                    )}
+                </div>
+
+                <div className="space-y-1.5">
+                    <div className="flex items-start gap-2.5">
+                        <input
+                            id="aceite-termos"
+                            type="checkbox"
+                            checked={aceiteTermos}
+                            onChange={(event) => {
+                                setAceiteTermos(event.target.checked)
+                                if (event.target.checked) {
+                                    setFieldErrors((previous) => {
+                                        const next = { ...previous }
+                                        delete next.aceite_termos
+                                        return next
+                                    })
+                                }
+                            }}
+                            aria-invalid={Boolean(fieldErrors.aceite_termos)}
+                            aria-label="Para se cadastrar aceite nossos termos de uso"
+                            className="mt-0.5 size-4 shrink-0 cursor-pointer rounded border-[#cad5e2] accent-vari"
+                        />
+                        <div className="text-[14px] leading-[20px] text-[#101828]">
+                            <label
+                                htmlFor="aceite-termos"
+                                className="cursor-pointer font-medium"
+                            >
+                                Para se cadastrar aceite nossos
+                            </label>{" "}
+                            <Link
+                                to="/termos"
+                                target="_blank"
+                                rel="noreferrer"
+                                className="font-bold text-vari hover:underline"
+                            >
+                                termos de uso
+                            </Link>
+                        </div>
+                    </div>
+
+                    {fieldErrors.aceite_termos && (
+                        <p role="alert" className="text-xs text-destructive">
+                            {fieldErrors.aceite_termos}
                         </p>
                     )}
                 </div>
