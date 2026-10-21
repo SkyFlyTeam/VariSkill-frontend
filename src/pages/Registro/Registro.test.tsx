@@ -34,6 +34,9 @@ describe("RegistroPage", () => {
             "href",
             "/login",
         )
+        expect(
+            screen.getByRole("link", { name: /termos de uso/i }),
+        ).toHaveAttribute("href", "/termos")
     })
 
     it("deve enviar os dados para a API ao cadastrar", async () => {
@@ -62,6 +65,7 @@ describe("RegistroPage", () => {
             "joe@example.com",
         )
         await user.type(screen.getByPlaceholderText("**********"), "secret")
+        await user.click(screen.getByRole("checkbox"))
         await user.click(screen.getByRole("button", { name: /cadastrar/i }))
 
         await waitFor(() =>
@@ -84,6 +88,7 @@ describe("RegistroPage", () => {
             apelido: "joe.doe",
             email: "joe@example.com",
             password: "secret",
+            aceite_termos: true,
         })
     })
 
@@ -108,6 +113,7 @@ describe("RegistroPage", () => {
             "joe@example.com",
         )
         await user.type(screen.getByPlaceholderText("**********"), "secret")
+        await user.click(screen.getByRole("checkbox"))
         await user.click(screen.getByRole("button", { name: /cadastrar/i }))
 
         expect(await screen.findByRole("alert")).toBeInTheDocument()
@@ -129,6 +135,35 @@ describe("RegistroPage", () => {
         expect(screen.getByText("Informe o apelido.")).toBeInTheDocument()
         expect(screen.getByText("Informe o email.")).toBeInTheDocument()
         expect(screen.getByText("Informe a senha.")).toBeInTheDocument()
+        expect(
+            screen.getByText("Para se cadastrar, aceite os termos de uso."),
+        ).toBeInTheDocument()
+        expect(
+            fetchMock.mock.calls.some(([url]) => url === "/api/register/"),
+        ).toBe(false)
+    })
+
+    it("não envia o cadastro sem aceitar os termos de uso", async () => {
+        const fetchMock = jest.fn()
+        globalThis.fetch = fetchMock as unknown as typeof fetch
+
+        const user = userEvent.setup()
+        renderWithProviders(<RegistroPage />)
+
+        await user.type(screen.getByPlaceholderText("Joe Doe"), "Joe Doe")
+        await user.type(screen.getByPlaceholderText("joe.doe"), "joe.doe")
+        await user.type(
+            screen.getByPlaceholderText("email@gmail.com"),
+            "joe@example.com",
+        )
+        await user.type(screen.getByPlaceholderText("**********"), "secret")
+        await user.click(screen.getByRole("button", { name: /cadastrar/i }))
+
+        expect(
+            await screen.findByText(
+                "Para se cadastrar, aceite os termos de uso.",
+            ),
+        ).toBeInTheDocument()
         expect(
             fetchMock.mock.calls.some(([url]) => url === "/api/register/"),
         ).toBe(false)
@@ -155,6 +190,7 @@ describe("RegistroPage", () => {
             "joe@example.com",
         )
         await user.type(screen.getByPlaceholderText("**********"), "secret")
+        await user.click(screen.getByRole("checkbox"))
         await user.click(screen.getByRole("button", { name: /cadastrar/i }))
 
         expect(await screen.findByText(/already exists/i)).toBeInTheDocument()
