@@ -95,7 +95,7 @@ describe("TrackCard", () => {
         ).toBeInTheDocument()
     })
 
-    it("mantém apenas uma parada de teclado por card disponível", async () => {
+    it("permite navegar por teclado entre o card e o botão de começar", async () => {
         const user = userEvent.setup()
         render(
             <MemoryRouter>
@@ -109,14 +109,22 @@ describe("TrackCard", () => {
             </MemoryRouter>,
         )
 
+        const startButtons = screen.getAllByRole("button", {
+            name: "Começar",
+        })
+
         await user.tab()
         expect(
-            screen.getByRole("link", { name: "Começar trilha Javascript" }),
+            screen.getByRole("link", { name: "Visualizar trilha Javascript" }),
         ).toHaveFocus()
         await user.tab()
+        expect(startButtons[0]).toHaveFocus()
+        await user.tab()
         expect(
-            screen.getByRole("link", { name: "Começar trilha React" }),
+            screen.getByRole("link", { name: "Visualizar trilha React" }),
         ).toHaveFocus()
+        await user.tab()
+        expect(startButtons[1]).toHaveFocus()
     })
 
     it.each([
