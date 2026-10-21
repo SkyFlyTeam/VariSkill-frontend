@@ -32,6 +32,11 @@ type EnviarMensagemResponse = {
         sugestoes_rapidas?: string[]
         acao?: string | null
         redirecionar_para?: string | null
+        dados_acao?: {
+            trilha_id?: string
+            atividade_id?: string
+            [chave: string]: unknown
+        } | null
         criada_em: string
     }
 }
@@ -41,15 +46,31 @@ const ROTULOS_ACAO: Record<string, string> = {
     INICIAR_TESTE_DIAGNOSTICO: "Iniciar teste de nivelamento",
     INICIAR_DO_INICIO: "Começar primeira atividade",
     MATRICULA_EXISTENTE: "Ir para a trilha",
+    PROXIMA_ATIVIDADE: "Ir para a próxima atividade",
+}
+
+function rotaDaAcao(
+    resposta: EnviarMensagemResponse["resposta_assistente"],
+): string | undefined {
+    if (resposta.redirecionar_para) return resposta.redirecionar_para
+
+    // PROXIMA_ATIVIDADE pode vir só com os ids em dados_acao.
+    const trilhaId = resposta.dados_acao?.trilha_id
+    const atividadeId = resposta.dados_acao?.atividade_id
+    if (resposta.acao === "PROXIMA_ATIVIDADE" && trilhaId && atividadeId) {
+        return `/trilhas/${encodeURIComponent(trilhaId)}/atividade/${encodeURIComponent(atividadeId)}`
+    }
+    return undefined
 }
 
 function acaoDaResposta(
     resposta: EnviarMensagemResponse["resposta_assistente"],
 ): ChatAction | undefined {
-    if (!resposta.redirecionar_para) return undefined
+    const href = rotaDaAcao(resposta)
+    if (!href) return undefined
     return {
         label: ROTULOS_ACAO[resposta.acao ?? ""] ?? "Continuar",
-        href: resposta.redirecionar_para,
+        href,
     }
 }
 

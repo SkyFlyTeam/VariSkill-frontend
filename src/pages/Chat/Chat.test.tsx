@@ -188,6 +188,108 @@ describe("ChatPage", () => {
         ).toBeInTheDocument()
     })
 
+    describe("ação PROXIMA_ATIVIDADE", () => {
+        function respostaProximaAtividade(
+            extras: Record<string, unknown>,
+        ) {
+            return {
+                resposta_assistente: {
+                    id: "msg-4",
+                    remetente: "ASSISTENTE",
+                    conteudo: "Sua próxima atividade é Variáveis em JS.",
+                    intencao_detectada: "PROXIMA_ATIVIDADE",
+                    acao: "PROXIMA_ATIVIDADE",
+                    criada_em: "2026-09-27T12:00:03Z",
+                    ...extras,
+                },
+            }
+        }
+
+        async function enviarEClicarNoBotao(resposta: object) {
+            const user = userEvent.setup()
+            mockedApi
+                .mockResolvedValueOnce(SESSAO)
+                .mockResolvedValueOnce(resposta)
+            render(
+                <MemoryRouter initialEntries={["/chat"]}>
+                    <Routes>
+                        <Route path="/chat" element={<ChatPage />} />
+                        <Route
+                            path="/trilhas/:trilhaId/atividade/:atividadeId"
+                            element={<p>Tela da atividade</p>}
+                        />
+                    </Routes>
+                </MemoryRouter>,
+            )
+
+            await screen.findByText(SESSAO.mensagem_inicial.conteudo)
+            await user.type(
+                screen.getByPlaceholderText("Digite sua dúvida..."),
+                "Qual minha próxima atividade?",
+            )
+            await user.click(
+                screen.getByRole("button", { name: "Enviar mensagem" }),
+            )
+            await user.click(
+                await screen.findByRole("button", {
+                    name: "Ir para a próxima atividade",
+                }),
+            )
+        }
+
+        it("deve navegar para a rota enviada em redirecionar_para", async () => {
+            await enviarEClicarNoBotao(
+                respostaProximaAtividade({
+                    redirecionar_para: "/trilhas/t-1/atividade/a-2",
+                    dados_acao: { trilha_id: "t-1", atividade_id: "a-2" },
+                }),
+            )
+
+            expect(
+                await screen.findByText("Tela da atividade"),
+            ).toBeInTheDocument()
+        })
+
+        it("deve montar a rota a partir de dados_acao quando não houver redirecionar_para", async () => {
+            await enviarEClicarNoBotao(
+                respostaProximaAtividade({
+                    redirecionar_para: null,
+                    dados_acao: { trilha_id: "t-1", atividade_id: "a-2" },
+                }),
+            )
+
+            expect(
+                await screen.findByText("Tela da atividade"),
+            ).toBeInTheDocument()
+        })
+
+        it("não deve exibir o botão sem rota nem ids da atividade", async () => {
+            const user = userEvent.setup()
+            mockedApi
+                .mockResolvedValueOnce(SESSAO)
+                .mockResolvedValueOnce(
+                    respostaProximaAtividade({ dados_acao: {} }),
+                )
+            renderPage()
+
+            await screen.findByText(SESSAO.mensagem_inicial.conteudo)
+            await user.type(
+                screen.getByPlaceholderText("Digite sua dúvida..."),
+                "Qual minha próxima atividade?",
+            )
+            await user.click(
+                screen.getByRole("button", { name: "Enviar mensagem" }),
+            )
+
+            await screen.findByText("Sua próxima atividade é Variáveis em JS.")
+            expect(
+                screen.queryByRole("button", {
+                    name: "Ir para a próxima atividade",
+                }),
+            ).not.toBeInTheDocument()
+        })
+    })
+
     it("deve exibir mensagem de erro quando o envio falhar", async () => {
         const user = userEvent.setup()
         mockedApi
