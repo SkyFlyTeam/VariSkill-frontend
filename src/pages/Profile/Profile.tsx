@@ -6,7 +6,7 @@ import {
     useState,
 } from "react"
 
-import { Camera, Lock, Pencil, User } from "lucide-react"
+import { Camera, ChevronDown, Lock, Pencil, User } from "lucide-react"
 
 import { useToast } from "@/components/shared/toast"
 import { Button } from "@/components/ui/button"
@@ -38,6 +38,20 @@ function Field({ id, label, children }: FieldProps) {
             <div className="relative">{children}</div>
         </div>
     )
+}
+
+function sanitizeIdade(value: string): string | null {
+    const digits = value.replace(/\D/g, "").slice(0, 3)
+
+    if (digits !== "" && Number(digits) > 120) return null
+
+    return digits
+}
+
+function normalizarIdadeInicial(value: number | null): string {
+    if (value === null || value < 10 || value > 120) return ""
+
+    return String(value)
 }
 
 export function ProfilePage() {
@@ -80,7 +94,7 @@ export function ProfilePage() {
                 setNome(data.nome)
                 setApelido(data.apelido)
                 setSexo(data.sexo ?? "")
-                setIdade(data.idade?.toString() ?? "")
+                setIdade(normalizarIdadeInicial(data.idade))
                 setInteresses(interessesDisponiveis)
                 setInteressesSelecionados(
                     data.interesses.map((interesse) => interesse.id),
@@ -159,7 +173,7 @@ export function ProfilePage() {
             setNome(updated.nome)
             setApelido(updated.apelido)
             setSexo(updated.sexo ?? "")
-            setIdade(updated.idade?.toString() ?? "")
+            setIdade(normalizarIdadeInicial(updated.idade))
             setInteressesSelecionados(
                 updated.interesses.map((interesse) => interesse.id),
             )
@@ -308,6 +322,10 @@ export function ProfilePage() {
                                 <option value="M">Masculino</option>
                                 <option value="F">Feminino</option>
                             </select>
+                            <ChevronDown
+                                aria-hidden="true"
+                                className="pointer-events-none absolute top-1/2 right-4 size-4 -translate-y-1/2 text-slate-500"
+                            />
                         </Field>
 
                         <Field id="idade" label="Idade">
@@ -319,11 +337,12 @@ export function ProfilePage() {
                                 maxLength={3}
                                 className={fieldClass}
                                 value={idade}
-                                onChange={(event) =>
-                                    setIdade(
-                                        event.target.value.replace(/\D/g, ""),
+                                onChange={(event) => {
+                                    const valor = sanitizeIdade(
+                                        event.target.value,
                                     )
-                                }
+                                    setIdade(valor ?? "")
+                                }}
                             />
                         </Field>
 

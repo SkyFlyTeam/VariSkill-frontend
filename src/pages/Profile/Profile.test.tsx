@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import { ProfilePage } from "@/pages/Profile/Profile"
@@ -140,5 +140,35 @@ describe("ProfilePage", () => {
             ),
         )
         expect(mockUpdateProfile).not.toHaveBeenCalled()
+    })
+
+    it("não aceita idade acima de 120 no campo", async () => {
+        render(<ProfilePage />)
+
+        await screen.findByRole("button", { name: "Python" })
+        const idadeInput = screen.getByLabelText("Idade")
+
+        fireEvent.change(idadeInput, {
+            target: { value: "2147483647" },
+        })
+        expect(idadeInput).toHaveValue("")
+
+        fireEvent.change(idadeInput, {
+            target: { value: "120" },
+        })
+        expect(idadeInput).toHaveValue("120")
+    })
+
+    it("não pré-preenche idade inválida vinda do perfil", async () => {
+        mockGetSession.mockResolvedValue({
+            ...profile,
+            idade: 2147483647,
+        })
+
+        render(<ProfilePage />)
+
+        await screen.findByRole("button", { name: "Python" })
+
+        expect(screen.getByLabelText("Idade")).toHaveValue("")
     })
 })
