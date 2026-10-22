@@ -146,12 +146,16 @@ export function ProfilePage() {
             return
         }
 
-        const idadeNumero = idade.trim() === "" ? null : Number(idade)
+        if (idade.trim() === "") {
+            toast.error("Informe a idade.")
+            return
+        }
+
+        const idadeNumero = Number(idade)
         if (
-            idadeNumero !== null &&
-            (!Number.isInteger(idadeNumero) ||
-                idadeNumero < 10 ||
-                idadeNumero > 120)
+            !Number.isInteger(idadeNumero) ||
+            idadeNumero < 10 ||
+            idadeNumero > 120
         ) {
             toast.error("A idade deve estar entre 10 e 120 anos.")
             return
@@ -335,6 +339,7 @@ export function ProfilePage() {
                                 inputMode="numeric"
                                 pattern="[0-9]*"
                                 maxLength={3}
+                                required
                                 className={fieldClass}
                                 value={idade}
                                 onChange={(event) => {
