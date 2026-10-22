@@ -30,6 +30,7 @@ export function UserLevelBar({
     const xpRestante =
         progresso?.xp_restante ?? Math.max(0, xpProximo - xpAtual)
     const progressoPct = progresso?.progresso_pct ?? 0
+
     const textoRestante = xpRestante === 1 ? "Falta" : "Faltam"
     const isDark = tone === "dark"
 
