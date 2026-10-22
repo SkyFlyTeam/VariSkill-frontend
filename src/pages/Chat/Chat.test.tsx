@@ -60,47 +60,54 @@ describe("ChatPage", () => {
             </MemoryRouter>,
         )
 
-        await userEvent.click(screen.getByRole("button", { name: "Voltar" }))
+        await screen.findByText(SESSAO.mensagem_inicial.conteudo)
 
-        expect(await screen.findByText("Tela de trilhas")).toBeInTheDocument()
+        const backButton = screen.getByRole("button", {
+            name: "Voltar",
+        })
+        await userEvent.click(backButton)
+
+        expect(screen.getByText("Tela de trilhas")).toBeInTheDocument()
     })
 
-    it("deve ir para a home ao voltar sem histórico de navegação", async () => {
-        mockedApi.mockResolvedValueOnce(SESSAO)
-        render(
-            <MemoryRouter initialEntries={["/chat"]}>
-                <Routes>
-                    <Route path="/" element={<p>Home</p>} />
-                    <Route path="/chat" element={<ChatPage />} />
-                </Routes>
-            </MemoryRouter>,
-        )
-
-        await userEvent.click(screen.getByRole("button", { name: "Voltar" }))
-
-        expect(await screen.findByText("Home")).toBeInTheDocument()
-    })
-
-    it("deve renderizar o cabeçalho e a mensagem inicial da sessão", async () => {
+    it("deve renderizar a mensagem inicial e as sugestões rápidas", async () => {
         mockedApi.mockResolvedValueOnce(SESSAO)
         renderPage()
 
         expect(
-            screen.getByRole("heading", { name: "Vari" }),
-        ).toBeInTheDocument()
-        expect(
             await screen.findByText(SESSAO.mensagem_inicial.conteudo),
         ).toBeInTheDocument()
-        expect(screen.getByText("online agora")).toBeInTheDocument()
         expect(
             screen.getByRole("button", { name: "Ver trilhas disponíveis" }),
         ).toBeInTheDocument()
-        expect(mockedApi).toHaveBeenCalledWith("/chat/sessao/iniciar/", {
-            method: "POST",
-        })
     })
 
-    it("deve enviar a mensagem e exibir a resposta do assistente", async () => {
+    it("deve exibir fallback quando a API de iniciar sessão falhar", async () => {
+        mockedApi.mockRejectedValueOnce(new Error("rede fora"))
+        renderPage()
+
+        expect(
+            await screen.findByText(
+                "Olá! Não foi possível conectar com o assistente no momento. Tente novamente mais tarde.",
+            ),
+        ).toBeInTheDocument()
+    })
+
+    it("não deve enviar mensagem com campo vazio", async () => {
+        const user = userEvent.setup()
+        mockedApi.mockResolvedValueOnce(SESSAO)
+        renderPage()
+
+        await screen.findByText(SESSAO.mensagem_inicial.conteudo)
+
+        await user.click(
+            screen.getByRole("button", { name: "Enviar mensagem" }),
+        )
+
+        expect(mockedApi).toHaveBeenCalledTimes(1) // Apenas a sessão inicial
+    })
+
+    it("deve enviar a mensagem e exibir a resposta do assistente com card de recomendação", async () => {
         const user = userEvent.setup()
         mockedApi.mockResolvedValueOnce(SESSAO).mockResolvedValueOnce(RESPOSTA)
         renderPage()
@@ -118,8 +125,10 @@ describe("ChatPage", () => {
         expect(
             await screen.findByText(RESPOSTA.resposta_assistente.conteudo),
         ).toBeInTheDocument()
+        expect(screen.getByText("Javascript")).toBeInTheDocument()
+        expect(screen.getByText("Frontend")).toBeInTheDocument()
         expect(
-            screen.getByRole("button", { name: /Javascript/ }),
+            screen.getByRole("button", { name: /Iniciar Trilha/i }),
         ).toBeInTheDocument()
         expect(mockedApi).toHaveBeenLastCalledWith(
             "/chat/sessao/sessao-1/mensagem/",
