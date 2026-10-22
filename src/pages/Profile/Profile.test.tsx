@@ -121,6 +121,18 @@ describe("ProfilePage", () => {
         )
     })
 
+    it("não salva quando a idade está vazia", async () => {
+        const user = userEvent.setup()
+        render(<ProfilePage />)
+
+        await screen.findByRole("button", { name: "Python" })
+        await user.click(screen.getByRole("button", { name: "Python" }))
+        await user.click(screen.getByRole("button", { name: "Salvar" }))
+
+        expect(mockToastError).toHaveBeenCalledWith("Informe a idade.")
+        expect(mockUpdateProfile).not.toHaveBeenCalled()
+    })
+
     it("bloqueia idade fora de 10 a 120", async () => {
         const user = userEvent.setup()
         render(<ProfilePage />)
