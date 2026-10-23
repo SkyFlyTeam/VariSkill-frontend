@@ -85,16 +85,15 @@ hospedagem, banco de dados e recursos de IA. Em especial:
 - **Infraestrutura de hospedagem e banco de dados:** armazenamento da aplicação e dos dados
   necessários ao funcionamento.
 
-O tratamento realizado por operadores é formalizado em **DPA/contrato de tratamento de
-dados** e em lista de subprocessadores, mantidos como **controle interno** do projeto.
+Este é um projeto acadêmico. O DPA interno é um exercício de documentação e simulação das
+regras da LGPD.
 
 ## 6. Transferência internacional
 
-O uso da IA externa pode envolver transferência internacional de dados pessoais. Essa
-transferência é realizada com base nas hipóteses dos arts. 33 a 36 da LGPD e com as
-salvaguardas contratuais aplicáveis. Ao aceitar estes termos, você é informado sobre essa
-possibilidade e sobre o uso da IA externa para dicas pedagógicas. Você pode solicitar mais
-informações pelo contato de privacidade.
+O uso da IA externa pode envolver transferência internacional de dados pessoais. O projeto
+simula os requisitos dos arts. 33 a 36 da LGPD e informa você sobre essa possibilidade e
+sobre o uso da IA externa para dicas pedagógicas. Você pode solicitar mais informações pelo
+contato de privacidade.
 
 ## 7. Cookies e armazenamento local
 
@@ -173,7 +172,7 @@ solicitaremos novo aceite.
 
 ## 14. Contato
 
-**Encarregado/Contato de privacidade:** skyfly.organization@gmail.com
+**Contato de privacidade:** skyfly.organization@gmail.com
 **Projeto:** VariSkill — Fatec São José dos Campos
 **Última atualização:** 20/10/2026
 
