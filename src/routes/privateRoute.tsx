@@ -29,7 +29,8 @@ export function PrivateRoute() {
     return (
         <SidebarProvider defaultOpen>
             <AppSidebar />
-            <SidebarInset>
+            {/* min-w-0: conteúdo largo (ex.: fileira de quick chips) rola dentro da página em vez de alargá-la. */}
+            <SidebarInset className="min-w-0">
                 <div className="flex items-center bg-[#001A3F] px-4 py-2 md:hidden sticky top-0 z-10">
                     <SidebarTrigger className="text-gray-50" />
                 </div>

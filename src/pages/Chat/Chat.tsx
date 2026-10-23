@@ -6,9 +6,14 @@ import { ChatHeader } from "@/pages/Chat/components/ChatHeader"
 import {
     type ChatAction,
     type ChatMessage,
-    type ChatOption,
+    type ChatTrack,
     MessageBubble,
 } from "@/pages/Chat/components/MessageBubble"
+import { QuickChips } from "@/pages/Chat/components/QuickChips"
+import {
+    type ReforcoPedagogico,
+    ReinforcementBanner,
+} from "@/pages/Chat/components/ReinforcementBanner"
 import { api } from "@/services/api"
 
 type SessaoResponse = {
@@ -18,6 +23,7 @@ type SessaoResponse = {
         remetente: string
         conteudo: string
         sugestoes_rapidas?: string[]
+        reforco_pedagogico?: ReforcoPedagogico | null
         criada_em: string
     }
 }
@@ -28,7 +34,7 @@ type EnviarMensagemResponse = {
         remetente: string
         conteudo: string
         intencao_detectada: string | null
-        opcoes_trilhas?: (ChatOption & { habilidade: string })[]
+        opcoes_trilhas?: ChatTrack[]
         sugestoes_rapidas?: string[]
         acao?: string | null
         redirecionar_para?: string | null
@@ -37,6 +43,7 @@ type EnviarMensagemResponse = {
             atividade_id?: string
             [chave: string]: unknown
         } | null
+        reforco_pedagogico?: ReforcoPedagogico | null
         criada_em: string
     }
 }
@@ -74,11 +81,33 @@ function acaoDaResposta(
     }
 }
 
+// Trilhas recomendadas viram chips "Iniciar trilha" que matriculam direto. Exceção: quando a Vari
+// pede para escolher a trilha de um fluxo (nivelamento, começar do zero), os chips do backend
+// carregam essa escolha e são mantidos.
+function opcoesDaResposta(
+    resposta: EnviarMensagemResponse["resposta_assistente"],
+): Pick<ChatMessage, "tracks" | "suggestions"> {
+    const tracks = resposta.opcoes_trilhas ?? []
+    if (tracks.length === 0 || resposta.acao === "SELECIONAR_TRILHA") {
+        return { suggestions: resposta.sugestoes_rapidas }
+    }
+    // Remove as sugestões que repetem uma trilha já oferecida como chip "Iniciar trilha".
+    const suggestions = resposta.sugestoes_rapidas?.filter(
+        (sugestao) => !tracks.some((t) => sugestao.includes(t.titulo)),
+    )
+    return {
+        tracks: tracks.map(({ id, titulo }) => ({ id, titulo })),
+        suggestions,
+    }
+}
+
 export function ChatPage() {
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [sessaoId, setSessaoId] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [sending, setSending] = useState(false)
+    const [reforco, setReforco] = useState<ReforcoPedagogico | null>(null)
+    const [startingTrackId, setStartingTrackId] = useState<string | null>(null)
     const bottomRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
     const location = useLocation()
@@ -99,6 +128,7 @@ export function ChatPage() {
             .then((sessao) => {
                 if (!active) return
                 setSessaoId(sessao.sessao_id)
+                setReforco(sessao.mensagem_inicial?.reforco_pedagogico ?? null)
                 setMessages([
                     {
                         id: sessao.mensagem_inicial?.id ?? "assistant-initial",
@@ -164,6 +194,10 @@ export function ChatPage() {
                     },
                 )
 
+            // Cada resposta traz o estado atual do reforço; ausente = backend sem o campo.
+            if (resposta.reforco_pedagogico !== undefined) {
+                setReforco(resposta.reforco_pedagogico)
+            }
             setMessages((curr) => [
                 ...curr,
                 {
@@ -172,8 +206,7 @@ export function ChatPage() {
                         resposta.conteudo ||
                         "Desculpe, não consegui entender. Pode reformular a pergunta?",
                     sender: "assistant",
-                    options: resposta.opcoes_trilhas,
-                    suggestions: resposta.sugestoes_rapidas,
+                    ...opcoesDaResposta(resposta),
                     action: acaoDaResposta(resposta),
                 },
             ])
@@ -191,7 +224,28 @@ export function ChatPage() {
         }
     }
 
+    // Mesmo comportamento do card de recomendação (VAR-99): matricula e abre a trilha;
+    // se já houver matrícula ou a API falhar, abre a trilha do mesmo jeito.
+    async function handleStartTrack(track: ChatTrack) {
+        setStartingTrackId(track.id)
+        try {
+            await api("/matriculas/", {
+                method: "POST",
+                body: JSON.stringify({ trilha_id: track.id }),
+            })
+        } catch {
+            // Já matriculado ou erro: segue para a trilha.
+        } finally {
+            setStartingTrackId(null)
+            navigate(`/trilhas/${encodeURIComponent(track.id)}`)
+        }
+    }
+
     const busy = loading || sending
+    // Só as opções da última resposta da Vari; somem enquanto a próxima não chega.
+    const lastMessage = messages.at(-1)
+    const lastAssistant =
+        lastMessage?.sender === "assistant" ? lastMessage : undefined
 
     return (
         <main className="flex h-[calc(100svh-2.75rem)] min-h-0 flex-col overflow-hidden bg-[#e8ebef] px-3 py-5 text-slate-900 sm:h-svh sm:px-10 sm:py-6">
@@ -208,25 +262,30 @@ export function ChatPage() {
                     }
                 />
 
+                {reforco && <ReinforcementBanner reforco={reforco} />}
+
                 <section
                     aria-label="Conversa com Vari"
                     className="min-h-0 flex-1 overflow-y-auto px-1 py-8 sm:px-3 sm:py-12"
                 >
                     <div className="flex flex-col gap-8">
                         {messages.map((message) => (
-                            <MessageBubble
-                                key={message.id}
-                                message={message}
-                                onSuggestionClick={
-                                    busy ? undefined : handleSend
-                                }
-                            />
+                            <MessageBubble key={message.id} message={message} />
                         ))}
                         <div ref={bottomRef} />
                     </div>
                 </section>
 
-                <div className="shrink-0">
+                <div className="flex shrink-0 flex-col gap-3">
+                    <QuickChips
+                        chips={lastAssistant?.suggestions ?? []}
+                        action={lastAssistant?.action}
+                        tracks={lastAssistant?.tracks}
+                        onStartTrack={handleStartTrack}
+                        startingTrackId={startingTrackId}
+                        onSelect={handleSend}
+                        disabled={busy}
+                    />
                     <ChatComposer onSend={handleSend} disabled={busy} />
                 </div>
             </div>
