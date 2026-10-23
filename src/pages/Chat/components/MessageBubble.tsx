@@ -10,6 +10,8 @@ export type ChatOption = {
     titulo: string
     habilidade?: string
     motivo?: string
+    total_modulos?: number
+    modulos?: unknown[]
 }
 
 export type ChatAction = {
@@ -78,6 +80,7 @@ export function MessageBubble({
                                     title={opt.titulo}
                                     skill={opt.habilidade || "Geral"}
                                     reason={opt.motivo}
+                                    totalModules={opt.total_modulos ?? opt.modulos?.length}
                                     loading={enrollingTrackId === opt.id}
                                     onStartTrack={handleStartTrack}
                                     compact

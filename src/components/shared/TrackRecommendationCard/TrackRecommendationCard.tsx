@@ -1,10 +1,11 @@
-import { Sparkles, ArrowRight, BookOpen } from "lucide-react"
+import { Sparkles, ArrowRight, BookOpen, Layers } from "lucide-react"
 
 export type TrackRecommendationCardProps = {
     id: string
     title: string
     skill: string
     reason?: string
+    totalModules?: number
     onStartTrack?: (id: string) => void | Promise<void>
     loading?: boolean
     compact?: boolean
@@ -15,6 +16,7 @@ export function TrackRecommendationCard({
     title,
     skill,
     reason,
+    totalModules,
     onStartTrack,
     loading = false,
     compact = false,
@@ -48,7 +50,16 @@ export function TrackRecommendationCard({
                 )}
             </div>
 
-            <div className="mt-3.5 pt-2 flex items-center justify-end">
+            <div className="mt-3.5 pt-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                    {typeof totalModules === "number" && (
+                        <span className="inline-flex items-center gap-1 font-medium">
+                            <Layers className="size-3.5 text-slate-400" />
+                            {totalModules} {totalModules === 1 ? "módulo" : "módulos"}
+                        </span>
+                    )}
+                </div>
+
                 <button
                     type="button"
                     disabled={loading}
@@ -68,4 +79,3 @@ export function TrackRecommendationCard({
         </div>
     )
 }
-
