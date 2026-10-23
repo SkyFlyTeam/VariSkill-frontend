@@ -3,7 +3,7 @@
 **Versão:** 1.0
 **Data:** 20/10/2026
 **Projeto:** VariSkill — Fatec São José dos Campos (2026-2)
-**Contato:** ivan.silva5@aluno.sp.gov.br
+**Contato:** skyfly.organization@gmail.com
 
 > Ao marcar a caixa **“Para se cadastrar aceite nossos termos de uso”**, você declara que
 > leu e concorda com este documento. Sem o aceite, o cadastro não é concluído.
@@ -17,7 +17,7 @@ aprendizagem por meio de trilhas, atividades, exercícios e um assistente virtua
 
 Para fins da Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD), a equipe do
 VariSkill atua como **controladora** dos dados pessoais tratados na plataforma. O contato
-para dúvidas e solicitações é **ivan.silva5@aluno.sp.gov.br**.
+para dúvidas e solicitações é **skyfly.organization@gmail.com**.
 
 ## 2. Quais dados tratamos
 
@@ -126,7 +126,7 @@ Nos termos dos arts. 17 a 22 da LGPD, você pode solicitar:
 - revisão de decisões tomadas unicamente com base em tratamento automatizado, quando
   aplicável.
 
-As solicitações podem ser feitas pelo e-mail **ivan.silva5@aluno.sp.gov.br**. Responderemos
+As solicitações podem ser feitas pelo e-mail **skyfly.organization@gmail.com**. Responderemos
 no prazo legal e sem custo para você.
 
 ## 10. Segurança
@@ -169,7 +169,7 @@ solicitaremos novo aceite.
 
 ## 14. Contato
 
-**Encarregado/Contato de privacidade:** ivan.silva5@aluno.sp.gov.br
+**Encarregado/Contato de privacidade:** skyfly.organization@gmail.com
 **Projeto:** VariSkill — Fatec São José dos Campos
 **Última atualização:** 20/10/2026
 
