@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 
 import { TrackCard } from "@/components/shared/TrackCard/TrackCard"
+import { TrackRecommendationCard } from "@/components/shared/TrackRecommendationCard"
 import { UserLevelBar } from "@/components/shared/UserLevelBar/UserLevelBar"
 import { useAuth } from "@/contexts/authContext"
 import { InfoCard } from "@/pages/Home/components/InfoCard"
@@ -43,6 +44,7 @@ export function HomePage() {
     const [trilhaProgresso, setTrilhaProgresso] = useState<Record<string, number>>({})
     const [modulosConcluidos, setModulosConcluidos] = useState<Record<string, number>>({})
     const [loading, setLoading] = useState(true)
+    const [enrollingTrackId, setEnrollingTrackId] = useState<string | null>(null)
 
     useEffect(() => {
         // Atualiza perfil (XP e streak) ao entrar na Home
@@ -85,6 +87,7 @@ export function HomePage() {
     }, [])
 
     async function handleStartTrack(trilhaId: string) {
+        setEnrollingTrackId(trilhaId)
         try {
             await api("/matriculas/", {
                 method: "POST",
@@ -92,8 +95,10 @@ export function HomePage() {
             })
         } catch {
             // Se já matriculado ou erro, continua navegação
+        } finally {
+            setEnrollingTrackId(null)
+            navigate(`/trilhas/${encodeURIComponent(trilhaId)}`)
         }
-        navigate(`/trilhas/${encodeURIComponent(trilhaId)}`)
     }
 
     const matriculadasIds = new Set(matriculas.map((m) => m.trilha_id))
@@ -104,6 +109,9 @@ export function HomePage() {
     const emAndamentoCount = matriculas.filter(
         (m) => m.status === "EM_ANDAMENTO" && (trilhaProgresso[m.trilha_id] ?? 0) < 100,
     ).length
+
+    // Trilha em destaque para recomendação: primeira trilha disponível
+    const trilhaRecomendada = trilhasDisponiveis.length > 0 ? trilhasDisponiveis[0] : null
 
     const infoCards = [
         {
@@ -206,6 +214,25 @@ export function HomePage() {
                         </div>
                     )}
                 </section>
+
+                {trilhaRecomendada && (
+                    <section className="mt-7" aria-label="Recomendação de trilha">
+                        <div className="mb-3 flex items-center gap-2">
+                            <h2 className="text-lg font-bold">Recomendado para você</h2>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            <TrackRecommendationCard
+                                id={trilhaRecomendada.id}
+                                title={trilhaRecomendada.titulo}
+                                skill={trilhaRecomendada.habilidade}
+                                reason={trilhaRecomendada.descricao || "Trilha selecionada com base nas suas preferências e jornada de estudo no VariSkill."}
+                                totalModules={trilhaRecomendada.total_modulos}
+                                loading={enrollingTrackId === trilhaRecomendada.id}
+                                onStartTrack={handleStartTrack}
+                            />
+                        </div>
+                    </section>
+                )}
 
                 <section className="mt-8 pb-4">
                     <h2 className="mb-4 text-lg font-bold">
