@@ -29,6 +29,16 @@ describe("TrackRecommendationCard", () => {
         ).toBeInTheDocument()
     })
 
+    it("deve exibir a quantidade de módulos quando totalModules for fornecido", () => {
+        const { rerender } = render(
+            <TrackRecommendationCard {...mockProps} totalModules={1} />,
+        )
+        expect(screen.getByText("1 módulo")).toBeInTheDocument()
+
+        rerender(<TrackRecommendationCard {...mockProps} totalModules={5} />)
+        expect(screen.getByText("5 módulos")).toBeInTheDocument()
+    })
+
     it("deve chamar onStartTrack com o id correto ao clicar no botão", () => {
         render(<TrackRecommendationCard {...mockProps} />)
 
@@ -47,4 +57,3 @@ describe("TrackRecommendationCard", () => {
         expect(screen.getByText("Iniciando...")).toBeInTheDocument()
     })
 })
-

@@ -168,22 +168,6 @@ export function HomePage() {
                     ))}
                 </section>
 
-                {trilhaRecomendada && (
-                    <section className="mt-7" aria-label="Recomendação de trilha">
-                        <div className="mb-3 flex items-center gap-2">
-                            <h2 className="text-lg font-bold">Recomendado para você</h2>
-                        </div>
-                        <TrackRecommendationCard
-                            id={trilhaRecomendada.id}
-                            title={trilhaRecomendada.titulo}
-                            skill={trilhaRecomendada.habilidade}
-                            reason={trilhaRecomendada.descricao || "Trilha selecionada com base nas suas preferências e jornada de estudo no VariSkill."}
-                            loading={enrollingTrackId === trilhaRecomendada.id}
-                            onStartTrack={handleStartTrack}
-                        />
-                    </section>
-                )}
-
                 <section className="mt-7">
                     <div className="mb-4 flex items-center gap-2">
                         <h2 className="text-lg font-bold">Minhas trilhas</h2>
@@ -230,6 +214,25 @@ export function HomePage() {
                         </div>
                     )}
                 </section>
+
+                {trilhaRecomendada && (
+                    <section className="mt-7" aria-label="Recomendação de trilha">
+                        <div className="mb-3 flex items-center gap-2">
+                            <h2 className="text-lg font-bold">Recomendado para você</h2>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            <TrackRecommendationCard
+                                id={trilhaRecomendada.id}
+                                title={trilhaRecomendada.titulo}
+                                skill={trilhaRecomendada.habilidade}
+                                reason={trilhaRecomendada.descricao || "Trilha selecionada com base nas suas preferências e jornada de estudo no VariSkill."}
+                                totalModules={trilhaRecomendada.total_modulos}
+                                loading={enrollingTrackId === trilhaRecomendada.id}
+                                onStartTrack={handleStartTrack}
+                            />
+                        </div>
+                    </section>
+                )}
 
                 <section className="mt-8 pb-4">
                     <h2 className="mb-4 text-lg font-bold">
