@@ -1,6 +1,6 @@
 import { MemoryRouter, Route, Routes } from "react-router-dom"
 
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import { ChatPage } from "@/pages/Chat/Chat"
@@ -32,6 +32,7 @@ const RESPOSTA = {
         opcoes_trilhas: [
             { id: "trilha-1", titulo: "Javascript", habilidade: "Frontend" },
         ],
+        sugestoes_rapidas: ["Quero me matricular na trilha Javascript"],
         criada_em: "2026-09-27T12:00:01Z",
     },
 }
@@ -107,7 +108,7 @@ describe("ChatPage", () => {
         expect(mockedApi).toHaveBeenCalledTimes(1) // Apenas a sessão inicial
     })
 
-    it("deve enviar a mensagem e exibir a resposta do assistente com card de recomendação", async () => {
+    it("deve enviar a mensagem e exibir as opções da resposta apenas no rodapé", async () => {
         const user = userEvent.setup()
         mockedApi.mockResolvedValueOnce(SESSAO).mockResolvedValueOnce(RESPOSTA)
         renderPage()
@@ -125,11 +126,18 @@ describe("ChatPage", () => {
         expect(
             await screen.findByText(RESPOSTA.resposta_assistente.conteudo),
         ).toBeInTheDocument()
-        expect(screen.getByText("Javascript")).toBeInTheDocument()
-        expect(screen.getByText("Frontend")).toBeInTheDocument()
+        // A trilha vira chip "Iniciar trilha" no rodapé; a sugestão repetida da mesma trilha sai.
+        const rodape = screen.getByRole("group", { name: "Sugestões rápidas" })
         expect(
-            screen.getByRole("button", { name: /Iniciar Trilha/i }),
+            within(rodape).getByRole("button", {
+                name: "Iniciar trilha Javascript",
+            }),
         ).toBeInTheDocument()
+        expect(
+            screen.queryByRole("button", {
+                name: "Quero me matricular na trilha Javascript",
+            }),
+        ).not.toBeInTheDocument()
         expect(mockedApi).toHaveBeenLastCalledWith(
             "/chat/sessao/sessao-1/mensagem/",
             {
@@ -187,14 +195,143 @@ describe("ChatPage", () => {
             screen.getByRole("button", { name: "Enviar mensagem" }),
         )
 
+        const acao = await screen.findByRole("button", {
+            name: "Começar primeira atividade",
+        })
+        const rodape = screen.getByRole("group", { name: "Sugestões rápidas" })
+        // Ação e sugestões ficam juntas no rodapé, com a ação em primeiro.
+        expect(within(rodape).getAllByRole("button")[0]).toBe(acao)
         expect(
-            await screen.findByRole("button", {
-                name: "Começar primeira atividade",
+            within(rodape).getByRole("button", {
+                name: "Pode me dar uma dica?",
             }),
         ).toBeInTheDocument()
-        expect(
-            screen.getByRole("button", { name: "Pode me dar uma dica?" }),
-        ).toBeInTheDocument()
+    })
+
+    describe("quick chips", () => {
+        it("deve exibir no rodapé apenas as sugestões da última resposta", async () => {
+            const user = userEvent.setup()
+            mockedApi.mockResolvedValueOnce(SESSAO).mockResolvedValueOnce({
+                resposta_assistente: {
+                    ...RESPOSTA.resposta_assistente,
+                    sugestoes_rapidas: ["Quero me matricular"],
+                },
+            })
+            renderPage()
+
+            const chips = await screen.findByRole("group", {
+                name: "Sugestões rápidas",
+            })
+            await user.click(
+                within(chips).getByRole("button", {
+                    name: "Ver trilhas disponíveis",
+                }),
+            )
+
+            const novosChips = await screen.findByRole("button", {
+                name: "Quero me matricular",
+            })
+            expect(
+                screen.getByRole("group", { name: "Sugestões rápidas" }),
+            ).toContainElement(novosChips)
+            expect(
+                screen.queryByRole("button", {
+                    name: "Ver trilhas disponíveis",
+                }),
+            ).not.toBeInTheDocument()
+        })
+
+        it("deve esconder os chips enquanto aguarda a resposta", async () => {
+            const user = userEvent.setup()
+            mockedApi
+                .mockResolvedValueOnce(SESSAO)
+                .mockReturnValueOnce(new Promise(() => {}))
+            renderPage()
+
+            await user.click(
+                await screen.findByRole("button", {
+                    name: "Ver trilhas disponíveis",
+                }),
+            )
+
+            expect(
+                screen.queryByRole("group", { name: "Sugestões rápidas" }),
+            ).not.toBeInTheDocument()
+            expect(screen.getByText("digitando...")).toBeInTheDocument()
+        })
+    })
+
+    describe("banner de reforço pedagógico", () => {
+        const REFORCO = {
+            modulo_id: "modulo-1",
+            titulo: "Funções e Escopo",
+            taxa_acerto: 33.3,
+        }
+
+        it("deve exibir o banner quando a sessão indicar reforço", async () => {
+            mockedApi.mockResolvedValueOnce({
+                ...SESSAO,
+                mensagem_inicial: {
+                    ...SESSAO.mensagem_inicial,
+                    reforco_pedagogico: REFORCO,
+                },
+            })
+            renderPage()
+
+            const banner = await screen.findByRole("status")
+            expect(banner).toHaveTextContent("Momento de reforço:")
+            expect(banner).toHaveTextContent("Funções e Escopo")
+            expect(banner).toHaveTextContent("33% de acertos")
+        })
+
+        it("não deve exibir o banner sem reforço", async () => {
+            mockedApi.mockResolvedValueOnce({
+                ...SESSAO,
+                mensagem_inicial: {
+                    ...SESSAO.mensagem_inicial,
+                    reforco_pedagogico: null,
+                },
+            })
+            renderPage()
+
+            await screen.findByText(SESSAO.mensagem_inicial.conteudo)
+            expect(screen.queryByRole("status")).not.toBeInTheDocument()
+        })
+
+        it("deve atualizar o banner conforme a resposta do assistente", async () => {
+            const user = userEvent.setup()
+            mockedApi
+                .mockResolvedValueOnce(SESSAO)
+                .mockResolvedValueOnce({
+                    resposta_assistente: {
+                        ...RESPOSTA.resposta_assistente,
+                        reforco_pedagogico: REFORCO,
+                    },
+                })
+                .mockResolvedValueOnce({
+                    resposta_assistente: {
+                        ...RESPOSTA.resposta_assistente,
+                        id: "msg-5",
+                        reforco_pedagogico: null,
+                    },
+                })
+            renderPage()
+
+            await screen.findByText(SESSAO.mensagem_inicial.conteudo)
+            expect(screen.queryByRole("status")).not.toBeInTheDocument()
+
+            const input = screen.getByPlaceholderText("Digite sua dúvida...")
+            await user.type(input, "Oi{Enter}")
+            expect(await screen.findByRole("status")).toHaveTextContent(
+                "Funções e Escopo",
+            )
+
+            await user.type(input, "Tudo certo{Enter}")
+            await screen.findByText("Tudo certo")
+            await waitFor(() =>
+                expect(screen.queryByRole("status")).not.toBeInTheDocument(),
+            )
+        })
     })
 
     describe("ação PROXIMA_ATIVIDADE", () => {
@@ -294,6 +431,75 @@ describe("ChatPage", () => {
             expect(
                 screen.queryByRole("button", {
                     name: "Ir para a próxima atividade",
+                }),
+            ).not.toBeInTheDocument()
+        })
+    })
+
+    describe("trilhas recomendadas", () => {
+        it("deve matricular e abrir a trilha ao clicar em Iniciar trilha", async () => {
+            const user = userEvent.setup()
+            mockedApi
+                .mockResolvedValueOnce(SESSAO)
+                .mockResolvedValueOnce(RESPOSTA)
+                .mockResolvedValueOnce({})
+            render(
+                <MemoryRouter initialEntries={["/chat"]}>
+                    <Routes>
+                        <Route path="/chat" element={<ChatPage />} />
+                        <Route
+                            path="/trilhas/:id"
+                            element={<p>Tela da trilha</p>}
+                        />
+                    </Routes>
+                </MemoryRouter>,
+            )
+
+            await user.click(
+                await screen.findByRole("button", {
+                    name: "Ver trilhas disponíveis",
+                }),
+            )
+            await user.click(
+                await screen.findByRole("button", {
+                    name: "Iniciar trilha Javascript",
+                }),
+            )
+
+            expect(await screen.findByText("Tela da trilha")).toBeInTheDocument()
+            expect(mockedApi).toHaveBeenLastCalledWith("/matriculas/", {
+                method: "POST",
+                body: JSON.stringify({ trilha_id: "trilha-1" }),
+            })
+        })
+
+        it("deve manter os chips do backend quando a Vari pede para escolher a trilha de um fluxo", async () => {
+            const user = userEvent.setup()
+            mockedApi.mockResolvedValueOnce(SESSAO).mockResolvedValueOnce({
+                resposta_assistente: {
+                    ...RESPOSTA.resposta_assistente,
+                    acao: "SELECIONAR_TRILHA",
+                    sugestoes_rapidas: [
+                        "Quero fazer o teste de nivelamento da trilha Javascript",
+                    ],
+                },
+            })
+            renderPage()
+
+            await user.click(
+                await screen.findByRole("button", {
+                    name: "Ver trilhas disponíveis",
+                }),
+            )
+
+            expect(
+                await screen.findByRole("button", {
+                    name: "Quero fazer o teste de nivelamento da trilha Javascript",
+                }),
+            ).toBeInTheDocument()
+            expect(
+                screen.queryByRole("button", {
+                    name: "Iniciar trilha Javascript",
                 }),
             ).not.toBeInTheDocument()
         })
