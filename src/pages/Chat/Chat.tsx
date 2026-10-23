@@ -9,6 +9,11 @@ import {
     type ChatOption,
     MessageBubble,
 } from "@/pages/Chat/components/MessageBubble"
+import { QuickChips } from "@/pages/Chat/components/QuickChips"
+import {
+    type ReforcoPedagogico,
+    ReinforcementBanner,
+} from "@/pages/Chat/components/ReinforcementBanner"
 import { api } from "@/services/api"
 
 type SessaoResponse = {
@@ -18,6 +23,7 @@ type SessaoResponse = {
         remetente: string
         conteudo: string
         sugestoes_rapidas?: string[]
+        reforco_pedagogico?: ReforcoPedagogico | null
         criada_em: string
     }
 }
@@ -32,6 +38,7 @@ type EnviarMensagemResponse = {
         sugestoes_rapidas?: string[]
         acao?: string | null
         redirecionar_para?: string | null
+        reforco_pedagogico?: ReforcoPedagogico | null
         criada_em: string
     }
 }
@@ -58,6 +65,7 @@ export function ChatPage() {
     const [sessaoId, setSessaoId] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [sending, setSending] = useState(false)
+    const [reforco, setReforco] = useState<ReforcoPedagogico | null>(null)
     const bottomRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
     const location = useLocation()
@@ -78,6 +86,7 @@ export function ChatPage() {
             .then((sessao) => {
                 if (!active) return
                 setSessaoId(sessao.sessao_id)
+                setReforco(sessao.mensagem_inicial?.reforco_pedagogico ?? null)
                 setMessages([
                     {
                         id: sessao.mensagem_inicial?.id ?? "assistant-initial",
@@ -143,6 +152,10 @@ export function ChatPage() {
                     },
                 )
 
+            // Cada resposta traz o estado atual do reforço; ausente = backend sem o campo.
+            if (resposta.reforco_pedagogico !== undefined) {
+                setReforco(resposta.reforco_pedagogico)
+            }
             setMessages((curr) => [
                 ...curr,
                 {
@@ -171,6 +184,12 @@ export function ChatPage() {
     }
 
     const busy = loading || sending
+    // Só as sugestões da última resposta da Vari; somem enquanto a próxima não chega.
+    const lastMessage = messages.at(-1)
+    const quickChips =
+        lastMessage?.sender === "assistant"
+            ? (lastMessage.suggestions ?? [])
+            : []
 
     return (
         <main className="flex h-[calc(100svh-2.75rem)] min-h-0 flex-col overflow-hidden bg-[#e8ebef] px-3 py-5 text-slate-900 sm:h-svh sm:px-10 sm:py-6">
@@ -187,25 +206,26 @@ export function ChatPage() {
                     }
                 />
 
+                {reforco && <ReinforcementBanner reforco={reforco} />}
+
                 <section
                     aria-label="Conversa com Vari"
                     className="min-h-0 flex-1 overflow-y-auto px-1 py-8 sm:px-3 sm:py-12"
                 >
                     <div className="flex flex-col gap-8">
                         {messages.map((message) => (
-                            <MessageBubble
-                                key={message.id}
-                                message={message}
-                                onSuggestionClick={
-                                    busy ? undefined : handleSend
-                                }
-                            />
+                            <MessageBubble key={message.id} message={message} />
                         ))}
                         <div ref={bottomRef} />
                     </div>
                 </section>
 
-                <div className="shrink-0">
+                <div className="flex shrink-0 flex-col gap-3">
+                    <QuickChips
+                        chips={quickChips}
+                        onSelect={handleSend}
+                        disabled={busy}
+                    />
                     <ChatComposer onSend={handleSend} disabled={busy} />
                 </div>
             </div>
