@@ -7,6 +7,10 @@
 
 > Ao marcar a caixa **“Para se cadastrar aceite nossos termos de uso”**, você declara que
 > leu e concorda com este documento. Sem o aceite, o cadastro não é concluído.
+>
+> O aceite é único e abrange o tratamento dos dados de cadastro, dos dados adicionais de
+> perfil (sexo, idade e interesses) e o uso da IA externa para dicas pedagógicas, conforme
+> as finalidades e bases legais descritas abaixo.
 
 ## 1. Quem somos
 
@@ -24,8 +28,8 @@ para dúvidas e solicitações é **skyfly.organization@gmail.com**.
 A plataforma pode tratar os seguintes dados:
 
 - **Cadastro e identificação:** nome, apelido, e-mail e senha (armazenada apenas como hash).
-- **Dados opcionais de personalização:** sexo, idade e interesses, quando você decide
-  informá-los.
+- **Dados adicionais de perfil:** sexo, idade e interesses, usados para personalizar sua
+  experiência. O aceite dos Termos cobre o tratamento desses dados.
 - **Dados de aprendizagem:** matrículas, trilhas, módulos, atividades, respostas, execuções,
   pontuações, XP, streak e progresso.
 - **Conversas com o Vari:** mensagens enviadas por você e respostas do assistente.
@@ -47,7 +51,7 @@ Tratamos os dados para:
 - criar e manter sua conta;
 - autenticar seu acesso e proteger a plataforma;
 - entregar as trilhas, atividades, correções e o progresso pedagógico;
-- personalizar a experiência com os dados opcionais que você autorizar;
+- personalizar a experiência com os dados adicionais de perfil;
 - responder dúvidas e fornecer dicas pedagógicas;
 - calcular XP, níveis e streak;
 - produzir feedback e diagnóstico de erros;
@@ -60,9 +64,9 @@ Conforme a LGPD, cada tratamento precisa de uma base legal. No VariSkill:
 
 - **Execução de contrato ou procedimentos preliminares** (art. 7º, V): cadastro, login,
   manutenção da conta e entrega das funcionalidades pedagógicas.
-- **Consentimento** (art. 7º, I): dados opcionais de personalização, foto de perfil, uso de
-  IA externa e comunicações de marketing, quando aplicáveis. O consentimento pode ser
-  revogado a qualquer momento.
+- **Consentimento** (art. 7º, I): dados adicionais de perfil (sexo, idade e interesses) e
+  uso de IA externa para dicas pedagógicas. O aceite único dos Termos cobre esses
+  tratamentos e pode ser revogado pela exclusão da conta ou pelo contato de privacidade.
 - **Legítimo interesse** (art. 7º, IX): segurança, prevenção a fraudes, logs e melhoria do
   serviço, com avaliação de necessidade e balanceamento.
 - **Cumprimento de obrigação legal ou regulatória** (art. 7º, II), quando aplicável.
@@ -88,9 +92,9 @@ dados** e em lista de subprocessadores, mantidos como **controle interno** do pr
 
 O uso da IA externa pode envolver transferência internacional de dados pessoais. Essa
 transferência é realizada com base nas hipóteses dos arts. 33 a 36 da LGPD e com as
-salvaguardas contratuais aplicáveis. Ao aceitar estes termos e usar os recursos de IA, você é
-informado sobre essa possibilidade. Você pode solicitar mais informações pelo contato de
-privacidade.
+salvaguardas contratuais aplicáveis. Ao aceitar estes termos, você é informado sobre essa
+possibilidade e sobre o uso da IA externa para dicas pedagógicas. Você pode solicitar mais
+informações pelo contato de privacidade.
 
 ## 7. Cookies e armazenamento local
 
