@@ -77,46 +77,41 @@ it("atualiza o perfil com PATCH em /users/me/ e token CSRF", async () => {
     )
 })
 
-it("confirma senha atual antes do PATCH e usa o CSRF rotacionado no login", async () => {
-    fetchMock
-        .mockResolvedValueOnce(json(profile))
-        .mockImplementationOnce(async () => {
-            cookieDocument.cookie = "csrftoken=rotated-token"
-            return json(profile)
-        })
-        .mockResolvedValueOnce(json(profile))
+it("envia a senha atual para a rota de alteração de senha", async () => {
+    fetchMock.mockResolvedValue(new Response(null, { status: 204 }))
+
     await userService.changePassword({
         senhaAtual: "old-pass",
         novaSenha: "new-pass",
     })
-    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
-        "/api/users/me/",
-        "/api/login/",
-        "/api/users/user-123/",
-    ])
-    expect(fetchMock.mock.calls[1][1]).toMatchObject({
+
+    const [url, options] = fetchMock.mock.calls[0]
+    expect(url).toBe("/api/users/me/alterar-senha/")
+    expect(options).toMatchObject({
         method: "POST",
-        body: JSON.stringify({ apelido: "ana", password: "old-pass" }),
+        body: JSON.stringify({
+            senha_atual: "old-pass",
+            nova_senha: "new-pass",
+        }),
+        credentials: "include",
     })
-    const patch = fetchMock.mock.calls[2][1]
-    expect(patch).toMatchObject({
-        method: "PATCH",
-        body: JSON.stringify({ password: "new-pass" }),
-    })
-    expect(new Headers(patch?.headers).get("X-CSRFToken")).toBe("rotated-token")
+    expect(new Headers(options?.headers).get("X-CSRFToken")).toBe(
+        "initial-token",
+    )
 })
 
-it("não envia PATCH se a senha atual estiver errada", async () => {
-    fetchMock
-        .mockResolvedValueOnce(json(profile))
-        .mockResolvedValueOnce(json({ detail: "Invalid credentials." }, 400))
+it("propaga erro quando a senha atual está incorreta", async () => {
+    fetchMock.mockResolvedValue(
+        json({ senha_atual: ["Senha atual incorreta."] }, 400),
+    )
+
     await expect(
         userService.changePassword({
             senhaAtual: "wrong",
             novaSenha: "new-pass",
         }),
     ).rejects.toThrow("Senha atual incorreta.")
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
 })
 
 it("propaga erro de validação do backend", async () => {
