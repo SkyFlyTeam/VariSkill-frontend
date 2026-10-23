@@ -4,6 +4,10 @@
 
 server_tokens off;
 
+# Logs sem IP, query string, referer ou user-agent. A rotação/retenção do
+# arquivo é responsabilidade do ambiente de deploy.
+log_format privacy '$time_iso8601 "$request_method $uri $server_protocol" $status $body_bytes_sent';
+
 gzip on;
 gzip_vary on;
 gzip_proxied any;
@@ -19,6 +23,8 @@ limit_req_status 429;
 server {
     listen 80;
     server_name _;
+
+    access_log /var/log/nginx/access.log privacy;
 
     root /usr/share/nginx/html;
     index index.html;
