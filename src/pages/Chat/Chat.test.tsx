@@ -1,6 +1,6 @@
 import { MemoryRouter, Route, Routes } from "react-router-dom"
 
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import { ChatPage } from "@/pages/Chat/Chat"
@@ -186,6 +186,132 @@ describe("ChatPage", () => {
         expect(
             screen.getByRole("button", { name: "Pode me dar uma dica?" }),
         ).toBeInTheDocument()
+    })
+
+    describe("quick chips", () => {
+        it("deve exibir no rodapé apenas as sugestões da última resposta", async () => {
+            const user = userEvent.setup()
+            mockedApi.mockResolvedValueOnce(SESSAO).mockResolvedValueOnce({
+                resposta_assistente: {
+                    ...RESPOSTA.resposta_assistente,
+                    sugestoes_rapidas: ["Quero me matricular"],
+                },
+            })
+            renderPage()
+
+            const chips = await screen.findByRole("group", {
+                name: "Sugestões rápidas",
+            })
+            await user.click(
+                within(chips).getByRole("button", {
+                    name: "Ver trilhas disponíveis",
+                }),
+            )
+
+            const novosChips = await screen.findByRole("button", {
+                name: "Quero me matricular",
+            })
+            expect(
+                screen.getByRole("group", { name: "Sugestões rápidas" }),
+            ).toContainElement(novosChips)
+            expect(
+                screen.queryByRole("button", {
+                    name: "Ver trilhas disponíveis",
+                }),
+            ).not.toBeInTheDocument()
+        })
+
+        it("deve esconder os chips enquanto aguarda a resposta", async () => {
+            const user = userEvent.setup()
+            mockedApi
+                .mockResolvedValueOnce(SESSAO)
+                .mockReturnValueOnce(new Promise(() => {}))
+            renderPage()
+
+            await user.click(
+                await screen.findByRole("button", {
+                    name: "Ver trilhas disponíveis",
+                }),
+            )
+
+            expect(
+                screen.queryByRole("group", { name: "Sugestões rápidas" }),
+            ).not.toBeInTheDocument()
+            expect(screen.getByText("digitando...")).toBeInTheDocument()
+        })
+    })
+
+    describe("banner de reforço pedagógico", () => {
+        const REFORCO = {
+            modulo_id: "modulo-1",
+            titulo: "Funções e Escopo",
+            taxa_acerto: 33.3,
+        }
+
+        it("deve exibir o banner quando a sessão indicar reforço", async () => {
+            mockedApi.mockResolvedValueOnce({
+                ...SESSAO,
+                mensagem_inicial: {
+                    ...SESSAO.mensagem_inicial,
+                    reforco_pedagogico: REFORCO,
+                },
+            })
+            renderPage()
+
+            const banner = await screen.findByRole("status")
+            expect(banner).toHaveTextContent("Momento de reforço:")
+            expect(banner).toHaveTextContent("Funções e Escopo")
+            expect(banner).toHaveTextContent("33% de acertos")
+        })
+
+        it("não deve exibir o banner sem reforço", async () => {
+            mockedApi.mockResolvedValueOnce({
+                ...SESSAO,
+                mensagem_inicial: {
+                    ...SESSAO.mensagem_inicial,
+                    reforco_pedagogico: null,
+                },
+            })
+            renderPage()
+
+            await screen.findByText(SESSAO.mensagem_inicial.conteudo)
+            expect(screen.queryByRole("status")).not.toBeInTheDocument()
+        })
+
+        it("deve atualizar o banner conforme a resposta do assistente", async () => {
+            const user = userEvent.setup()
+            mockedApi
+                .mockResolvedValueOnce(SESSAO)
+                .mockResolvedValueOnce({
+                    resposta_assistente: {
+                        ...RESPOSTA.resposta_assistente,
+                        reforco_pedagogico: REFORCO,
+                    },
+                })
+                .mockResolvedValueOnce({
+                    resposta_assistente: {
+                        ...RESPOSTA.resposta_assistente,
+                        id: "msg-5",
+                        reforco_pedagogico: null,
+                    },
+                })
+            renderPage()
+
+            await screen.findByText(SESSAO.mensagem_inicial.conteudo)
+            expect(screen.queryByRole("status")).not.toBeInTheDocument()
+
+            const input = screen.getByPlaceholderText("Digite sua dúvida...")
+            await user.type(input, "Oi{Enter}")
+            expect(await screen.findByRole("status")).toHaveTextContent(
+                "Funções e Escopo",
+            )
+
+            await user.type(input, "Tudo certo{Enter}")
+            await screen.findByText("Tudo certo")
+            await waitFor(() =>
+                expect(screen.queryByRole("status")).not.toBeInTheDocument(),
+            )
+        })
     })
 
     it("deve exibir mensagem de erro quando o envio falhar", async () => {

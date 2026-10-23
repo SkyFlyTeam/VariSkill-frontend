@@ -17,19 +17,16 @@ export type ChatMessage = {
     content: string
     sender: "assistant" | "user"
     options?: ChatOption[]
+    // Renderizadas como quick chips no rodapé do chat, não dentro do balão.
     suggestions?: string[]
     action?: ChatAction
 }
 
 type MessageBubbleProps = {
     message: ChatMessage
-    onSuggestionClick?: (suggestion: string) => void
 }
 
-export function MessageBubble({
-    message,
-    onSuggestionClick,
-}: MessageBubbleProps) {
+export function MessageBubble({ message }: MessageBubbleProps) {
     const isAssistant = message.sender === "assistant"
     const navigate = useNavigate()
 
@@ -68,23 +65,6 @@ export function MessageBubble({
                             >
                                 {message.action.label}
                             </button>
-                        </div>
-                    )}
-                    {message.suggestions && message.suggestions.length > 0 && (
-                        <div className="flex flex-wrap gap-2 pt-1">
-                            {message.suggestions.map((suggestion) => (
-                                <button
-                                    key={suggestion}
-                                    type="button"
-                                    disabled={!onSuggestionClick}
-                                    onClick={() =>
-                                        onSuggestionClick?.(suggestion)
-                                    }
-                                    className="rounded-lg bg-white border border-rose-200 px-3 py-1.5 text-xs font-semibold text-[#e91a36] shadow-sm hover:bg-rose-50 transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                    {suggestion}
-                                </button>
-                            ))}
                         </div>
                     )}
                 </div>
