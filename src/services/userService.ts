@@ -1,4 +1,4 @@
-import { ApiError, api } from "@/services/api"
+import { api } from "@/services/api"
 
 // Contrato de userManagement.serializers.UserSerializer.
 export type Interesse = {
@@ -50,30 +50,17 @@ export const userService = {
             body: JSON.stringify(data),
         }),
 
-    changePassword: async ({
+    changePassword: ({
         senhaAtual,
         novaSenha,
-    }: ChangePasswordData): Promise<void> => {
-        // O PATCH só recebe password. Confirmar a senha pelo login real antes
-        // de alterar o usuário identificado pela sessão, sem confiar no formulário.
-        const current = await userService.getSession()
-        try {
-            await userService.login({
-                apelido: current.apelido,
-                password: senhaAtual,
-            })
-        } catch (error) {
-            if (error instanceof ApiError && error.status === 400) {
-                throw new ApiError("Senha atual incorreta.", 400)
-            }
-            throw error
-        }
-        await api<UserProfile>(`/users/${encodeURIComponent(current.id)}/`, {
-            method: "PATCH",
-            body: JSON.stringify({ password: novaSenha }),
-        })
-        // set_password invalida a sessão no Django. A UI pede um novo login.
-    },
+    }: ChangePasswordData): Promise<void> =>
+        api<void>("/users/me/alterar-senha/", {
+            method: "POST",
+            body: JSON.stringify({
+                senha_atual: senhaAtual,
+                nova_senha: novaSenha,
+            }),
+        }),
 
     // Rota do DRF incluída em settings/urls.py; responde com HTML/redirect.
     logout: () => api<void>("/auth/logout/", { method: "POST" }),

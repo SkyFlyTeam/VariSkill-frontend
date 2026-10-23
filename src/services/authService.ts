@@ -29,6 +29,7 @@ export type RegisterPayload = {
     nome: string
     email: string
     password: string
+    aceite_termos: boolean
 }
 
 export function login(email: string, password: string) {

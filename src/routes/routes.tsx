@@ -8,6 +8,7 @@ import { LoginPage } from "@/pages/Login/Login"
 import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
 import { ProfilePage } from "@/pages/Profile/Profile"
 import { RegistroPage } from "@/pages/Registro/Registro"
+import { TermosPage } from "@/pages/Termos/Termos"
 import { TrackRoadmapPage } from "@/pages/TrackRoadmap/TrackRoadmap"
 import { PrivateRoute } from "@/routes/privateRoute"
 import { PublicRoute } from "@/routes/publicRoute"
@@ -20,6 +21,8 @@ export const AppRoutes = () => {
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/registro" element={<RegistroPage />} />
                 </Route>
+
+                <Route path="/termos" element={<TermosPage />} />
 
                 <Route element={<PrivateRoute />}>
                     <Route path="/" element={<HomePage />} />
