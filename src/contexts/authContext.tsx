@@ -16,7 +16,7 @@ type AuthContextType = {
     login: (email: string, password: string) => Promise<void>
     register: (payload: RegisterPayload) => Promise<void>
     logout: () => Promise<void>
-    completeOnboarding: () => Promise<void>
+    completeOnboarding: (interessesIds?: string[]) => Promise<void>
     updateUser: (user: User) => void
     clearSession: () => void
 }
@@ -71,8 +71,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }
 
-    const completeOnboarding = async () => {
-        const updatedUser = await authService.completeOnboarding()
+    const completeOnboarding = async (interessesIds?: string[]) => {
+        const updatedUser = await authService.completeOnboarding(interessesIds)
         setUser(updatedUser)
     }
 

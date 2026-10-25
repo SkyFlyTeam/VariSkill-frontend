@@ -65,6 +65,8 @@ describe("RegistroPage", () => {
             "joe@example.com",
         )
         await user.type(screen.getByPlaceholderText("**********"), "secret")
+        await user.type(screen.getByLabelText("Idade"), "21")
+        await user.selectOptions(screen.getByLabelText("Sexo"), "F")
         await user.click(screen.getByRole("checkbox"))
         await user.click(screen.getByRole("button", { name: /cadastrar/i }))
 
@@ -88,6 +90,8 @@ describe("RegistroPage", () => {
             apelido: "joe.doe",
             email: "joe@example.com",
             password: "secret",
+            sexo: "F",
+            idade: 21,
             aceite_termos: true,
         })
     })
@@ -113,6 +117,8 @@ describe("RegistroPage", () => {
             "joe@example.com",
         )
         await user.type(screen.getByPlaceholderText("**********"), "secret")
+        await user.type(screen.getByLabelText("Idade"), "21")
+        await user.selectOptions(screen.getByLabelText("Sexo"), "F")
         await user.click(screen.getByRole("checkbox"))
         await user.click(screen.getByRole("button", { name: /cadastrar/i }))
 
@@ -135,6 +141,8 @@ describe("RegistroPage", () => {
         expect(screen.getByText("Informe o apelido.")).toBeInTheDocument()
         expect(screen.getByText("Informe o email.")).toBeInTheDocument()
         expect(screen.getByText("Informe a senha.")).toBeInTheDocument()
+        expect(screen.getByText("Informe a idade.")).toBeInTheDocument()
+        expect(screen.getByText("Informe o sexo.")).toBeInTheDocument()
         expect(
             screen.getByText("Para se cadastrar, aceite os termos de uso."),
         ).toBeInTheDocument()
@@ -157,6 +165,8 @@ describe("RegistroPage", () => {
             "joe@example.com",
         )
         await user.type(screen.getByPlaceholderText("**********"), "secret")
+        await user.type(screen.getByLabelText("Idade"), "21")
+        await user.selectOptions(screen.getByLabelText("Sexo"), "F")
         await user.click(screen.getByRole("button", { name: /cadastrar/i }))
 
         expect(
@@ -164,6 +174,22 @@ describe("RegistroPage", () => {
                 "Para se cadastrar, aceite os termos de uso.",
             ),
         ).toBeInTheDocument()
+        expect(
+            fetchMock.mock.calls.some(([url]) => url === "/api/register/"),
+        ).toBe(false)
+    })
+
+    it("deve rejeitar idade fora do intervalo permitido", async () => {
+        const fetchMock = jest.fn()
+        globalThis.fetch = fetchMock as unknown as typeof fetch
+
+        const user = userEvent.setup()
+        renderWithProviders(<RegistroPage />)
+
+        await user.type(screen.getByLabelText("Idade"), "150")
+        await user.click(screen.getByRole("button", { name: /cadastrar/i }))
+
+        expect(await screen.findByText("Idade inválida.")).toBeInTheDocument()
         expect(
             fetchMock.mock.calls.some(([url]) => url === "/api/register/"),
         ).toBe(false)
@@ -190,6 +216,8 @@ describe("RegistroPage", () => {
             "joe@example.com",
         )
         await user.type(screen.getByPlaceholderText("**********"), "secret")
+        await user.type(screen.getByLabelText("Idade"), "21")
+        await user.selectOptions(screen.getByLabelText("Sexo"), "F")
         await user.click(screen.getByRole("checkbox"))
         await user.click(screen.getByRole("button", { name: /cadastrar/i }))
 

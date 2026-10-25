@@ -22,6 +22,8 @@ export function RegistroPage() {
     const [apelido, setApelido] = useState("")
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
+    const [sexo, setSexo] = useState<"" | "M" | "F">("")
+    const [idade, setIdade] = useState("")
     const [showPassword, setShowPassword] = useState(false)
     const [aceiteTermos, setAceiteTermos] = useState(false)
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
@@ -37,6 +39,8 @@ export function RegistroPage() {
             apelido,
             email,
             password,
+            sexo,
+            idade,
         })
 
         if (!aceiteTermos) {
@@ -58,6 +62,8 @@ export function RegistroPage() {
                 apelido,
                 email,
                 password,
+                sexo: sexo as "M" | "F",
+                idade: Number(idade),
                 aceite_termos: aceiteTermos,
             })
         } catch (requestError) {
@@ -151,6 +157,69 @@ export function RegistroPage() {
                             {fieldErrors.email}
                         </p>
                     )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <label htmlFor="idade" className={labelClassName}>
+                            Idade
+                        </label>
+
+                        <Input
+                            id="idade"
+                            type="number"
+                            inputMode="numeric"
+                            min={1}
+                            max={120}
+                            value={idade}
+                            onChange={(event) => setIdade(event.target.value)}
+                            placeholder="18"
+                            required
+                            aria-invalid={Boolean(fieldErrors.idade)}
+                            className={inputClassName}
+                        />
+
+                        {fieldErrors.idade && (
+                            <p
+                                role="alert"
+                                className="text-xs text-destructive"
+                            >
+                                {fieldErrors.idade}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label htmlFor="sexo" className={labelClassName}>
+                            Sexo
+                        </label>
+
+                        <select
+                            id="sexo"
+                            value={sexo}
+                            onChange={(event) =>
+                                setSexo(event.target.value as "" | "M" | "F")
+                            }
+                            required
+                            aria-invalid={Boolean(fieldErrors.sexo)}
+                            className={`${inputClassName} w-full outline-none ${sexo ? "" : "text-neutral-400"}`}
+                        >
+                            <option value="" disabled>
+                                Selecione
+                            </option>
+                            <option value="M">Masculino</option>
+                            <option value="F">Feminino</option>
+                        </select>
+
+                        {fieldErrors.sexo && (
+                            <p
+                                role="alert"
+                                className="text-xs text-destructive"
+                            >
+                                {fieldErrors.sexo}
+                            </p>
+                        )}
+                    </div>
                 </div>
 
                 <div className="space-y-1.5">

@@ -29,6 +29,8 @@ export type RegisterPayload = {
     nome: string
     email: string
     password: string
+    sexo: "M" | "F"
+    idade: number
     aceite_termos: boolean
 }
 
@@ -54,9 +56,12 @@ export function me() {
     return api<User>("/users/me/")
 }
 
-export function completeOnboarding() {
+export function completeOnboarding(interessesIds?: string[]) {
     return api<User>("/users/me/", {
         method: "PATCH",
-        body: JSON.stringify({ is_primeiro_acesso: false }),
+        body: JSON.stringify({
+            is_primeiro_acesso: false,
+            ...(interessesIds?.length ? { interesses_ids: interessesIds } : {}),
+        }),
     })
 }

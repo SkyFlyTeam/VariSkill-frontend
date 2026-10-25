@@ -35,6 +35,8 @@ export function validateRegister(values: {
     apelido: string
     email: string
     password: string
+    sexo: string
+    idade: string
 }): Record<string, string> {
     const errors: Record<string, string> = {}
 
@@ -53,6 +55,21 @@ export function validateRegister(values: {
 
     if (!values.password) {
         errors.password = "Informe a senha."
+    }
+
+    if (!values.sexo) {
+        errors.sexo = "Informe o sexo."
+    }
+
+    const idade = values.idade.trim()
+    if (!idade) {
+        errors.idade = "Informe a idade."
+    } else if (
+        !/^\d+$/.test(idade) ||
+        Number(idade) < 1 ||
+        Number(idade) > 120
+    ) {
+        errors.idade = "Idade inválida."
     }
 
     return errors

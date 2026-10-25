@@ -18,10 +18,23 @@ const BASE_USER = {
     is_primeiro_acesso: true,
 }
 
+const INTERESSES = [
+    { id: "i-python", nome: "Python" },
+    { id: "i-js", nome: "JavaScript" },
+]
+
 function mockFetch(user = BASE_USER) {
     const fetchMock = jest
         .fn()
         .mockImplementation((url: string, options?: RequestInit) => {
+            if (url === "/api/interesses/") {
+                return Promise.resolve({
+                    ok: true,
+                    status: 200,
+                    json: async () => INTERESSES,
+                })
+            }
+
             if (url === "/api/users/me/" && options?.method === "PATCH") {
                 return Promise.resolve({
                     ok: true,
@@ -61,7 +74,7 @@ function renderOnboarding() {
 }
 
 describe("OnboardingPage", () => {
-    it("abre a primeira etapa automaticamente com indicador 1 de 4", async () => {
+    it("abre a primeira etapa automaticamente com indicador 1 de 5", async () => {
         mockFetch()
 
         renderOnboarding()
@@ -71,13 +84,13 @@ describe("OnboardingPage", () => {
                 name: "Bem-vindo ao VariSkill!",
             }),
         ).toBeInTheDocument()
-        expect(screen.getAllByRole("tab")).toHaveLength(4)
+        expect(screen.getAllByRole("tab")).toHaveLength(5)
         expect(
-            screen.getByRole("tab", { name: "Etapa 1 de 4" }),
+            screen.getByRole("tab", { name: "Etapa 1 de 5" }),
         ).toHaveAttribute("aria-selected", "true")
     })
 
-    it("avança pelas 4 etapas e conclui o onboarding no backend", async () => {
+    it("avança pelas 5 etapas e conclui o onboarding no backend", async () => {
         const fetchMock = mockFetch()
 
         renderOnboarding()
@@ -96,6 +109,11 @@ describe("OnboardingPage", () => {
             screen.getByRole("heading", {
                 name: "Aprenda praticando e ganhe recompensas!",
             }),
+        ).toBeInTheDocument()
+
+        fireEvent.click(screen.getAllByRole("button", { name: "Continuar" })[0])
+        expect(
+            screen.getByRole("heading", { name: "Quais temas te interessam?" }),
         ).toBeInTheDocument()
 
         fireEvent.click(screen.getAllByRole("button", { name: "Continuar" })[0])
@@ -133,6 +151,45 @@ describe("OnboardingPage", () => {
                 ),
             ).toBe(true),
         )
+        expect(await screen.findByText("Home stub")).toBeInTheDocument()
+    })
+
+    it("salva os interesses escolhidos ao concluir o onboarding", async () => {
+        const fetchMock = mockFetch()
+
+        renderOnboarding()
+
+        await screen.findByRole("heading", { name: "Bem-vindo ao VariSkill!" })
+
+        fireEvent.click(
+            screen.getByRole("button", { name: "Conhecer a plataforma" }),
+        )
+        fireEvent.click(screen.getAllByRole("button", { name: "Continuar" })[0])
+        fireEvent.click(screen.getAllByRole("button", { name: "Continuar" })[0])
+
+        const python = await screen.findByRole("button", { name: "Python" })
+        fireEvent.click(python)
+        expect(python).toHaveAttribute("aria-pressed", "true")
+
+        fireEvent.click(screen.getAllByRole("button", { name: "Continuar" })[0])
+        fireEvent.click(
+            screen.getByRole("button", { name: "Explorar Trilhas" }),
+        )
+
+        await waitFor(() =>
+            expect(
+                fetchMock.mock.calls.some(
+                    ([, options]) => options?.method === "PATCH",
+                ),
+            ).toBe(true),
+        )
+        const [, options] = fetchMock.mock.calls.find(
+            ([, options]) => options?.method === "PATCH",
+        ) as [string, RequestInit]
+        expect(JSON.parse(options.body as string)).toEqual({
+            is_primeiro_acesso: false,
+            interesses_ids: ["i-python"],
+        })
         expect(await screen.findByText("Home stub")).toBeInTheDocument()
     })
 
