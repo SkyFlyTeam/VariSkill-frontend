@@ -17,8 +17,10 @@ jest.mock("@/services/api", () => ({
     },
 }))
 
+const mockRefreshUser = jest.fn().mockResolvedValue(undefined)
+
 jest.mock("@/contexts/authContext", () => ({
-    useAuth: () => ({ user: null, updateUser: jest.fn() }),
+    useAuth: () => ({ user: null, refreshUser: mockRefreshUser }),
 }))
 
 const mockedApi = api as jest.MockedFunction<typeof api>
@@ -103,6 +105,7 @@ function renderExercise() {
 beforeEach(() => {
     localStorage.clear()
     mockedApi.mockReset()
+    mockRefreshUser.mockClear()
     mockApi()
 })
 
@@ -148,6 +151,8 @@ describe("ExercisePage", () => {
         expect(
             await screen.findByText("Parabéns, você foi aprovado!"),
         ).toBeInTheDocument()
+        // Atualiza XP, nível e streak do usuário após a submissão
+        expect(mockRefreshUser).toHaveBeenCalledTimes(1)
     })
 
     it("exibe uma questão por vez e só submete todas as respostas ao final", async () => {

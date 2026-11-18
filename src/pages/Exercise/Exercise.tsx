@@ -184,7 +184,7 @@ function ExerciseSession({
     onClose,
     onContinue,
 }: ExerciseSessionProps) {
-    const { user, updateUser } = useAuth()
+    const { user, refreshUser } = useAuth()
     const { questoes } = atividade
 
     const {
@@ -287,9 +287,8 @@ function ExerciseSession({
                 submission.level_up === true &&
                     typeof submission.novo_nivel === "number",
             )
-            if (user && typeof submission.novo_xp_total === "number") {
-                updateUser({ ...user, xp_total: submission.novo_xp_total })
-            }
+            // XP, nível e streak são calculados no backend: busca o estado atualizado.
+            void refreshUser()
         } catch (requestError: unknown) {
             setSubmitError(
                 requestError instanceof ApiError

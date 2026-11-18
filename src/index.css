@@ -20,6 +20,21 @@
     /* Duas ondas de confete (~5s) e depois param. */
     --animate-confetti-fall: confetti-fall 2.4s ease-in 2 both;
     --animate-level-pop: level-pop 0.6s ease-out 0.2s both;
+    /* Chama acesa do FireStreak */
+    --animate-flame-flicker: flame-flicker 1.8s ease-in-out infinite;
+
+    @keyframes flame-flicker {
+        0%,
+        100% {
+            transform: scale(1) rotate(0deg);
+        }
+        30% {
+            transform: scale(1.04, 0.97) rotate(-2deg);
+        }
+        60% {
+            transform: scale(0.97, 1.04) rotate(2deg);
+        }
+    }
 
     @keyframes confetti-fall {
         0% {
