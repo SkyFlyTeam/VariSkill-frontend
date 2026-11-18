@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 
 import { useNavigate, useParams } from "react-router-dom"
 
+import { AchievementUnlockedModal } from "@/components/shared/AchievementUnlockedModal/AchievementUnlockedModal"
 import {
     ActivityResultModal,
     type ActivitySubmissionResult,
@@ -205,6 +206,8 @@ function ExerciseSession({
     const [submitting, setSubmitting] = useState(false)
     const [submitError, setSubmitError] = useState<string | null>(null)
     const [levelUpOpen, setLevelUpOpen] = useState(false)
+    const [achievementsOpen, setAchievementsOpen] = useState(false)
+    const unlockedAchievements = result?.conquistas_desbloqueadas ?? []
 
     const [hintLoading, setHintLoading] = useState(false)
     const [hintModalOpen, setHintModalOpen] = useState(false)
@@ -289,6 +292,9 @@ function ExerciseSession({
             )
             // XP, nível e streak são calculados no backend: busca o estado atualizado.
             void refreshUser()
+            setAchievementsOpen(
+                (submission.conquistas_desbloqueadas?.length ?? 0) > 0,
+            )
         } catch (requestError: unknown) {
             setSubmitError(
                 requestError instanceof ApiError
@@ -312,6 +318,7 @@ function ExerciseSession({
                 .map((feedback) => feedback.questao_id) ?? []
         setResult(null)
         setLevelUpOpen(false)
+        setAchievementsOpen(false)
         setHintModalOpen(false)
         setSubmitError(null)
         startRetry(wrongQuestionIds)
@@ -455,7 +462,16 @@ function ExerciseSession({
                 />
             )}
 
-            {result && !levelUpOpen && (
+            {/* Fila de comemorações: Nível → Conquistas → Resultado. */}
+            {result && !levelUpOpen && achievementsOpen && (
+                <AchievementUnlockedModal
+                    open
+                    achievements={unlockedAchievements}
+                    onClose={() => setAchievementsOpen(false)}
+                />
+            )}
+
+            {result && !levelUpOpen && !achievementsOpen && (
                 <ActivityResultModal
                     open
                     result={result}
