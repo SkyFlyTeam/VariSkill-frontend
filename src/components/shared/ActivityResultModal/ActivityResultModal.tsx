@@ -2,6 +2,7 @@ import { Check, FlaskConical, ListChecks, Trophy, X } from "lucide-react"
 
 import celebrationVari from "@/assets/vari/celebrationVari.svg"
 import retryVari from "@/assets/vari/retryVari.svg"
+import type { UnlockedAchievement } from "@/components/shared/AchievementUnlockedModal/AchievementUnlockedModal"
 import { VariMessageModal } from "@/components/shared/VariMessageModal/VariMessageModal"
 import { cn } from "@/lib/utils"
 
@@ -23,6 +24,8 @@ export interface ActivitySubmissionResult {
     level_up?: boolean
     nivel_anterior?: number
     novo_nivel?: number
+    /** Contrato proposto (VAR-106/108/109); ausente até o backend enviar. */
+    conquistas_desbloqueadas?: UnlockedAchievement[]
     executado_em: string
     questoes_feedback: QuestionFeedback[]
 }
