@@ -204,6 +204,60 @@ describe("ExercisePage", () => {
         expect(localStorage.length).toBe(0)
     })
 
+    it("comemora na ordem Nível → Conquista → Resultado", async () => {
+        const defaultImpl = mockedApi.getMockImplementation()!
+        mockedApi.mockImplementation((path: string, ...rest) =>
+            path === "/atividades/ativ-1/submeter/"
+                ? Promise.resolve({
+                      ...RESULTADO,
+                      level_up: true,
+                      nivel_anterior: 1,
+                      novo_nivel: 2,
+                      conquistas_desbloqueadas: [
+                          {
+                              id: "conquista-1",
+                              codigo: "PRIMEIRO_PASSO",
+                              titulo: "Primeiro Passo",
+                              descricao: "Você concluiu sua primeira atividade.",
+                              categoria: "PROGRESSO",
+                              icone: "icone-primeiro-passo.svg",
+                              xp_recompensa: 50,
+                              recompensas: [],
+                          },
+                      ],
+                  })
+                : defaultImpl(path, ...rest),
+        )
+        renderExercise()
+
+        await screen.findByText(
+            "1 - Arraste os blocos para completar o código:",
+        )
+        fireEvent.click(screen.getByText("let"))
+        const verifyButton = screen.getByRole("button", { name: "Verificar" })
+        await waitFor(() => expect(verifyButton).toBeEnabled())
+        fireEvent.click(verifyButton)
+
+        fireEvent.click(
+            await screen.findByRole("button", {
+                name: "Continuar Aprendendo",
+            }),
+        )
+
+        expect(
+            await screen.findByRole("heading", { name: "Primeiro Passo" }),
+        ).toBeInTheDocument()
+        expect(
+            screen.queryByText("Parabéns, você foi aprovado!"),
+        ).not.toBeInTheDocument()
+
+        fireEvent.click(screen.getByRole("button", { name: "Continuar" }))
+
+        expect(
+            await screen.findByText("Parabéns, você foi aprovado!"),
+        ).toBeInTheDocument()
+    })
+
     it("ao tentar novamente, refaz apenas as questões erradas", async () => {
         mockApi(ATIVIDADE_MULTIPLA)
         const submitResponses = [
