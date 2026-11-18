@@ -3,7 +3,8 @@ import { NavLink, useLocation } from "react-router-dom"
 import { Home, UserRound } from "lucide-react"
 
 import { SairButton } from "@/components/shared/SairButton/SairButton"
-import { UserLevelBar } from "@/components/shared/UserLevelBar/UserLevelBar"
+import { toUserStatisticsProps } from "@/components/shared/UserStatistics/toUserStatisticsProps"
+import { UserStatistics } from "@/components/shared/UserStatistics/UserStatistics"
 import {
     Sidebar,
     SidebarContent,
@@ -15,6 +16,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { useAuth } from "@/contexts/authContext"
 
 const navigationItems = [
     { label: "Home", href: "/", icon: Home },
@@ -23,6 +25,7 @@ const navigationItems = [
 
 export function AppSidebar() {
     const location = useLocation()
+    const { user } = useAuth()
 
     return (
         <Sidebar className="border-sidebar-border">
@@ -37,7 +40,13 @@ export function AppSidebar() {
                         VariSkill
                     </span>
                 </div>
-                <UserLevelBar compact tone="dark" className="mt-4" />
+                {user && (
+                    <UserStatistics
+                        {...toUserStatisticsProps(user)}
+                        compact
+                        className="mt-4"
+                    />
+                )}
             </SidebarHeader>
 
             <SidebarContent className="px-3">
