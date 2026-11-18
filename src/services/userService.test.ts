@@ -8,7 +8,7 @@ const profile = {
     apelido: "ana",
     email: "ana@example.com",
     xp_total: 120,
-    streak_dias: 3,
+    streak: { atual: 3, recorde: 3, concluiu_hoje: false, ultimo_dia: null },
     sexo: null,
     idade: null,
     interesses: [],

@@ -1,4 +1,5 @@
 import { api } from "@/services/api"
+import type { Streak } from "@/services/authService"
 
 // Contrato de userManagement.serializers.UserSerializer.
 export type Interesse = {
@@ -12,7 +13,7 @@ export type UserProfile = {
     apelido: string
     email: string
     xp_total: number
-    streak_dias: number
+    streak: Streak
     sexo: "M" | "F" | null
     idade: number | null
     interesses: Interesse[]

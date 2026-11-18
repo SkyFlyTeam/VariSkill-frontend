@@ -50,7 +50,7 @@ describe("LoginPage", () => {
                 nome: "Alice",
                 email: "alice@example.com",
                 xp_total: 0,
-                streak_dias: 0,
+                streak: { atual: 0, recorde: 0, concluiu_hoje: false, ultimo_dia: null },
             }),
         })
         globalThis.fetch = fetchMock as unknown as typeof fetch

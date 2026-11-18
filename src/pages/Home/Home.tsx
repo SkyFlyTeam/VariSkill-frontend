@@ -2,20 +2,21 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
     CodeXml,
-    Flame,
     FlaskConical,
     ListChecks,
     RefreshCw,
 } from "lucide-react"
 
+import { FireStreak } from "@/components/shared/FireStreak/FireStreak"
 import { TrackCard } from "@/components/shared/TrackCard/TrackCard"
 import { TrackRecommendationCard } from "@/components/shared/TrackRecommendationCard"
-import { UserLevelBar } from "@/components/shared/UserLevelBar/UserLevelBar"
+import { toUserStatisticsProps } from "@/components/shared/UserStatistics/toUserStatisticsProps"
 import { useAuth } from "@/contexts/authContext"
 import { InfoCard } from "@/pages/Home/components/InfoCard"
 import { TrackSearch } from "@/pages/Home/components/TrackSearch"
 import { api } from "@/services/api"
 import { matchesTrackSearch } from "@/utils/trackSearch"
+import { UserLevelBar } from "@/components/shared/UserLevelBar/UserLevelBar"
 
 type TrilhaItem = {
     id: string
@@ -44,7 +45,7 @@ type MatriculaItem = {
 }
 
 export function HomePage() {
-    const { user, updateUser } = useAuth()
+    const { user, refreshUser } = useAuth()
     const navigate = useNavigate()
     const [trilhas, setTrilhas] = useState<TrilhaItem[]>([])
     const [matriculas, setMatriculas] = useState<MatriculaItem[]>([])
@@ -57,9 +58,7 @@ export function HomePage() {
 
     useEffect(() => {
         // Atualiza perfil (XP e streak) ao entrar na Home
-        api<typeof user>("/users/me/").then((me) => {
-            if (me) updateUser(me)
-        }).catch(() => {})
+        void refreshUser()
 
         Promise.all([
             api<TrilhaItem[]>("/trilhas/").catch(() => []),
@@ -97,7 +96,7 @@ export function HomePage() {
                 setModulosConcluidos(modulosMap)
             })
             .finally(() => setLoading(false))
-    }, [])
+    }, [refreshUser])
 
     async function handleStartTrack(trilhaId: string) {
         setEnrollingTrackId(trilhaId)
@@ -142,13 +141,20 @@ export function HomePage() {
     ).length
 
 
+    const userStats = user ? toUserStatisticsProps(user) : null
+
     const infoCards = [
         {
             label: "Streak",
-            value: String(user?.streak_dias ?? 0),
+            value: String(userStats?.streak.atual ?? 0),
             description: "dias consecutivos",
-            icon: Flame,
-            color: "text-orange-500",
+            icon: (
+                <FireStreak
+                    count={userStats?.streak.atual ?? 0}
+                    record={userStats?.streak.recorde ?? 0}
+                    active={userStats?.streak.concluiu_hoje ?? false}
+                />
+            ),
         },
         {
             label: "XP",

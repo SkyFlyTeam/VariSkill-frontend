@@ -1,6 +1,7 @@
 import {
     type ReactNode,
     createContext,
+    useCallback,
     useContext,
     useEffect,
     useState,
@@ -18,6 +19,7 @@ type AuthContextType = {
     logout: () => Promise<void>
     completeOnboarding: (interessesIds?: string[]) => Promise<void>
     updateUser: (user: User) => void
+    refreshUser: () => Promise<void>
     clearSession: () => void
 }
 
@@ -71,6 +73,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }
 
+    const refreshUser = useCallback(async () => {
+        try {
+            setUser(await authService.me())
+        } catch {
+            // Mantém os dados atuais em vez de deslogar se a requisição falhar.
+        }
+    }, [])
+
     const completeOnboarding = async (interessesIds?: string[]) => {
         const updatedUser = await authService.completeOnboarding(interessesIds)
         setUser(updatedUser)
@@ -87,6 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 logout,
                 completeOnboarding,
                 updateUser: setUser,
+                refreshUser,
                 clearSession: () => setUser(null),
             }}
         >

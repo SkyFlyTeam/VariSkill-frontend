@@ -9,13 +9,20 @@ export type ProgressoNivel = {
     progresso_pct: number
 }
 
+export type Streak = {
+    atual: number
+    recorde: number
+    concluiu_hoje: boolean
+    ultimo_dia: string | null
+}
+
 export type User = {
     id: string
     apelido: string
     nome: string
     email: string
     xp_total: number
-    streak_dias: number
+    streak: Streak
     is_primeiro_acesso?: boolean
     sexo?: "M" | "F" | null
     idade?: number | null
