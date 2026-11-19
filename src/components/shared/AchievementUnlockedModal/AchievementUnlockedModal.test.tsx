@@ -5,20 +5,26 @@ import {
     type UnlockedAchievement,
 } from "./AchievementUnlockedModal"
 
-const EM_CHAMAS: UnlockedAchievement = {
-    id: "conquista-streak",
-    codigo: "EM_CHAMAS",
-    titulo: "Em Chamas",
-    descricao: "Você estudou 7 dias seguidos.",
-    categoria: "STREAK",
-    icone: "icone-em-chamas.svg",
-    xp_recompensa: 50,
-    recompensas: [
+/** Mesmo formato de `serializar_conquista` (motor da VAR-108). */
+const TIRO_CERTEIRO: UnlockedAchievement = {
+    id: "conquista-precisao",
+    codigo: "PRECISAO_MAXIMA",
+    titulo: "Tiro Certeiro",
+    descricao: "Acertou 100% de uma bateria de questões sem errar.",
+    icone: "conquistas/tiro_certeiro.svg",
+    xp_recompensa: 150,
+    item_desbloqueado: {
+        id: "borda-neon",
+        nome: "Borda Neon",
+        tipo: "BORDA",
+        asset_url: "",
+    },
+    itens_desbloqueados: [
+        { id: "borda-neon", nome: "Borda Neon", tipo: "BORDA", asset_url: "" },
         {
-            id: "borda-flamejante",
-            nome: "Borda Flamejante",
-            tipo: "BORDA",
-            raridade: "RARO",
+            id: "mestre-logica",
+            nome: "Mestre da Lógica",
+            tipo: "TITULO",
             asset_url: "",
         },
     ],
@@ -28,9 +34,11 @@ const PRIMEIRO_PASSO: UnlockedAchievement = {
     id: "conquista-progresso",
     codigo: "PRIMEIRO_PASSO",
     titulo: "Primeiro Passo",
-    descricao: "Você concluiu sua primeira atividade.",
-    categoria: "PROGRESSO",
+    descricao: "Concluiu a primeira atividade.",
+    icone: "conquistas/primeiro_passo.svg",
     xp_recompensa: 0,
+    item_desbloqueado: null,
+    itens_desbloqueados: [],
 }
 
 function renderModal(
@@ -39,7 +47,7 @@ function renderModal(
     return render(
         <AchievementUnlockedModal
             open
-            achievements={[EM_CHAMAS]}
+            achievements={[TIRO_CERTEIRO]}
             onClose={() => {}}
             {...props}
         />,
@@ -47,74 +55,109 @@ function renderModal(
 }
 
 describe("AchievementUnlockedModal", () => {
-    it("anuncia a conquista com título, descrição, medalha, XP e recompensa", () => {
+    it("anuncia a conquista com título, descrição, medalha, XP e itens", () => {
         renderModal()
 
         expect(screen.getByText("CONQUISTA DESBLOQUEADA")).toBeInTheDocument()
         expect(
-            screen.getByRole("heading", { name: "Em Chamas" }),
+            screen.getByRole("heading", { name: "Tiro Certeiro" }),
         ).toBeInTheDocument()
         expect(
-            screen.getByText("Você estudou 7 dias seguidos."),
+            screen.getByText(
+                "Acertou 100% de uma bateria de questões sem errar.",
+            ),
         ).toBeInTheDocument()
         expect(
             screen.getByRole("img", {
-                name: "Medalha da conquista Em Chamas",
+                name: "Medalha da conquista Tiro Certeiro",
             }),
-        ).toHaveAttribute("data-icon", "chama")
-        expect(screen.getByText("+50 XP")).toBeInTheDocument()
-        expect(screen.getByText("Borda Flamejante")).toBeInTheDocument()
-        expect(screen.getByText("Raro")).toBeInTheDocument()
+        ).toHaveAttribute("data-icon", "estrela")
+        expect(screen.getByText("+150 XP")).toBeInTheDocument()
+
+        const rewards = within(
+            screen.getByRole("list", { name: "Recompensas" }),
+        ).getAllByTestId("achievement-reward")
+        expect(rewards).toHaveLength(2)
         expect(
             screen.getByText("Borda de Perfil · já está no seu inventário"),
+        ).toBeInTheDocument()
+        expect(
+            screen.getByText("Título de Honra · já está no seu inventário"),
         ).toBeInTheDocument()
     })
 
     it.each([
-        ["STREAK", "chama"],
-        ["PROGRESSO", "check"],
-        ["PRECISAO", "estrela"],
-        ["DESCONHECIDA", "estrela"],
-    ])("usa a medalha da categoria %s", (categoria, icon) => {
-        renderModal({ achievements: [{ ...PRIMEIRO_PASSO, categoria }] })
+        ["PRIMEIRO_PASSO", "check"],
+        ["EXPLORADOR_MODULO", "check"],
+        ["DEDICACAO_INICIAL", "chama"],
+        ["HABITO_DE_FERRO", "chama"],
+        ["PRECISAO_MAXIMA", "estrela"],
+        ["DESCONHECIDO", "estrela"],
+    ])("escolhe a medalha pelo código %s", (codigo, icon) => {
+        renderModal({ achievements: [{ ...PRIMEIRO_PASSO, codigo }] })
 
         expect(
             screen.getByRole("img", { name: /Medalha da conquista/ }),
         ).toHaveAttribute("data-icon", icon)
     })
 
-    it("lista todos os cosméticos que a conquista libera", () => {
+    it("prioriza a categoria sobre o código quando ela vier", () => {
+        renderModal({
+            achievements: [{ ...PRIMEIRO_PASSO, categoria: "STREAK" }],
+        })
+
+        expect(
+            screen.getByRole("img", { name: /Medalha da conquista/ }),
+        ).toHaveAttribute("data-icon", "chama")
+    })
+
+    it("usa item_desbloqueado quando a lista de itens não vem", () => {
         renderModal({
             achievements: [
                 {
-                    ...EM_CHAMAS,
-                    recompensas: [
+                    ...PRIMEIRO_PASSO,
+                    itens_desbloqueados: undefined,
+                    item_desbloqueado: {
+                        id: "vari-estudioso",
+                        nome: "Vari Estudioso",
+                        tipo: "AVATAR",
+                        asset_url: "",
+                    },
+                },
+            ],
+        })
+
+        expect(screen.getByText("Vari Estudioso")).toBeInTheDocument()
+        expect(
+            screen.getByText("Avatar · já está no seu inventário"),
+        ).toBeInTheDocument()
+    })
+
+    it("mostra a raridade só quando o backend envia", () => {
+        const { unmount } = renderModal()
+        expect(screen.queryByText("Épico")).not.toBeInTheDocument()
+        unmount()
+
+        renderModal({
+            achievements: [
+                {
+                    ...TIRO_CERTEIRO,
+                    itens_desbloqueados: [
                         {
-                            id: "titulo",
-                            nome: "Mestre da Precisão",
-                            tipo: "TITULO",
-                            raridade: "EPICO",
-                        },
-                        {
-                            id: "borda",
-                            nome: "Borda Dourada",
+                            id: "borda-flamejante",
+                            nome: "Borda Flamejante",
                             tipo: "BORDA",
-                            raridade: "LENDARIO",
+                            raridade: "EPICO",
+                            asset_url: "",
                         },
                     ],
                 },
             ],
         })
-
-        const rewards = within(
-            screen.getByRole("list", { name: "Recompensas" }),
-        ).getAllByTestId("achievement-reward")
-        expect(rewards).toHaveLength(2)
         expect(screen.getByText("Épico")).toBeInTheDocument()
-        expect(screen.getByText("Lendário")).toBeInTheDocument()
     })
 
-    it("omite recompensas e XP quando a conquista não os concede", () => {
+    it("omite itens e XP quando a conquista não os concede", () => {
         renderModal({ achievements: [PRIMEIRO_PASSO] })
 
         expect(
@@ -139,7 +182,7 @@ describe("AchievementUnlockedModal", () => {
 
     it("mostra várias conquistas uma por vez antes de fechar", () => {
         const onClose = jest.fn()
-        renderModal({ achievements: [PRIMEIRO_PASSO, EM_CHAMAS], onClose })
+        renderModal({ achievements: [PRIMEIRO_PASSO, TIRO_CERTEIRO], onClose })
 
         expect(screen.getByText("1 de 2")).toBeInTheDocument()
         expect(
@@ -152,7 +195,7 @@ describe("AchievementUnlockedModal", () => {
 
         expect(screen.getByText("2 de 2")).toBeInTheDocument()
         expect(
-            screen.getByRole("heading", { name: "Em Chamas" }),
+            screen.getByRole("heading", { name: "Tiro Certeiro" }),
         ).toBeInTheDocument()
         expect(onClose).not.toHaveBeenCalled()
 
@@ -163,12 +206,12 @@ describe("AchievementUnlockedModal", () => {
 
     it("Esc avança como o botão de ação", () => {
         const onClose = jest.fn()
-        renderModal({ achievements: [PRIMEIRO_PASSO, EM_CHAMAS], onClose })
+        renderModal({ achievements: [PRIMEIRO_PASSO, TIRO_CERTEIRO], onClose })
 
         fireEvent.keyDown(document.body, { key: "Escape" })
 
         expect(
-            screen.getByRole("heading", { name: "Em Chamas" }),
+            screen.getByRole("heading", { name: "Tiro Certeiro" }),
         ).toBeInTheDocument()
         expect(onClose).not.toHaveBeenCalled()
 

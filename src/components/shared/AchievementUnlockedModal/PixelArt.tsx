@@ -64,8 +64,9 @@ const MEDAL_ICONS = {
 export type MedalIcon = keyof typeof MEDAL_ICONS
 
 /**
- * Medalha por `Conquista.categoria` (backend, VAR-106). O campo `icone` é um
- * arquivo que o front ainda não possui; categoria desconhecida = estrela.
+ * Medalha por `Conquista.categoria` (VAR-106). O motor (VAR-108) não envia a
+ * categoria, então o `codigo` do catálogo (seed da VAR-107) é o fallback.
+ * O campo `icone` é um arquivo que o front ainda não possui. Sem match = estrela.
  */
 const CATEGORY_ICONS: Record<string, MedalIcon> = {
     STREAK: "chama",
@@ -73,8 +74,26 @@ const CATEGORY_ICONS: Record<string, MedalIcon> = {
     PRECISAO: "estrela",
 }
 
-function resolveMedalIcon(categoria: string | null | undefined): MedalIcon {
-    return CATEGORY_ICONS[categoria?.trim().toUpperCase() ?? ""] ?? "estrela"
+const CODE_ICONS: Record<string, MedalIcon> = {
+    PRIMEIRO_PASSO: "check",
+    EXPLORADOR_MODULO: "check",
+    MESTRE_TRILHA: "check",
+    DEDICACAO_INICIAL: "chama",
+    HABITO_DE_FERRO: "chama",
+    PRECISAO_MAXIMA: "estrela",
+}
+
+function resolveMedalIcon(
+    categoria: string | null | undefined,
+    codigo: string | null | undefined,
+): MedalIcon {
+    const normalize = (value: string | null | undefined) =>
+        value?.trim().toUpperCase() ?? ""
+    return (
+        CATEGORY_ICONS[normalize(categoria)] ??
+        CODE_ICONS[normalize(codigo)] ??
+        "estrela"
+    )
 }
 
 function Pixels({ pixels }: { pixels: readonly Pixel[] }) {
@@ -92,14 +111,16 @@ function Pixels({ pixels }: { pixels: readonly Pixel[] }) {
 
 export function PixelMedal({
     categoria,
+    codigo,
     label,
     className,
 }: {
-    categoria: string | null | undefined
+    categoria?: string | null
+    codigo?: string | null
     label: string
     className?: string
 }) {
-    const icon = resolveMedalIcon(categoria)
+    const icon = resolveMedalIcon(categoria, codigo)
 
     return (
         <svg
