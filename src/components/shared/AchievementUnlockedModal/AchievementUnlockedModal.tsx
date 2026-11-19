@@ -52,9 +52,9 @@ export interface AchievementUnlockedModalProps {
     open: boolean
     /** Conquistas desbloqueadas na submissão, exibidas uma por vez. */
     achievements: UnlockedAchievement[]
-    /** Chamado ao concluir a última conquista (botão "Continuar" ou Esc). */
+    /** Chamado ao concluir a última conquista (botão "Continuar Estudando" ou Esc). */
     onClose: () => void
-    /** Link para a aba de conquistas (VAR-111). Omitido = link oculto. */
+    /** Abre o inventário (VAR-111). Omitido = botão "Ver no Inventário" oculto. */
     onViewAchievements?: () => void
 }
 
@@ -311,7 +311,7 @@ export function AchievementUnlockedModal({
                             className="h-auto min-h-11 w-full rounded-[10px] px-10 py-3.5 text-xs font-bold sm:w-auto"
                             onClick={handleAdvance}
                         >
-                            {isLast ? "Continuar" : "Próxima conquista"}
+                            {isLast ? "Continuar Estudando" : "Próxima conquista"}
                         </Button>
 
                         {onViewAchievements && (
@@ -320,7 +320,7 @@ export function AchievementUnlockedModal({
                                 className="py-2 text-xs font-bold text-gray-600 underline-offset-2 hover:text-main-blue-dark hover:underline"
                                 onClick={onViewAchievements}
                             >
-                                Ver minhas conquistas
+                                Ver no Inventário
                             </button>
                         )}
                     </div>
