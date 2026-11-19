@@ -246,7 +246,9 @@ describe("ExercisePage", () => {
             screen.queryByText("Parabéns, você foi aprovado!"),
         ).not.toBeInTheDocument()
 
-        fireEvent.click(screen.getByRole("button", { name: "Continuar" }))
+        fireEvent.click(
+            screen.getByRole("button", { name: "Continuar Estudando" }),
+        )
 
         expect(
             await screen.findByText("Parabéns, você foi aprovado!"),
