@@ -20,6 +20,57 @@
     /* Duas ondas de confete (~5s) e depois param. */
     --animate-confetti-fall: confetti-fall 2.4s ease-in 2 both;
     --animate-level-pop: level-pop 0.6s ease-out 0.2s both;
+    /* Modal de conquista: medalha entra com pop, raios giram, brilhos piscam e a recompensa sobe. */
+    --animate-achievement-pop: achievement-pop 0.7s
+        cubic-bezier(0.2, 0.8, 0.3, 1.2) 0.15s both;
+    --animate-achievement-rays: achievement-rays 20s linear infinite;
+    --animate-achievement-twinkle: achievement-twinkle 1.6s ease-in-out
+        infinite;
+    --animate-achievement-rise: achievement-rise 0.4s ease-out 0.55s both;
+
+    @keyframes achievement-pop {
+        0% {
+            transform: scale(0.4) rotate(-12deg);
+            opacity: 0;
+        }
+        60% {
+            transform: scale(1.12) rotate(4deg);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
+        }
+    }
+
+    @keyframes achievement-rays {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes achievement-twinkle {
+        0%,
+        100% {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+        50% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    @keyframes achievement-rise {
+        0% {
+            transform: translateY(12px);
+            opacity: 0;
+        }
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
 
     @keyframes confetti-fall {
         0% {
