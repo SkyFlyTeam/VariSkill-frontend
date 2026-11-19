@@ -16,6 +16,7 @@ const baseUser: User = {
     nome: "Ana",
     email: "ana@example.com",
     xp_total: 240,
+    conquistas_desbloqueadas: 0,
     streak: { atual: 2, recorde: 2, concluiu_hoje: false, ultimo_dia: null },
     nivel: 2,
     progresso_nivel: {

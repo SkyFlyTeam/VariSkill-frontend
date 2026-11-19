@@ -1,7 +1,8 @@
 import { Trophy } from "lucide-react"
 
-import neutralVari from "@/assets/vari/neutralVari.svg"
 import { FireStreak } from "@/components/shared/FireStreak/FireStreak"
+import { HonorTitle } from "@/components/shared/HonorTitle/HonorTitle"
+import { ProfileAvatar } from "@/components/shared/ProfileAvatar/ProfileAvatar"
 import { ProgressBar } from "@/components/shared/ProgressBar/ProgressBar"
 import { cn } from "@/lib/utils"
 import type { Streak } from "@/services/authService"
@@ -19,7 +20,12 @@ export type UserStatisticsProps = {
     /** Contador do troféu (ex.: trilhas concluídas). Oculto quando omitido. */
     trophies?: number
     trophiesLabel?: string
+    /** Avatar equipado; sem valor, usa o Vari neutro. */
     avatarUrl?: string
+    /** Borda cosmética equipada, desenhada ao redor do avatar. */
+    borderUrl?: string
+    /** Título de honra equipado, exibido abaixo do nome. */
+    title?: string
     compact?: boolean
     className?: string
 }
@@ -62,7 +68,9 @@ export function UserStatistics({
     streak,
     trophies,
     trophiesLabel = "trilhas concluídas",
-    avatarUrl = neutralVari,
+    avatarUrl,
+    borderUrl,
+    title,
     compact = false,
     className,
 }: UserStatisticsProps) {
@@ -75,22 +83,20 @@ export function UserStatistics({
                 className,
             )}
         >
-            <div className={cn("flex items-center", compact ? "gap-4" : "gap-6")}>
-                <div className="relative shrink-0">
-                    <div
-                        className={cn(
-                            "grid place-items-center overflow-hidden rounded-full bg-[#e9c8f7]",
-                            compact ? "size-12" : "size-20 sm:size-24",
-                        )}
-                    >
-                        <img
-                            src={avatarUrl}
-                            alt=""
-                            className="size-[80%] object-contain"
-                        />
-                    </div>
+            <div
+                className={cn("flex items-center", compact ? "gap-4" : "gap-6")}
+            >
+                <ProfileAvatar
+                    avatarUrl={avatarUrl}
+                    borderUrl={borderUrl}
+                    className={cn(
+                        compact ? "size-12" : "size-20 sm:size-24",
+                        // Espaço para a borda, que se estende além do avatar.
+                        borderUrl && (compact ? "m-2" : "m-4"),
+                    )}
+                >
                     <LevelBadge level={level} compact={compact} />
-                </div>
+                </ProfileAvatar>
 
                 <div className="min-w-0 flex-1">
                     <p
@@ -101,13 +107,26 @@ export function UserStatistics({
                     >
                         {name}
                     </p>
+                    {title && (
+                        <HonorTitle
+                            title={title}
+                            className={cn(
+                                "max-w-full",
+                                compact
+                                    ? "mt-0.5 px-2 py-0.5 text-[10px]"
+                                    : "mt-1",
+                            )}
+                        />
+                    )}
                     <span className="sr-only">Nível {level}</span>
                     <ProgressBar
                         value={progressPct}
                         aria-label={`Progresso para o nível ${level + 1}`}
                         className={cn(
                             "bg-[#d9d9d9]",
-                            compact ? "mt-1.5 h-1.5 sm:h-1.5" : "mt-2 h-2.5 sm:h-3",
+                            compact
+                                ? "mt-1.5 h-1.5 sm:h-1.5"
+                                : "mt-2 h-2.5 sm:h-3",
                         )}
                     />
                     <p
@@ -140,7 +159,9 @@ export function UserStatistics({
                         aria-label={`${trophies} ${trophiesLabel}`}
                         className={cn(
                             "inline-flex items-center gap-2 rounded-full bg-[#7a1010] font-bold",
-                            compact ? "px-3 py-1 text-sm" : "px-4 py-1.5 text-base",
+                            compact
+                                ? "px-3 py-1 text-sm"
+                                : "px-4 py-1.5 text-base",
                         )}
                     >
                         <Trophy
