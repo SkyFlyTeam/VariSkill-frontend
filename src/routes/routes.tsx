@@ -1,11 +1,13 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
+import { CookieBanner } from "@/components/shared/CookieBanner/CookieBanner"
 import { ChatPage } from "@/pages/Chat/Chat"
 import { ExercisePage } from "@/pages/Exercise/Exercise"
 import { HomePage } from "@/pages/Home/Home"
 import { LessonPage } from "@/pages/Lesson/Lesson"
 import { LoginPage } from "@/pages/Login/Login"
 import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
+import { PrivacyPage } from "@/pages/Privacy/Privacy"
 import { ProfilePage } from "@/pages/Profile/Profile"
 import { RegistroPage } from "@/pages/Registro/Registro"
 import { TermosPage } from "@/pages/Termos/Termos"
@@ -38,8 +40,10 @@ export const AppRoutes = () => {
                     <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route path="/chat" element={<ChatPage />} />
                     <Route path="/perfil" element={<ProfilePage />} />
+                    <Route path="/privacidade" element={<PrivacyPage />} />
                 </Route>
             </Routes>
+            <CookieBanner />
         </BrowserRouter>
     )
 }

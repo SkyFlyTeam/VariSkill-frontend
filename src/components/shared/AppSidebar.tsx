@@ -1,10 +1,10 @@
 import { NavLink, useLocation } from "react-router-dom"
 
-import { Home, UserRound } from "lucide-react"
+import { Home, ShieldCheck, UserRound } from "lucide-react"
 
 import { SairButton } from "@/components/shared/SairButton/SairButton"
-import { toUserStatisticsProps } from "@/components/shared/UserStatistics/toUserStatisticsProps"
 import { UserStatistics } from "@/components/shared/UserStatistics/UserStatistics"
+import { toUserStatisticsProps } from "@/components/shared/UserStatistics/toUserStatisticsProps"
 import {
     Sidebar,
     SidebarContent,
@@ -21,6 +21,7 @@ import { useAuth } from "@/contexts/authContext"
 const navigationItems = [
     { label: "Home", href: "/", icon: Home },
     { label: "Perfil", href: "/perfil", icon: UserRound },
+    { label: "Privacidade", href: "/privacidade", icon: ShieldCheck },
 ]
 
 export function AppSidebar() {

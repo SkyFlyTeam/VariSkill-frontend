@@ -72,7 +72,7 @@ export function ProfilePage() {
     const nomeRef = useRef<HTMLInputElement>(null)
     const apelidoRef = useRef<HTMLInputElement>(null)
     const photoInputRef = useRef<HTMLInputElement>(null)
-    const { photo, handleFileChange } = useProfilePhoto({
+    const { photo, handleFileChange, removePhoto } = useProfilePhoto({
         onError: toast.error,
         onSuccess: toast.success,
     })
@@ -257,6 +257,19 @@ export function ProfilePage() {
                     >
                         Editar foto
                     </button>
+                    {photo && (
+                        <button
+                            type="button"
+                            onClick={removePhoto}
+                            className="mt-1 text-xs font-bold text-destructive hover:underline"
+                        >
+                            Remover foto
+                        </button>
+                    )}
+                    <p className="mt-2 max-w-xs text-center text-[11px] leading-snug text-neutral-500">
+                        Sua foto fica apenas neste navegador e não é enviada aos
+                        servidores do VariSkill.
+                    </p>
                 </div>
 
                 <section className="mt-10">

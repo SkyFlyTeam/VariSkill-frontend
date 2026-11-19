@@ -29,6 +29,17 @@ export type User = {
     interesses?: { id: string; nome: string }[]
     nivel?: number
     progresso_nivel?: ProgressoNivel
+    aceite_privacidade_versao?: string | null
+    aceite_privacidade_em?: string | null
+    consentimento_revogado_em?: string | null
+    responsavel?: ResponsavelLegal | null
+}
+
+export type ResponsavelLegal = {
+    nome: string
+    cpf: string
+    email: string
+    criado_em?: string
 }
 
 export type RegisterPayload = {
@@ -39,6 +50,12 @@ export type RegisterPayload = {
     sexo: "M" | "F"
     idade: number
     aceite_termos: boolean
+    /** Só para menores de 18: dados do responsável legal. */
+    responsavel?: {
+        nome: string
+        cpf: string
+        email: string
+    }
 }
 
 export function login(email: string, password: string) {
