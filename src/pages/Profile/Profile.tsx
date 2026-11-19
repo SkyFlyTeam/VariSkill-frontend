@@ -72,10 +72,6 @@ export function ProfilePage() {
     const nomeRef = useRef<HTMLInputElement>(null)
     const apelidoRef = useRef<HTMLInputElement>(null)
     const photoInputRef = useRef<HTMLInputElement>(null)
-    const { photo, handleFileChange } = useProfilePhoto({
-        onError: toast.error,
-        onSuccess: toast.success,
-    })
 
     function openPhotoPicker() {
         photoInputRef.current?.click()
@@ -218,46 +214,6 @@ export function ProfilePage() {
                 onSubmit={handleSubmit}
                 className="w-full max-w-4xl rounded-3xl bg-white px-6 py-10 sm:px-20"
             >
-                <div className="flex flex-col items-center">
-                    <input
-                        ref={photoInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleFileChange}
-                    />
-
-                    <div className="relative">
-                        <div className="flex size-40 items-center justify-center overflow-hidden rounded-full bg-brand-blue text-slate-200">
-                            {photo ? (
-                                <img
-                                    src={photo}
-                                    alt="Foto de perfil"
-                                    className="size-full object-cover"
-                                />
-                            ) : (
-                                <User className="size-24" strokeWidth={1.5} />
-                            )}
-                        </div>
-                        <button
-                            type="button"
-                            aria-label="Editar foto"
-                            onClick={openPhotoPicker}
-                            className="absolute right-1 bottom-2 flex size-8 items-center justify-center rounded-full bg-brand-navy text-white"
-                        >
-                            <Camera className="size-4" />
-                        </button>
-                    </div>
-
-                    <h1 className="mt-6 text-base font-bold">{profile.nome}</h1>
-                    <button
-                        type="button"
-                        onClick={openPhotoPicker}
-                        className="text-xs font-bold text-brand-blue hover:underline"
-                    >
-                        Editar foto
-                    </button>
-                </div>
 
                 <section className="mt-10">
                     <h2 className="text-base font-bold">Informações</h2>
