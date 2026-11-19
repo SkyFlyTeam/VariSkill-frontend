@@ -1,5 +1,9 @@
-import { api } from "@/services/api"
-import type { Streak } from "@/services/authService"
+import { ApiError, api } from "@/services/api"
+import type {
+    ProgressoNivel,
+    ResponsavelLegal,
+    Streak,
+} from "@/services/authService"
 
 // Contrato de userManagement.serializers.UserSerializer.
 export type Interesse = {
@@ -17,6 +21,12 @@ export type UserProfile = {
     sexo: "M" | "F" | null
     idade: number | null
     interesses: Interesse[]
+    aceite_privacidade_versao?: string | null
+    aceite_privacidade_em?: string | null
+    consentimento_revogado_em?: string | null
+    nivel?: number
+    progresso_nivel?: ProgressoNivel
+    responsavel?: ResponsavelLegal | null
     // Existe no modelo Django, mas ainda não é exposto pelo serializer atual.
     criado_em?: string
 }
@@ -80,4 +90,23 @@ export const userService = {
 
     // Rota do DRF incluída em settings/urls.py; responde com HTML/redirect.
     logout: () => api<void>("/auth/logout/", { method: "POST" }),
+
+    /**
+     * Exportação self-service (VAR-124). O backend ignora qualquer e-mail
+     * enviado e sempre devolve os dados do usuário autenticado.
+     */
+    async exportMyDataCsv(): Promise<Blob> {
+        const response = await fetch("/api/users/me/exportar-csv/", {
+            credentials: "include",
+        })
+
+        if (!response.ok) {
+            throw new ApiError(
+                "Não foi possível gerar a exportação dos seus dados.",
+                response.status,
+            )
+        }
+
+        return response.blob()
+    },
 }

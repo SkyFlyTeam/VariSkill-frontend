@@ -36,6 +36,17 @@ export function getFieldErrors(error: unknown): Record<string, string> {
             result[field] = String(value[0])
         } else if (typeof value === "string") {
             result[field] = value
+        } else if (value && typeof value === "object") {
+            // DRF aninha erros de serializers aninhados (ex.: responsavel.cpf).
+            for (const [subfield, subvalue] of Object.entries(
+                value as Record<string, unknown>,
+            )) {
+                if (Array.isArray(subvalue) && subvalue.length > 0) {
+                    result[`${field}.${subfield}`] = String(subvalue[0])
+                } else if (typeof subvalue === "string") {
+                    result[`${field}.${subfield}`] = subvalue
+                }
+            }
         }
     }
 
