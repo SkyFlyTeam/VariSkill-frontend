@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+
 import { useLocation, useNavigate } from "react-router-dom"
 
 import { instantAnswerId } from "@/components/shared/InstantAnswerFeedback/instantAnswer"
@@ -25,6 +26,7 @@ type SessaoResponse = {
         conteudo: string
         sugestoes_rapidas?: string[]
         reforco_pedagogico?: ReforcoPedagogico | null
+        origem_resposta?: string | null
         criada_em: string
     }
 }
@@ -88,6 +90,17 @@ function acaoDaResposta(
 // Trilhas recomendadas viram chips "Iniciar trilha" que matriculam direto. Exceção: quando a Vari
 // pede para escolher a trilha de um fluxo (nivelamento, começar do zero), os chips do backend
 // carregam essa escolha e são mantidos.
+function origemDaResposta(valor?: string | null): ChatMessage["origin"] {
+    if (
+        valor === "PLN_LOCAL" ||
+        valor === "IA_EXTERNA" ||
+        valor === "CONTINGENCIA"
+    ) {
+        return valor
+    }
+    return undefined
+}
+
 function opcoesDaResposta(
     resposta: EnviarMensagemResponse["resposta_assistente"],
 ): Pick<ChatMessage, "tracks" | "suggestions"> {
@@ -152,6 +165,9 @@ export function ChatPage() {
                             "Olá! Sou a Vari, sua assistente virtual no VariSkill. Como posso te ajudar hoje?",
                         sender: "assistant",
                         suggestions: sessao.mensagem_inicial?.sugestoes_rapidas,
+                        origin: origemDaResposta(
+                            sessao.mensagem_inicial?.origem_resposta,
+                        ),
                     },
                 ])
             })
@@ -238,6 +254,7 @@ export function ChatPage() {
                         resposta.origem_resposta,
                         resposta.duvida_assimilada_id,
                     ),
+                    origin: origemDaResposta(resposta.origem_resposta),
                 },
             ])
         } catch {
