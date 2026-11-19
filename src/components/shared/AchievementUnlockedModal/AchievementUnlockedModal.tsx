@@ -11,19 +11,18 @@ import { cn } from "@/lib/utils"
 import { PixelGift, PixelMedal, PixelSparkle } from "./PixelArt"
 
 /**
- * Item de `conquistas_desbloqueadas` no retorno de `POST /atividades/{id}/submeter/`.
- * Os nomes seguem os models `Conquista` e `ItemCosmetico` do backend (VAR-106);
- * o motor (VAR-108) e a serialização (VAR-109) ainda vão preencher o campo.
+ * Item de `conquistas_desbloqueadas` no retorno de `POST /atividades/{id}/submeter/`,
+ * no formato do motor de gamificação (VAR-108, `serializar_conquista`).
  */
 export interface AchievementReward {
     id: string
     nome: string
     /** `AVATAR` | `TITULO` | `BORDA`. */
     tipo: string
-    /** `COMUM` | `RARO` | `EPICO` | `LENDARIO`; outros valores são exibidos como vierem. */
-    raridade: string
     /** URL da arte do item. Vazia/nula = presente pixelado. */
     asset_url?: string | null
+    /** `COMUM` | `RARO` | `EPICO` | `LENDARIO`. Ainda não enviado pelo motor: sem ele, o selo some. */
+    raridade?: string | null
 }
 
 export interface UnlockedAchievement {
@@ -31,13 +30,21 @@ export interface UnlockedAchievement {
     codigo: string
     titulo: string
     descricao: string
-    /** `PROGRESSO` | `STREAK` | `PRECISAO`: define a medalha exibida. */
-    categoria: string
     /** Arquivo do ícone no backend; ainda não usado pelo front. */
     icone?: string
     xp_recompensa: number
-    /** Itens cosméticos que têm esta conquista como requisito. */
-    recompensas?: AchievementReward[]
+    /** `PROGRESSO` | `STREAK` | `PRECISAO`. Não enviado pelo motor: a medalha sai do `codigo`. */
+    categoria?: string | null
+    /** Primeiro item liberado (mantido pelo backend por compatibilidade). */
+    item_desbloqueado?: AchievementReward | null
+    /** Todos os itens cosméticos que a conquista liberou. */
+    itens_desbloqueados?: AchievementReward[]
+}
+
+function rewardsOf(achievement: UnlockedAchievement | undefined) {
+    if (!achievement) return []
+    if (achievement.itens_desbloqueados) return achievement.itens_desbloqueados
+    return achievement.item_desbloqueado ? [achievement.item_desbloqueado] : []
 }
 
 export interface AchievementUnlockedModalProps {
@@ -65,7 +72,8 @@ const REWARD_TYPE: Record<string, string> = {
     BORDA: "Borda de Perfil",
 }
 
-function rarityOf(raridade: string) {
+function rarityOf(raridade: string | null | undefined) {
+    if (!raridade) return null
     return (
         RARITY[raridade.toUpperCase()] ?? {
             label: raridade,
@@ -114,14 +122,16 @@ function RewardCard({ reward }: { reward: AchievementReward }) {
                 </span>
             </div>
 
-            <span
-                className={cn(
-                    "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold",
-                    rarity.className,
-                )}
-            >
-                {rarity.label}
-            </span>
+            {rarity && (
+                <span
+                    className={cn(
+                        "shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold",
+                        rarity.className,
+                    )}
+                >
+                    {rarity.label}
+                </span>
+            )}
         </li>
     )
 }
@@ -139,7 +149,7 @@ export function AchievementUnlockedModal({
     const current = Math.min(index, total - 1)
     const achievement = achievements[current]
     const isLast = current >= total - 1
-    const rewards = achievement?.recompensas ?? []
+    const rewards = rewardsOf(achievement)
 
     function handleAdvance() {
         if (isLast) {
@@ -176,12 +186,18 @@ export function AchievementUnlockedModal({
                     )}
                 >
                     {total > 1 && (
-                        <span className="absolute top-5 right-5 text-xs font-bold text-gray-600">
+                        <span className="absolute top-3 right-4 text-xs font-bold text-gray-600 sm:top-5 sm:right-5">
                             {current + 1} de {total}
                         </span>
                     )}
 
-                    <span className="inline-flex items-center gap-2 rounded-full bg-main-blue-dark px-3 py-1.5 text-[10px] font-bold tracking-[0.15em] text-white sm:px-3.5 sm:text-[11px]">
+                    {/* No celular, desce o selo para não encostar no contador "1 de N". */}
+                    <span
+                        className={cn(
+                            "inline-flex items-center gap-2 rounded-full bg-main-blue-dark px-3 py-1.5 text-[10px] font-bold tracking-[0.15em] text-white sm:mt-0 sm:px-3.5 sm:text-[11px]",
+                            total > 1 && "mt-3",
+                        )}
+                    >
                         <PixelSparkle color="#FFC83D" className="static size-2" />
                         CONQUISTA DESBLOQUEADA
                         <PixelSparkle color="#FFC83D" className="static size-2" />
@@ -225,6 +241,7 @@ export function AchievementUnlockedModal({
 
                             <PixelMedal
                                 categoria={achievement.categoria}
+                                codigo={achievement.codigo}
                                 label={`Medalha da conquista ${achievement.titulo}`}
                                 className="relative h-27.5 w-26 animate-achievement-pop motion-reduce:animate-none sm:h-34 sm:w-32"
                             />
