@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { ChatPage } from "@/pages/Chat/Chat"
 import { ExercisePage } from "@/pages/Exercise/Exercise"
 import { HomePage } from "@/pages/Home/Home"
+import { InventoryPage } from "@/pages/Inventory/Inventory"
 import { LessonPage } from "@/pages/Lesson/Lesson"
 import { LoginPage } from "@/pages/Login/Login"
 import { OnboardingPage } from "@/pages/Onboarding/Onboarding"
@@ -38,6 +39,7 @@ export const AppRoutes = () => {
                     <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route path="/chat" element={<ChatPage />} />
                     <Route path="/perfil" element={<ProfilePage />} />
+                    <Route path="/inventario" element={<InventoryPage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

@@ -1,4 +1,5 @@
 import type { User } from "@/services/authService"
+import { resolveCosmeticAsset } from "@/utils/cosmeticAsset"
 
 import type { UserStatisticsProps } from "./UserStatistics"
 
@@ -9,7 +10,10 @@ import type { UserStatisticsProps } from "./UserStatistics"
  */
 export function toUserStatisticsProps(
     user: User,
-): Omit<UserStatisticsProps, "trophies" | "trophiesLabel" | "compact" | "className"> {
+): Omit<
+    UserStatisticsProps,
+    "trophies" | "trophiesLabel" | "compact" | "className"
+> {
     const progresso = user.progresso_nivel
     const xpTotal = progresso?.xp_atual ?? user.xp_total ?? 0
     const xpMin = progresso?.xp_min_faixa ?? 0
@@ -26,5 +30,12 @@ export function toUserStatisticsProps(
             recorde: user.streak.recorde,
             concluiu_hoje: user.streak.concluiu_hoje,
         },
+        avatarUrl: user.avatar_equipado
+            ? resolveCosmeticAsset(user.avatar_equipado.recurso_visual)
+            : undefined,
+        borderUrl: user.borda_equipada
+            ? resolveCosmeticAsset(user.borda_equipada.recurso_visual)
+            : undefined,
+        title: user.titulo_equipado?.nome,
     }
 }
