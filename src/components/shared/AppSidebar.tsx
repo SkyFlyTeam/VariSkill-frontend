@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom"
 
-import { Home, UserRound } from "lucide-react"
+import { Backpack, Home, UserRound } from "lucide-react"
 
 import { SairButton } from "@/components/shared/SairButton/SairButton"
 import { toUserStatisticsProps } from "@/components/shared/UserStatistics/toUserStatisticsProps"
@@ -21,6 +21,7 @@ import { useAuth } from "@/contexts/authContext"
 const navigationItems = [
     { label: "Home", href: "/", icon: Home },
     { label: "Perfil", href: "/perfil", icon: UserRound },
+    { label: "Inventário", href: "/inventario", icon: Backpack },
 ]
 
 export function AppSidebar() {
@@ -45,6 +46,7 @@ export function AppSidebar() {
                         {...toUserStatisticsProps(user)}
                         compact
                         className="mt-4"
+                        trophies={user.conquistas_desbloqueadas}
                     />
                 )}
             </SidebarHeader>
