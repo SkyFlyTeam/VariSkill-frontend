@@ -21,6 +21,14 @@ export type ChatMessage = {
     tracks?: ChatTrack[]
     // Id da dúvida assimilada quando a resposta veio do cache semântico (resposta instantânea).
     instantAnswerId?: string
+    /** Origem da resposta (VAR-124): PLN_LOCAL | IA_EXTERNA | CONTINGENCIA. */
+    origin?: "PLN_LOCAL" | "IA_EXTERNA" | "CONTINGENCIA"
+}
+
+const ORIGIN_LABEL: Record<NonNullable<ChatMessage["origin"]>, string> = {
+    PLN_LOCAL: "PLN local",
+    IA_EXTERNA: "IA externa",
+    CONTINGENCIA: "Contingência",
 }
 
 type MessageBubbleProps = {
@@ -43,6 +51,20 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                         duvidaId={message.instantAnswerId}
                         className="pl-[3.125rem]"
                     />
+                )}
+                {message.origin && (
+                    <div className="mt-1.5 flex flex-wrap items-center gap-2 px-1 text-[11px] leading-snug text-slate-600">
+                        <span className="rounded-full bg-white/80 px-2 py-0.5 font-bold text-slate-700">
+                            {ORIGIN_LABEL[message.origin]}
+                        </span>
+                        {message.origin === "IA_EXTERNA" && (
+                            <span>
+                                Resposta processada por IA externa; a
+                                pergunta pode ter sido transferida para fora
+                                do Brasil.
+                            </span>
+                        )}
+                    </div>
                 )}
             </div>
         )

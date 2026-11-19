@@ -1,7 +1,7 @@
 # Termos de Uso e Aviso de Privacidade — VariSkill
 
-**Versão:** 1.0
-**Data:** 20/10/2026
+**Versão:** 1.1
+**Data:** 19/11/2026
 **Projeto:** VariSkill — Fatec São José dos Campos (2026-2)
 **Contato:** skyfly.organization@gmail.com
 
@@ -28,15 +28,17 @@ para dúvidas e solicitações é **skyfly.organization@gmail.com**.
 A plataforma pode tratar os seguintes dados:
 
 - **Cadastro e identificação:** nome, apelido, e-mail e senha (armazenada apenas como hash).
-- **Dados adicionais de perfil:** sexo, idade e interesses, usados para personalizar sua
-  experiência. O aceite dos Termos cobre o tratamento desses dados.
+- **Dados adicionais de perfil:** sexo, idade (obrigatória) e interesses, usados para
+  personalizar sua experiência. O aceite dos Termos cobre o tratamento desses dados.
+- **Dados do responsável legal (somente para menores de 18 anos):** nome, CPF e e-mail do
+  responsável, informados no cadastro para registrar a permissão de uso.
 - **Dados de aprendizagem:** matrículas, trilhas, módulos, atividades, respostas, execuções,
   pontuações, XP, streak e progresso.
 - **Conversas com o Vari:** mensagens enviadas por você e respostas do assistente.
 - **Dados técnicos:** data/hora de acesso, endereço IP (quando necessário para segurança),
   navegador e registros de uso da API.
 - **Foto de perfil:** quando utilizada, fica armazenada apenas no **navegador** (localStorage);
-  ela não é enviada ao servidor.
+  ela não é enviada ao servidor e pode ser removida por você a qualquer momento no Perfil.
 - **Cookies:** `sessionid` e `csrftoken` (essenciais para login e segurança) e
   `sidebar_state` (preferência de interface).
 
@@ -67,6 +69,9 @@ Conforme a LGPD, cada tratamento precisa de uma base legal. No VariSkill:
 - **Consentimento** (art. 7º, I): dados adicionais de perfil (sexo, idade e interesses) e
   uso de IA externa para dicas pedagógicas. O aceite único dos Termos cobre esses
   tratamentos e pode ser revogado pela exclusão da conta ou pelo contato de privacidade.
+- **Proteção do melhor interesse do menor** (art. 14): quando o titular tem menos de 18
+  anos, o cadastro exige a declaração dos dados do responsável legal (nome, CPF e e-mail).
+  O projeto é acadêmico e não realiza verificação documental dos dados informados.
 - **Legítimo interesse** (art. 7º, IX): segurança, prevenção a fraudes, logs e melhoria do
   serviço, com avaliação de necessidade e balanceamento.
 - **Cumprimento de obrigação legal ou regulatória** (art. 7º, II), quando aplicável.
@@ -107,8 +112,9 @@ A foto de perfil fica no **localStorage** do seu navegador e pode ser removida p
 
 Mantemos os dados enquanto sua conta estiver ativa e pelo tempo necessário às finalidades
 acima. Dados operacionais antigos podem ser anonimizados ou eliminados por rotina de
-retenção, atualmente com prazo padrão de **365 dias**, salvo obrigação legal, exercício de
-direitos ou necessidade de segurança.
+retenção. O prazo padrão é de **365 dias**, podendo variar por categoria (mensagens,
+execuções e auditoria), salvo obrigação legal, exercício de direitos, legal hold ou
+necessidade de segurança.
 
 Quando você exclui a conta, o sistema pode anonimizar seus identificadores e remover ou
 anonimizar conversas e respostas, preservando métricas agregadas. Uma exclusão definitiva
@@ -130,7 +136,14 @@ Nos termos dos arts. 17 a 22 da LGPD, você pode solicitar:
   aplicável.
 
 As solicitações podem ser feitas pelo e-mail **skyfly.organization@gmail.com**. Responderemos
-no prazo legal e sem custo para você.
+no prazo legal e sem custo para você. O prazo interno de resposta às solicitações de revisão
+é de **15 dias**.
+
+Você também pode, na página **Privacidade** da plataforma:
+
+- **exportar seus dados** em um arquivo CSV único, gerado na hora e baixado no seu navegador;
+- **solicitar a revogação do consentimento** pelo contato de privacidade (a revogação é
+  registrada pela equipe e não apaga automaticamente a conta).
 
 ## 10. Segurança
 
@@ -148,10 +161,16 @@ as medidas de contenção, investigação e comunicação previstas na LGPD.
 
 ## 11. Crianças e adolescentes
 
-O VariSkill não é direcionado intencionalmente a menores de 18 anos. O uso por menores depende
-de consentimento e acompanhamento de pelo menos um dos pais ou responsável legal. Se você é
-responsável por um menor e identificar uso indevido, entre em contato para que possamos
-adotar as medidas cabíveis.
+O VariSkill pode ser usado por menores de 18 anos somente com a permissão de pelo menos um
+dos pais ou responsável legal. No cadastro, o sistema verifica a idade informada: se o titular
+for menor de 18 anos, é obrigatório preencher **nome, CPF válido e e-mail do responsável**.
+Sem esses dados, o cadastro é bloqueado com a mensagem: “Menores de idade precisam de
+permissão do responsável para utilizar nossos serviços.”
+
+O CPF do responsável é validado apenas pelos dígitos verificadores; o projeto **não** realiza
+verificação documental dos dados informados. Se você é responsável por um
+menor e identificar uso indevido, entre em contato para que possamos adotar as medidas
+cabíveis.
 
 ## 12. Inteligência artificial
 
@@ -161,8 +180,10 @@ O Vari pode combinar:
 - **IA externa:** quando necessário, com envio minimizado da dúvida;
 - **contingência:** resposta alternativa quando a IA externa está indisponível.
 
-A origem da resposta é registrada para transparência. A IA não substitui avaliação humana
-quando houver solicitação de revisão.
+A origem da resposta é exibida no chat (**PLN local**, **IA externa** ou **Contingência**) e
+registrada na auditoria. Quando a resposta vem de IA externa, o chat informa que a pergunta
+pode ter sido transferida para fora do Brasil. A IA não substitui avaliação humana quando
+houver solicitação de revisão.
 
 ## 13. Alterações destes termos
 
@@ -174,7 +195,7 @@ solicitaremos novo aceite.
 
 **Contato de privacidade:** skyfly.organization@gmail.com
 **Projeto:** VariSkill — Fatec São José dos Campos
-**Última atualização:** 20/10/2026
+**Última atualização:** 19/11/2026
 
 ---
 
