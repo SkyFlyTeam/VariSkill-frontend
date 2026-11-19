@@ -27,6 +27,18 @@ export type UpdateProfileData = Pick<
 > & {
     interesses_ids: string[]
 }
+/**
+ * Contrato de `GET /users/me/diagnostico-pedagogico/` (VAR-126). Sem memória
+ * consolidada, o backend responde 200 com as listas vazias.
+ */
+export type LearningDiagnostics = {
+    pontos_fortes: string[]
+    topicos_dificuldade: string[]
+    taxa_acerto_geral: number
+    total_atividades_avaliadas: number
+    ultima_atualizacao: string | null
+}
+
 export type LoginData = { apelido: string; password: string }
 export type ChangePasswordData = { senhaAtual: string; novaSenha: string }
 
@@ -44,6 +56,9 @@ export const userService = {
         api<UserProfile>(`/users/${encodeURIComponent(id)}/`),
 
     getInterests: () => api<Interesse[]>("/interesses/"),
+
+    getLearningDiagnostics: () =>
+        api<LearningDiagnostics>("/users/me/diagnostico-pedagogico/"),
 
     updateProfile: (data: UpdateProfileData) =>
         api<UserProfile>("/users/me/", {
