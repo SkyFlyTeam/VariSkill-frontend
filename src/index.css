@@ -274,3 +274,12 @@
     background: var(--color-main-blue);
     cursor: pointer;
 }
+
+/* Esconde o scrollbar nativo de áreas que desenham o próprio trilho. */
+.scrollbar-none {
+    scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+    display: none;
+}
