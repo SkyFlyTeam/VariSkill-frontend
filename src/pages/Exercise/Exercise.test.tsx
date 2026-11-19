@@ -214,10 +214,10 @@ describe("ExercisePage", () => {
                               codigo: "PRIMEIRO_PASSO",
                               titulo: "Primeiro Passo",
                               descricao: "Você concluiu sua primeira atividade.",
-                              categoria: "PROGRESSO",
-                              icone: "icone-primeiro-passo.svg",
+                              icone: "conquistas/primeiro_passo.svg",
                               xp_recompensa: 50,
-                              recompensas: [],
+                              item_desbloqueado: null,
+                              itens_desbloqueados: [],
                           },
                       ],
                   })
