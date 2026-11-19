@@ -175,7 +175,9 @@ describe("AchievementUnlockedModal", () => {
             screen.queryByTestId("achievement-steps"),
         ).not.toBeInTheDocument()
 
-        fireEvent.click(screen.getByRole("button", { name: "Continuar" }))
+        fireEvent.click(
+            screen.getByRole("button", { name: "Continuar Estudando" }),
+        )
 
         expect(onClose).toHaveBeenCalledTimes(1)
     })
@@ -199,7 +201,9 @@ describe("AchievementUnlockedModal", () => {
         ).toBeInTheDocument()
         expect(onClose).not.toHaveBeenCalled()
 
-        fireEvent.click(screen.getByRole("button", { name: "Continuar" }))
+        fireEvent.click(
+            screen.getByRole("button", { name: "Continuar Estudando" }),
+        )
 
         expect(onClose).toHaveBeenCalledTimes(1)
     })
@@ -220,17 +224,17 @@ describe("AchievementUnlockedModal", () => {
         expect(onClose).toHaveBeenCalledTimes(1)
     })
 
-    it("só exibe 'Ver minhas conquistas' quando há destino", () => {
+    it("só exibe 'Ver no Inventário' quando há destino", () => {
         const { unmount } = renderModal()
         expect(
-            screen.queryByRole("button", { name: "Ver minhas conquistas" }),
+            screen.queryByRole("button", { name: "Ver no Inventário" }),
         ).not.toBeInTheDocument()
         unmount()
 
         const onViewAchievements = jest.fn()
         renderModal({ onViewAchievements })
         fireEvent.click(
-            screen.getByRole("button", { name: "Ver minhas conquistas" }),
+            screen.getByRole("button", { name: "Ver no Inventário" }),
         )
 
         expect(onViewAchievements).toHaveBeenCalledTimes(1)
