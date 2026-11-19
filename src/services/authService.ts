@@ -1,4 +1,5 @@
 import { api } from "@/services/api"
+import type { ItemCosmetico } from "@/services/inventoryService"
 
 export type ProgressoNivel = {
     nivel: number
@@ -29,6 +30,10 @@ export type User = {
     interesses?: { id: string; nome: string }[]
     nivel?: number
     progresso_nivel?: ProgressoNivel
+    conquistas_desbloqueadas: number
+    avatar_equipado?: ItemCosmetico | null
+    titulo_equipado?: ItemCosmetico | null
+    borda_equipada?: ItemCosmetico | null
 }
 
 export type RegisterPayload = {
