@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { Download, ScrollText, ShieldCheck } from "lucide-react"
 
 import { MarkdownViewer } from "@/components/shared/MarkdownViewer/MarkdownViewer"
+import { ScrollAreaVari } from "@/components/shared/ScrollAreaVari/ScrollAreaVari"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/authContext"
@@ -91,9 +92,9 @@ export function PrivacyPage() {
     }
 
     return (
-        <main className="min-h-screen bg-page px-4 py-8 text-slate-900 sm:px-8">
-            <div className="mx-auto w-full max-w-4xl">
-                <header className="rounded-3xl bg-white px-6 py-8 sm:px-10">
+        <main className="h-[calc(100svh-2.75rem)] overflow-hidden bg-page px-4 py-6 text-slate-900 sm:h-svh sm:px-8">
+            <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-4">
+                <header className="shrink-0 rounded-3xl bg-white px-6 py-6 sm:px-10">
                     <h1 className="font-poppins text-2xl font-bold text-[#101828]">
                         Privacidade e seus dados
                     </h1>
@@ -131,7 +132,7 @@ export function PrivacyPage() {
                     </div>
                 </header>
 
-                <section className="mt-4 rounded-3xl bg-white px-6 py-8 sm:px-10">
+                <section className="flex min-h-0 flex-1 flex-col rounded-3xl bg-white px-6 py-6 sm:px-10">
                     {aba === "exportar" && (
                         <div className="space-y-4">
                             <div>
@@ -227,8 +228,8 @@ export function PrivacyPage() {
                     )}
 
                     {aba === "termos" && (
-                        <div>
-                            <div className="mb-4 flex flex-wrap items-center gap-2">
+                        <div className="flex min-h-0 flex-1 flex-col">
+                            <div className="mb-4 flex shrink-0 flex-wrap items-center gap-2">
                                 <h2 className="text-base font-bold text-[#101828]">
                                     Termos de Uso e Aviso de Privacidade
                                 </h2>
@@ -250,7 +251,12 @@ export function PrivacyPage() {
                                     Carregando Termos de Uso...
                                 </p>
                             ) : (
-                                <MarkdownViewer content={termos} />
+                                <ScrollAreaVari
+                                    className="min-h-0 flex-1"
+                                    label="Termos de Uso e Aviso de Privacidade"
+                                >
+                                    <MarkdownViewer content={termos} />
+                                </ScrollAreaVari>
                             )}
                         </div>
                     )}
