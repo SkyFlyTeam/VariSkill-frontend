@@ -105,6 +105,14 @@ function opcoesDaResposta(
     }
 }
 
+function promptFromState(state: unknown): string | null {
+    if (!state || typeof state !== "object" || !("prompt" in state)) {
+        return null
+    }
+    const { prompt } = state as { prompt: unknown }
+    return typeof prompt === "string" && prompt.trim() ? prompt.trim() : null
+}
+
 export function ChatPage() {
     const [messages, setMessages] = useState<ChatMessage[]>([])
     const [sessaoId, setSessaoId] = useState<string | null>(null)
@@ -115,6 +123,9 @@ export function ChatPage() {
     const bottomRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
     const location = useLocation()
+    // Pergunta vinda de outra tela (ex.: "Pedir dica de estudo ao Vari", VAR-120),
+    // enviada uma única vez assim que a sessão abre.
+    const pendingPrompt = useRef<string | null>(promptFromState(location.state))
 
     // Volta para a tela anterior; se o chat foi aberto direto (sem histórico), vai para a home.
     function handleBack() {
@@ -167,6 +178,17 @@ export function ChatPage() {
     useEffect(() => {
         bottomRef.current?.scrollIntoView?.({ behavior: "smooth" })
     }, [messages, sending])
+
+    useEffect(() => {
+        const prompt = pendingPrompt.current
+        if (!sessaoId || !prompt) return
+        pendingPrompt.current = null
+        // Limpa o state para o prompt não ser reenviado ao recarregar a página.
+        navigate(location.pathname, { replace: true, state: null })
+        void handleSend(prompt)
+        // Dispara só quando a sessão fica disponível; handleSend usa o sessaoId atual.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sessaoId])
 
     async function handleSend(content: string) {
         setMessages((curr) => [

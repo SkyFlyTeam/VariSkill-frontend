@@ -8,6 +8,7 @@ import {
 
 import { ChevronDown, Lock, Pencil } from "lucide-react"
 
+import { LearningDiagnosticsCard } from "@/components/shared/LearningDiagnosticsCard/LearningDiagnosticsCard"
 import { useToast } from "@/components/shared/toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -202,7 +203,7 @@ export function ProfilePage() {
     }
 
     return (
-        <main className="flex min-h-screen items-center justify-center bg-page p-4 sm:p-8">
+        <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-page p-4 sm:p-8">
             <form
                 noValidate
                 onSubmit={handleSubmit}
@@ -375,6 +376,9 @@ export function ProfilePage() {
                     </Button>
                 </div>
             </form>
+
+            {/* Fora do <form>: o raio-x não participa do "Salvar" do perfil. */}
+            <LearningDiagnosticsCard />
 
             <ChangePasswordDialog
                 open={passwordOpen}

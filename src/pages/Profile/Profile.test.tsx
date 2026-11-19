@@ -28,6 +28,14 @@ jest.mock("@/components/shared/toast", () => ({
     }),
 }))
 
+// O raio-x tem testes próprios; aqui só importa que ele é exibido na página.
+jest.mock(
+    "@/components/shared/LearningDiagnosticsCard/LearningDiagnosticsCard",
+    () => ({
+        LearningDiagnosticsCard: () => <section aria-label="Raio-X" />,
+    }),
+)
+
 jest.mock("@/services/userService", () => ({
     userService: {
         getSession: jest.fn(),
@@ -80,6 +88,9 @@ describe("ProfilePage", () => {
             screen.getByRole("button", { name: "Dados" }),
         ).toBeInTheDocument()
         expect(mockGetInterests).toHaveBeenCalled()
+        expect(
+            screen.getByRole("region", { name: "Raio-X" }),
+        ).toBeInTheDocument()
     })
 
     it("salva sexo, idade e interesses via /users/me/ e atualiza o AuthContext", async () => {

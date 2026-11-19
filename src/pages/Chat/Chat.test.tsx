@@ -71,6 +71,47 @@ describe("ChatPage", () => {
         expect(screen.getByText("Tela de trilhas")).toBeInTheDocument()
     })
 
+    it("envia sozinho, uma única vez, o prompt recebido de outra tela", async () => {
+        const prompt =
+            "Quero revisar Funções Lambda. Me dá uma dica de estudo?"
+        mockedApi
+            .mockResolvedValueOnce(SESSAO)
+            .mockResolvedValueOnce(RESPOSTA)
+        render(
+            <MemoryRouter
+                initialEntries={[
+                    "/perfil",
+                    { pathname: "/chat", state: { prompt } },
+                ]}
+                initialIndex={1}
+            >
+                <Routes>
+                    <Route path="/perfil" element={<p>Tela de perfil</p>} />
+                    <Route path="/chat" element={<ChatPage />} />
+                </Routes>
+            </MemoryRouter>,
+        )
+
+        expect(await screen.findByText(prompt)).toBeInTheDocument()
+        expect(
+            await screen.findByText(RESPOSTA.resposta_assistente.conteudo),
+        ).toBeInTheDocument()
+
+        const envios = mockedApi.mock.calls.filter(([path]) =>
+            String(path).includes("/mensagem/"),
+        )
+        expect(envios).toHaveLength(1)
+        expect(envios[0][1]).toEqual(
+            expect.objectContaining({
+                method: "POST",
+                body: JSON.stringify({ conteudo: prompt }),
+            }),
+        )
+
+        await userEvent.click(screen.getByRole("button", { name: "Voltar" }))
+        expect(screen.getByText("Tela de perfil")).toBeInTheDocument()
+    })
+
     it("deve renderizar a mensagem inicial e as sugestões rápidas", async () => {
         mockedApi.mockResolvedValueOnce(SESSAO)
         renderPage()
