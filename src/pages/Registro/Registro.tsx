@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/authContext"
 import { getFieldErrors } from "@/services/api"
-import { validateRegister } from "@/utils/validation"
+import { formatCpf, onlyDigits, validateRegister } from "@/utils/validation"
 
 const inputClassName =
     "h-10 rounded-[10px] border border-[#cad5e2] bg-white px-3 text-sm shadow-none placeholder:text-neutral-400 focus-visible:ring-1"
@@ -24,11 +24,16 @@ export function RegistroPage() {
     const [password, setPassword] = useState("")
     const [sexo, setSexo] = useState<"" | "M" | "F">("")
     const [idade, setIdade] = useState("")
+    const [responsavelNome, setResponsavelNome] = useState("")
+    const [responsavelCpf, setResponsavelCpf] = useState("")
+    const [responsavelEmail, setResponsavelEmail] = useState("")
     const [showPassword, setShowPassword] = useState(false)
     const [aceiteTermos, setAceiteTermos] = useState(false)
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
     const [error, setError] = useState<string | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
+
+    const menorDeIdade = Number(idade) > 0 && Number(idade) < 18
 
     async function handleSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -41,6 +46,11 @@ export function RegistroPage() {
             password,
             sexo,
             idade,
+            responsavel: {
+                nome: responsavelNome,
+                cpf: responsavelCpf,
+                email: responsavelEmail,
+            },
         })
 
         if (!aceiteTermos) {
@@ -65,6 +75,15 @@ export function RegistroPage() {
                 sexo: sexo as "M" | "F",
                 idade: Number(idade),
                 aceite_termos: aceiteTermos,
+                ...(menorDeIdade
+                    ? {
+                          responsavel: {
+                              nome: responsavelNome,
+                              cpf: onlyDigits(responsavelCpf),
+                              email: responsavelEmail,
+                          },
+                      }
+                    : {}),
             })
         } catch (requestError) {
             const apiFieldErrors = getFieldErrors(requestError)
@@ -221,6 +240,132 @@ export function RegistroPage() {
                         )}
                     </div>
                 </div>
+
+                {menorDeIdade && (
+                    <section
+                        aria-labelledby="responsavel-title"
+                        className="space-y-4 rounded-xl border border-[#cad5e2] p-4"
+                    >
+                        <div>
+                            <h2
+                                id="responsavel-title"
+                                className="text-[14px] leading-[20px] font-bold text-[#101828]"
+                            >
+                                Dados do Responsável
+                            </h2>
+                            <p className="mt-1 text-xs text-neutral-600">
+                                Menores de 18 anos precisam da permissão do
+                                responsável legal para utilizar o VariSkill.
+                            </p>
+                        </div>
+
+                        {fieldErrors.responsavel && (
+                            <p
+                                role="alert"
+                                className="text-xs text-destructive"
+                            >
+                                {fieldErrors.responsavel}
+                            </p>
+                        )}
+
+                        <div className="space-y-1.5">
+                            <label
+                                htmlFor="responsavel-nome"
+                                className={labelClassName}
+                            >
+                                Nome do responsável
+                            </label>
+                            <Input
+                                id="responsavel-nome"
+                                value={responsavelNome}
+                                onChange={(event) =>
+                                    setResponsavelNome(event.target.value)
+                                }
+                                placeholder="Nome completo"
+                                autoComplete="name"
+                                required
+                                aria-invalid={Boolean(
+                                    fieldErrors["responsavel.nome"],
+                                )}
+                                className={inputClassName}
+                            />
+                            {fieldErrors["responsavel.nome"] && (
+                                <p
+                                    role="alert"
+                                    className="text-xs text-destructive"
+                                >
+                                    {fieldErrors["responsavel.nome"]}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label
+                                htmlFor="responsavel-cpf"
+                                className={labelClassName}
+                            >
+                                CPF do responsável
+                            </label>
+                            <Input
+                                id="responsavel-cpf"
+                                inputMode="numeric"
+                                value={responsavelCpf}
+                                onChange={(event) =>
+                                    setResponsavelCpf(
+                                        formatCpf(event.target.value),
+                                    )
+                                }
+                                placeholder="000.000.000-00"
+                                maxLength={14}
+                                required
+                                aria-invalid={Boolean(
+                                    fieldErrors["responsavel.cpf"],
+                                )}
+                                className={inputClassName}
+                            />
+                            {fieldErrors["responsavel.cpf"] && (
+                                <p
+                                    role="alert"
+                                    className="text-xs text-destructive"
+                                >
+                                    {fieldErrors["responsavel.cpf"]}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label
+                                htmlFor="responsavel-email"
+                                className={labelClassName}
+                            >
+                                E-mail do responsável
+                            </label>
+                            <Input
+                                id="responsavel-email"
+                                type="email"
+                                value={responsavelEmail}
+                                onChange={(event) =>
+                                    setResponsavelEmail(event.target.value)
+                                }
+                                placeholder="responsavel@gmail.com"
+                                autoComplete="email"
+                                required
+                                aria-invalid={Boolean(
+                                    fieldErrors["responsavel.email"],
+                                )}
+                                className={inputClassName}
+                            />
+                            {fieldErrors["responsavel.email"] && (
+                                <p
+                                    role="alert"
+                                    className="text-xs text-destructive"
+                                >
+                                    {fieldErrors["responsavel.email"]}
+                                </p>
+                            )}
+                        </div>
+                    </section>
+                )}
 
                 <div className="space-y-1.5">
                     <label htmlFor="password" className={labelClassName}>

@@ -58,5 +58,15 @@ export function useProfilePhoto({
         reader.readAsDataURL(file)
     }
 
-    return { photo, handleFileChange }
+    function removePhoto() {
+        try {
+            localStorage.removeItem(STORAGE_KEY)
+        } catch {
+            // localStorage indisponível — ainda assim limpamos o estado da tela.
+        }
+        setPhoto(null)
+        onSuccess("Foto removida.")
+    }
+
+    return { photo, handleFileChange, removePhoto }
 }
