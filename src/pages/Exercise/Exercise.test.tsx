@@ -111,6 +111,67 @@ beforeEach(() => {
 })
 
 describe("ExercisePage", () => {
+    describe("dica da Vari", () => {
+        function mockDica(resposta: Record<string, unknown>) {
+            const rotasBase = mockedApi.getMockImplementation()!
+            mockedApi.mockImplementation((path: string, ...rest) => {
+                if (path === "/chat/sessao/iniciar/") {
+                    return Promise.resolve({ sessao_id: "sessao-1" })
+                }
+                if (path === "/atividades/ativ-1/pedir-dica/") {
+                    return Promise.resolve(resposta)
+                }
+                return rotasBase(path, ...rest)
+            })
+        }
+
+        async function pedirDica() {
+            renderExercise()
+            fireEvent.click(
+                await screen.findByRole("button", {
+                    name: /Precisa de uma dica da Vari\?/,
+                }),
+            )
+        }
+
+        it("exibe o selo de resposta instantânea quando a dica vem do cache", async () => {
+            mockDica({
+                resposta_coach: "Pense em qual palavra-chave declara variáveis.",
+                origem_resposta: "CACHE_SEMANTICO",
+                questao_id: "q-1",
+                duvida_assimilada_id: "duvida-1",
+            })
+            await pedirDica()
+
+            expect(
+                await screen.findByText(
+                    "Pense em qual palavra-chave declara variáveis.",
+                ),
+            ).toBeInTheDocument()
+            expect(screen.getByText("Resposta instantânea")).toBeInTheDocument()
+            expect(
+                screen.getByRole("button", { name: "Sim, a resposta ajudou" }),
+            ).toBeInTheDocument()
+        })
+
+        it("não exibe o selo quando a dica vem da IA externa", async () => {
+            mockDica({
+                resposta_coach: "Pense em qual palavra-chave declara variáveis.",
+                origem_resposta: "IA_EXTERNA",
+                questao_id: "q-1",
+                duvida_assimilada_id: null,
+            })
+            await pedirDica()
+
+            await screen.findByText(
+                "Pense em qual palavra-chave declara variáveis.",
+            )
+            expect(
+                screen.queryByText("Resposta instantânea"),
+            ).not.toBeInTheDocument()
+        })
+    })
+
     it("carrega a atividade e renderiza a questão com o botão desabilitado", async () => {
         renderExercise()
 
