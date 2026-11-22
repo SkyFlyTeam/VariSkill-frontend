@@ -1,7 +1,5 @@
 import { useState } from "react"
 
-import { Link } from "react-router-dom"
-
 import { Button } from "@/components/ui/button"
 
 const STORAGE_KEY = "variskill:cookie-consent"
@@ -49,16 +47,6 @@ export function CookieBanner() {
                         <strong>sidebar_state</strong> para lembrar o menu
                         aberto ou fechado. Não usamos cookies de rastreamento ou
                         publicidade.
-                    </p>
-                    <p className="text-xs text-neutral-600">
-                        Saiba mais na página de{" "}
-                        <Link
-                            to="/privacidade"
-                            className="font-bold text-brand-blue hover:underline"
-                        >
-                            Privacidade
-                        </Link>
-                        .
                     </p>
                 </div>
                 <Button
