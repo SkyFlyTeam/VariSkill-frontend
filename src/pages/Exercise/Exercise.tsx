@@ -185,6 +185,7 @@ function ExerciseSession({
     onClose,
     onContinue,
 }: ExerciseSessionProps) {
+    const navigate = useNavigate()
     const { user, refreshUser } = useAuth()
     const { questoes } = atividade
 
@@ -468,6 +469,7 @@ function ExerciseSession({
                     open
                     achievements={unlockedAchievements}
                     onClose={() => setAchievementsOpen(false)}
+                    onViewAchievements={() => navigate("/inventario")}
                 />
             )}
 

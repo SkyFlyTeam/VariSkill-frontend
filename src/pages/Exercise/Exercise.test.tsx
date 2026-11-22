@@ -97,6 +97,7 @@ function renderExercise() {
                     element={<ExercisePage />}
                 />
                 <Route path="/trilhas/:trilhaId" element={<div>Roadmap</div>} />
+                <Route path="/inventario" element={<div>Inventário</div>} />
             </Routes>
         </MemoryRouter>,
     )
@@ -258,6 +259,44 @@ describe("ExercisePage", () => {
         expect(
             await screen.findByText("Parabéns, você foi aprovado!"),
         ).toBeInTheDocument()
+    })
+
+    it("abre o inventário pelo modal de conquista", async () => {
+        const defaultImpl = mockedApi.getMockImplementation()!
+        mockedApi.mockImplementation((path: string, ...rest) =>
+            path === "/atividades/ativ-1/submeter/"
+                ? Promise.resolve({
+                      ...RESULTADO,
+                      conquistas_desbloqueadas: [
+                          {
+                              id: "conquista-1",
+                              codigo: "PRIMEIRO_PASSO",
+                              titulo: "Primeiro Passo",
+                              descricao: "Você concluiu sua primeira atividade.",
+                              icone: "conquistas/primeiro_passo.svg",
+                              xp_recompensa: 50,
+                              item_desbloqueado: null,
+                              itens_desbloqueados: [],
+                          },
+                      ],
+                  })
+                : defaultImpl(path, ...rest),
+        )
+        renderExercise()
+
+        await screen.findByText(
+            "1 - Arraste os blocos para completar o código:",
+        )
+        fireEvent.click(screen.getByText("let"))
+        const verifyButton = screen.getByRole("button", { name: "Verificar" })
+        await waitFor(() => expect(verifyButton).toBeEnabled())
+        fireEvent.click(verifyButton)
+
+        fireEvent.click(
+            await screen.findByRole("button", { name: "Ver no Inventário" }),
+        )
+
+        expect(await screen.findByText("Inventário")).toBeInTheDocument()
     })
 
     it("ao tentar novamente, refaz apenas as questões erradas", async () => {

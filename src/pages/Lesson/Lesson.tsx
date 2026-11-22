@@ -2,6 +2,10 @@ import { useEffect, useState } from "react"
 
 import { useNavigate, useParams } from "react-router-dom"
 
+import {
+    AchievementUnlockedModal,
+    type UnlockedAchievement,
+} from "@/components/shared/AchievementUnlockedModal/AchievementUnlockedModal"
 import { LessonView } from "@/components/shared/LessonView/LessonView"
 import { ApiError, api } from "@/services/api"
 
@@ -36,6 +40,12 @@ type Roadmap = {
     modulos: RoadmapModule[]
 }
 
+type LessonCompletionResult = {
+    status: string
+    atividade_id: string
+    conquistas_desbloqueadas?: UnlockedAchievement[]
+}
+
 function extractCodeExamples(texto: string): {
     body: string
     examples: string[][]
@@ -62,6 +72,11 @@ export function LessonPage() {
     const [roadmap, setRoadmap] = useState<Roadmap | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [unlockedAchievements, setUnlockedAchievements] = useState<
+        UnlockedAchievement[]
+    >([])
+    /** Destino após o modal de conquistas; preenchido só quando ele está aberto. */
+    const [nextPath, setNextPath] = useState<string | null>(null)
 
     useEffect(() => {
         if (!atividadeId) return
@@ -123,6 +138,23 @@ export function LessonPage() {
         }
     }
 
+    function getNextPath(trilha: string, currentRoadmap: Roadmap) {
+        // Procura a próxima atividade na sequência do roadmap
+        const todasAtividades = currentRoadmap.modulos.flatMap(
+            (m) => m.atividades,
+        )
+        const currentIndex = todasAtividades.findIndex(
+            (a) => a.id === atividadeId,
+        )
+
+        if (currentIndex !== -1 && currentIndex + 1 < todasAtividades.length) {
+            const nextAtiv = todasAtividades[currentIndex + 1]
+            const rota = nextAtiv.conteudo_teorico ? "licao" : "atividade"
+            return `/trilhas/${encodeURIComponent(trilha)}/${rota}/${encodeURIComponent(nextAtiv.id)}`
+        }
+        return `/trilhas/${encodeURIComponent(trilha)}`
+    }
+
     async function handleNext() {
         if (!trilhaId || !roadmap) {
             handleClose()
@@ -130,32 +162,35 @@ export function LessonPage() {
         }
 
         // Marca a lição teórica atual como concluída no backend
+        let conquistas: UnlockedAchievement[] = []
         if (atividadeId) {
             try {
-                await api(`/atividades/${encodeURIComponent(atividadeId)}/concluir/`, {
-                    method: "POST",
-                })
+                const completion = await api<LessonCompletionResult>(
+                    `/atividades/${encodeURIComponent(atividadeId)}/concluir/`,
+                    { method: "POST" },
+                )
+                conquistas = completion?.conquistas_desbloqueadas ?? []
             } catch {
                 // Se der erro de rede, continua a navegação
             }
         }
 
-        // Procura a próxima atividade na sequência do roadmap
-        const todasAtividades = roadmap.modulos.flatMap((m) => m.atividades)
-        const currentIndex = todasAtividades.findIndex((a) => a.id === atividadeId)
-
-        if (currentIndex !== -1 && currentIndex + 1 < todasAtividades.length) {
-            const nextAtiv = todasAtividades[currentIndex + 1]
-            const rota = nextAtiv.conteudo_teorico ? "licao" : "atividade"
-            navigate(
-                `/trilhas/${encodeURIComponent(trilhaId)}/${rota}/${encodeURIComponent(nextAtiv.id)}`,
-                { replace: true },
-            )
-        } else {
-            navigate(`/trilhas/${encodeURIComponent(trilhaId)}`, {
-                replace: true,
-            })
+        const path = getNextPath(trilhaId, roadmap)
+        if (conquistas.length > 0) {
+            // Comemora antes de seguir para a próxima atividade.
+            setUnlockedAchievements(conquistas)
+            setNextPath(path)
+            return
         }
+        navigate(path, { replace: true })
+    }
+
+    function handleAchievementsClose() {
+        const path = nextPath
+        // A próxima lição reutiliza este componente: limpa antes de navegar.
+        setUnlockedAchievements([])
+        setNextPath(null)
+        if (path) navigate(path, { replace: true })
     }
 
     if (loading) {
@@ -181,13 +216,24 @@ export function LessonPage() {
     )
 
     return (
-        <LessonView
-            title={atividade.conteudo_teorico?.titulo ?? atividade.titulo}
-            body={body}
-            examples={examples}
-            progress={progress}
-            onClose={handleClose}
-            onNext={handleNext}
-        />
+        <>
+            <LessonView
+                title={atividade.conteudo_teorico?.titulo ?? atividade.titulo}
+                body={body}
+                examples={examples}
+                progress={progress}
+                onClose={handleClose}
+                onNext={handleNext}
+            />
+
+            {nextPath && unlockedAchievements.length > 0 && (
+                <AchievementUnlockedModal
+                    open
+                    achievements={unlockedAchievements}
+                    onClose={handleAchievementsClose}
+                    onViewAchievements={() => navigate("/inventario")}
+                />
+            )}
+        </>
     )
 }

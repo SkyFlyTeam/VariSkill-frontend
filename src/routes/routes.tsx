@@ -1,5 +1,3 @@
-import { Suspense, lazy } from "react"
-
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import { ChatPage } from "@/pages/Chat/Chat"
@@ -15,15 +13,6 @@ import { TermosPage } from "@/pages/Termos/Termos"
 import { TrackRoadmapPage } from "@/pages/TrackRoadmap/TrackRoadmap"
 import { PrivateRoute } from "@/routes/privateRoute"
 import { PublicRoute } from "@/routes/publicRoute"
-
-/** Preview só em desenvolvimento: fora do bundle de produção. */
-const AchievementPreviewPage = import.meta.env.DEV
-    ? lazy(() =>
-          import("@/pages/Dev/AchievementPreview").then((module) => ({
-              default: module.AchievementPreviewPage,
-          })),
-      )
-    : null
 
 export const AppRoutes = () => {
     return (
