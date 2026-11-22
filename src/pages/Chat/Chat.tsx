@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
+import { instantAnswerId } from "@/components/shared/InstantAnswerFeedback/instantAnswer"
 import { ChatComposer } from "@/pages/Chat/components/ChatComposer"
 import { ChatHeader } from "@/pages/Chat/components/ChatHeader"
 import {
@@ -44,6 +45,9 @@ type EnviarMensagemResponse = {
             [chave: string]: unknown
         } | null
         reforco_pedagogico?: ReforcoPedagogico | null
+        // PLN_LOCAL | CACHE_SEMANTICO | IA_EXTERNA | CONTINGENCIA
+        origem_resposta?: string | null
+        duvida_assimilada_id?: string | null
         criada_em: string
     }
 }
@@ -208,6 +212,10 @@ export function ChatPage() {
                     sender: "assistant",
                     ...opcoesDaResposta(resposta),
                     action: acaoDaResposta(resposta),
+                    instantAnswerId: instantAnswerId(
+                        resposta.origem_resposta,
+                        resposta.duvida_assimilada_id,
+                    ),
                 },
             ])
         } catch {

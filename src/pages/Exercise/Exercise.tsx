@@ -7,6 +7,8 @@ import {
     type ActivitySubmissionResult,
 } from "@/components/shared/ActivityResultModal/ActivityResultModal"
 import { ExerciseView } from "@/components/shared/ExerciseView/ExerciseView"
+import { InstantAnswerFeedback } from "@/components/shared/InstantAnswerFeedback/InstantAnswerFeedback"
+import { instantAnswerId } from "@/components/shared/InstantAnswerFeedback/instantAnswer"
 import { LevelUpModal } from "@/components/shared/LevelUpModal/LevelUpModal"
 import { Question } from "@/components/shared/Question/Question"
 import { useAuth } from "@/contexts/authContext"
@@ -29,6 +31,12 @@ type Atividade = {
     titulo: string
     contexto_avaliacao: string
     questoes: Questao[]
+}
+
+type Dica = {
+    texto: string
+    // Id da dúvida assimilada quando a dica veio do cache semântico (resposta instantânea).
+    instantAnswerId?: string
 }
 
 type RoadmapActivity = {
@@ -208,14 +216,15 @@ function ExerciseSession({
 
     const [hintLoading, setHintLoading] = useState(false)
     const [hintModalOpen, setHintModalOpen] = useState(false)
-    const [hints, setHints] = useState<Record<string, string>>({})
+    const [hints, setHints] = useState<Record<string, Dica>>({})
     const [sessaoId, setSessaoId] = useState<string | null>(null)
 
     const totalQuestions = activeQuestoes.length
     const questao = activeQuestoes[currentIndex]
     const currentAnswer = (questao && answers[questao.id]) ?? EMPTY_ANSWER
     const isLastQuestion = currentIndex === totalQuestions - 1
-    const hintText = questao ? hints[questao.id] : undefined
+    const hint = questao ? hints[questao.id] : undefined
+    const hintText = hint?.texto
 
     const question = useMemo(
         () =>
@@ -332,7 +341,11 @@ function ExerciseSession({
                 setSessaoId(sessao.sessao_id)
             }
 
-            const resp = await api<{ resposta_coach: string }>(
+            const resp = await api<{
+                resposta_coach: string
+                origem_resposta?: string | null
+                duvida_assimilada_id?: string | null
+            }>(
                 `/atividades/${encodeURIComponent(atividade.id)}/pedir-dica/`,
                 {
                     method: "POST",
@@ -345,14 +358,21 @@ function ExerciseSession({
             )
             setHints((previous) => ({
                 ...previous,
-                [questaoId]: resp.resposta_coach,
+                [questaoId]: {
+                    texto: resp.resposta_coach,
+                    instantAnswerId: instantAnswerId(
+                        resp.origem_resposta,
+                        resp.duvida_assimilada_id,
+                    ),
+                },
             }))
         } catch (error) {
             console.error("Hint request error:", error)
             setHints((previous) => ({
                 ...previous,
-                [questaoId]:
-                    "Não foi possível obter a dica no momento. Tente analisar as opções atentamente!",
+                [questaoId]: {
+                    texto: "Não foi possível obter a dica no momento. Tente analisar as opções atentamente!",
+                },
             }))
         } finally {
             setHintLoading(false)
@@ -436,9 +456,18 @@ function ExerciseSession({
                                         Vari está pensando na dica...
                                     </p>
                                 ) : (
-                                    <p className="text-xs leading-relaxed whitespace-pre-wrap text-slate-700">
-                                        {hintText}
-                                    </p>
+                                    <>
+                                        <p className="text-xs leading-relaxed whitespace-pre-wrap text-slate-700">
+                                            {hintText}
+                                        </p>
+                                        {hint?.instantAnswerId && (
+                                            <InstantAnswerFeedback
+                                                key={hint.instantAnswerId}
+                                                duvidaId={hint.instantAnswerId}
+                                                className="mt-3"
+                                            />
+                                        )}
+                                    </>
                                 )}
                             </div>
                         )}

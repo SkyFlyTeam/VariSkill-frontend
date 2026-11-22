@@ -527,4 +527,72 @@ describe("ChatPage", () => {
             ),
         ).toBeInTheDocument()
     })
+
+    describe("resposta instantânea (cache semântico)", () => {
+        const RESPOSTA_BASE = {
+            id: "msg-cache",
+            remetente: "ASSISTENTE",
+            conteudo: "Duck typing é decidir o tipo pelo comportamento.",
+            intencao_detectada: "DUVIDA_CONTEUDO",
+            sugestoes_rapidas: [],
+            criada_em: "2026-09-27T12:00:01Z",
+        }
+
+        async function enviarDuvida(resposta: Record<string, unknown>) {
+            const user = userEvent.setup()
+            mockedApi
+                .mockResolvedValueOnce(SESSAO)
+                .mockResolvedValueOnce({ resposta_assistente: resposta })
+            renderPage()
+
+            await screen.findByText(SESSAO.mensagem_inicial.conteudo)
+            await user.type(
+                screen.getByPlaceholderText("Digite sua dúvida..."),
+                "O que é duck typing?",
+            )
+            await user.click(
+                screen.getByRole("button", { name: "Enviar mensagem" }),
+            )
+            await screen.findByText(RESPOSTA_BASE.conteudo)
+            return user
+        }
+
+        it("deve exibir o selo e enviar o feedback da dúvida assimilada", async () => {
+            const user = await enviarDuvida({
+                ...RESPOSTA_BASE,
+                origem_resposta: "CACHE_SEMANTICO",
+                duvida_assimilada_id: "duvida-1",
+            })
+
+            expect(screen.getByText("Resposta instantânea")).toBeInTheDocument()
+
+            mockedApi.mockResolvedValueOnce({ sucesso: true })
+            await user.click(
+                screen.getByRole("button", { name: "Sim, a resposta ajudou" }),
+            )
+
+            expect(mockedApi).toHaveBeenLastCalledWith(
+                "/chat/duvidas/duvida-1/feedback/",
+                { method: "POST", body: JSON.stringify({ util: true }) },
+            )
+            expect(
+                await screen.findByText("Obrigado pelo feedback!"),
+            ).toBeInTheDocument()
+        })
+
+        it.each(["IA_EXTERNA", "PLN_LOCAL", "CONTINGENCIA"])(
+            "não deve exibir o selo para respostas com origem %s",
+            async (origem) => {
+                await enviarDuvida({
+                    ...RESPOSTA_BASE,
+                    origem_resposta: origem,
+                    duvida_assimilada_id: null,
+                })
+
+                expect(
+                    screen.queryByText("Resposta instantânea"),
+                ).not.toBeInTheDocument()
+            },
+        )
+    })
 })
