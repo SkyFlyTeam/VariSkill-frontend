@@ -1,3 +1,4 @@
+import { InstantAnswerFeedback } from "@/components/shared/InstantAnswerFeedback/InstantAnswerFeedback"
 import { ChatAvatar } from "@/pages/Chat/components/ChatAvatar"
 
 export type ChatAction = {
@@ -18,6 +19,8 @@ export type ChatMessage = {
     suggestions?: string[]
     action?: ChatAction
     tracks?: ChatTrack[]
+    // Id da dúvida assimilada quando a resposta veio do cache semântico (resposta instantânea).
+    instantAnswerId?: string
 }
 
 type MessageBubbleProps = {
@@ -27,11 +30,20 @@ type MessageBubbleProps = {
 export function MessageBubble({ message }: MessageBubbleProps) {
     if (message.sender === "assistant") {
         return (
-            <div className="flex items-end gap-2.5">
-                <ChatAvatar size="sm" />
-                <p className="relative max-w-[85%] rounded-2xl rounded-bl-sm bg-[#e91a36] px-4 py-2.5 text-sm leading-relaxed text-white shadow-sm whitespace-pre-wrap break-words sm:max-w-[70%]">
-                    {message.content}
-                </p>
+            <div className="flex flex-col gap-1.5">
+                <div className="flex items-end gap-2.5">
+                    <ChatAvatar size="sm" />
+                    <p className="relative max-w-[85%] rounded-2xl rounded-bl-sm bg-[#e91a36] px-4 py-2.5 text-sm leading-relaxed text-white shadow-sm whitespace-pre-wrap break-words sm:max-w-[70%]">
+                        {message.content}
+                    </p>
+                </div>
+                {message.instantAnswerId && (
+                    // Alinha com o balão: largura do avatar (size-10) + gap-2.5.
+                    <InstantAnswerFeedback
+                        duvidaId={message.instantAnswerId}
+                        className="pl-[3.125rem]"
+                    />
+                )}
             </div>
         )
     }
