@@ -6,14 +6,13 @@ import {
     useState,
 } from "react"
 
-import { Camera, ChevronDown, Lock, Pencil, User } from "lucide-react"
+import { ChevronDown, Lock, Pencil } from "lucide-react"
 
 import { useToast } from "@/components/shared/toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/contexts/authContext"
 import { ChangePasswordDialog } from "@/pages/Profile/ChangePasswordDialog"
-import { useProfilePhoto } from "@/pages/Profile/useProfilePhoto"
 import {
     type Interesse,
     type UserProfile,
@@ -71,11 +70,6 @@ export function ProfilePage() {
     const [passwordOpen, setPasswordOpen] = useState(false)
     const nomeRef = useRef<HTMLInputElement>(null)
     const apelidoRef = useRef<HTMLInputElement>(null)
-    const photoInputRef = useRef<HTMLInputElement>(null)
-
-    function openPhotoPicker() {
-        photoInputRef.current?.click()
-    }
 
     useEffect(() => {
         if (!user?.id) return
@@ -214,7 +208,6 @@ export function ProfilePage() {
                 onSubmit={handleSubmit}
                 className="w-full max-w-4xl rounded-3xl bg-white px-6 py-10 sm:px-20"
             >
-
                 <section className="mt-10">
                     <h2 className="text-base font-bold">Informações</h2>
 
