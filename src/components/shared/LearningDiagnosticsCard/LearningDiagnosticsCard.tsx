@@ -1,20 +1,23 @@
 import { useCallback, useEffect, useState } from "react"
 
+import { useNavigate } from "react-router-dom"
+
 import {
     ArrowRight,
     Check,
     CircleCheck,
+    Dumbbell,
     MessageCircle,
     RotateCcw,
     ScanSearch,
     Target,
 } from "lucide-react"
-import { useNavigate } from "react-router-dom"
 
 import neutralVari from "@/assets/vari/neutralVari.svg"
 import { cn } from "@/lib/utils"
 import {
     type LearningDiagnostics,
+    type PracticeTopic,
     userService,
 } from "@/services/userService"
 
@@ -114,8 +117,12 @@ function LoadingState() {
                 <div className="flex flex-col gap-3">
                     <div className={cn(skeleton, "h-4 w-44 rounded-md")} />
                     <div className="flex gap-2">
-                        <div className={cn(skeleton, "h-8.5 w-36 rounded-full")} />
-                        <div className={cn(skeleton, "h-8.5 w-28 rounded-full")} />
+                        <div
+                            className={cn(skeleton, "h-8.5 w-36 rounded-full")}
+                        />
+                        <div
+                            className={cn(skeleton, "h-8.5 w-28 rounded-full")}
+                        />
                     </div>
                 </div>
                 <div className="flex flex-col gap-3">
@@ -193,7 +200,9 @@ function EmptyState({ totalActivities }: { totalActivities: number }) {
                     onClick={() => navigate("/")}
                     className="mt-1 inline-flex min-h-10 items-center gap-1.5 rounded-[10px] bg-brand-red px-4.5 text-xs font-bold text-white transition-colors hover:bg-brand-red/90"
                 >
-                    {isNewStudent ? "Ir para as trilhas" : "Continuar estudando"}
+                    {isNewStudent
+                        ? "Ir para as trilhas"
+                        : "Continuar estudando"}
                     <ArrowRight aria-hidden="true" className="size-3.5" />
                 </button>
             </div>
@@ -205,6 +214,9 @@ function ReadyState({ data }: { data: LearningDiagnostics }) {
     const navigate = useNavigate()
     const strengths = topicNames(data.pontos_fortes)
     const focusTopics = topicNames(data.topicos_dificuldade)
+    const practiceByTopic = new Map(
+        data.topicos_praticar.map((practice) => [practice.topico, practice]),
+    )
     const total = data.total_atividades_avaliadas
 
     if (strengths.length === 0 && focusTopics.length === 0) {
@@ -213,6 +225,12 @@ function ReadyState({ data }: { data: LearningDiagnostics }) {
 
     function askForTip(topic: string) {
         navigate("/chat", { state: { prompt: studyTipPrompt(topic) } })
+    }
+
+    function practiceAgain({ trilha_id, atividade_id }: PracticeTopic) {
+        navigate(`/trilhas/${trilha_id}/atividade/${atividade_id}`, {
+            state: { praticaReforco: true },
+        })
     }
 
     return (
@@ -234,7 +252,9 @@ function ReadyState({ data }: { data: LearningDiagnostics }) {
                 </li>
                 <li className="rounded-full bg-slate-100 px-3 py-1.5 text-xs text-slate-700">
                     <strong className="text-brand-navy">{total}</strong>{" "}
-                    {total === 1 ? "atividade avaliada" : "atividades avaliadas"}
+                    {total === 1
+                        ? "atividade avaliada"
+                        : "atividades avaliadas"}
                 </li>
             </ul>
 
@@ -287,32 +307,53 @@ function ReadyState({ data }: { data: LearningDiagnostics }) {
                             aria-label="Tópicos em Foco"
                             className="flex flex-col gap-2"
                         >
-                            {focusTopics.map((topic) => (
-                                <li
-                                    key={topic}
-                                    className="flex flex-col gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:py-1.5 sm:pr-1.5 sm:pl-3"
-                                >
-                                    <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-amber-900 sm:text-xs">
-                                        <Target
-                                            aria-hidden="true"
-                                            className="size-3.5 shrink-0"
-                                        />
-                                        {topic}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        aria-label={`Pedir dica de estudo ao Vari sobre ${topic}`}
-                                        onClick={() => askForTip(topic)}
-                                        className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-[10px] border border-brand-navy bg-white px-3 text-xs font-bold whitespace-nowrap text-brand-navy transition-colors hover:bg-brand-navy hover:text-white sm:min-h-9 sm:text-[11px]"
+                            {focusTopics.map((topic) => {
+                                const practice = practiceByTopic.get(topic)
+                                return (
+                                    <li
+                                        key={topic}
+                                        className="flex flex-col gap-2.5 rounded-xl border border-amber-200 bg-amber-50 p-3"
                                     >
-                                        <MessageCircle
-                                            aria-hidden="true"
-                                            className="size-3.5"
-                                        />
-                                        Pedir dica de estudo ao Vari
-                                    </button>
-                                </li>
-                            ))}
+                                        <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-amber-900">
+                                            <Target
+                                                aria-hidden="true"
+                                                className="size-3.5 shrink-0"
+                                            />
+                                            {topic}
+                                        </span>
+                                        <div className="flex flex-wrap gap-2">
+                                            {practice && (
+                                                <button
+                                                    type="button"
+                                                    aria-label={`Praticar de novo ${topic}`}
+                                                    onClick={() =>
+                                                        practiceAgain(practice)
+                                                    }
+                                                    className="inline-flex min-h-10 flex-1 basis-32 items-center justify-center gap-1.5 rounded-[10px] border border-brand-navy bg-brand-navy px-3 text-xs font-bold text-white transition-colors hover:bg-brand-navy/90"
+                                                >
+                                                    <Dumbbell
+                                                        aria-hidden="true"
+                                                        className="size-3.5 shrink-0"
+                                                    />
+                                                    Praticar de novo
+                                                </button>
+                                            )}
+                                            <button
+                                                type="button"
+                                                aria-label={`Pedir dica de estudo ao Vari sobre ${topic}`}
+                                                onClick={() => askForTip(topic)}
+                                                className="inline-flex min-h-10 flex-1 basis-48 items-center justify-center gap-1.5 rounded-[10px] border border-brand-navy bg-white px-3 text-xs font-bold text-brand-navy transition-colors hover:bg-brand-navy hover:text-white"
+                                            >
+                                                <MessageCircle
+                                                    aria-hidden="true"
+                                                    className="size-3.5 shrink-0"
+                                                />
+                                                Pedir dica de estudo ao Vari
+                                            </button>
+                                        </div>
+                                    </li>
+                                )
+                            })}
                         </ul>
                     ) : (
                         <p className="text-[13px] text-gray-600">

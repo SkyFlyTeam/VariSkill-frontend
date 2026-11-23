@@ -88,9 +88,13 @@ function mockApi(atividade = ATIVIDADE) {
     })
 }
 
-function renderExercise() {
+function renderExercise(state?: unknown) {
     return render(
-        <MemoryRouter initialEntries={["/trilhas/trilha-1/atividade/ativ-1"]}>
+        <MemoryRouter
+            initialEntries={[
+                { pathname: "/trilhas/trilha-1/atividade/ativ-1", state },
+            ]}
+        >
             <Routes>
                 <Route
                     path="/trilhas/:trilhaId/atividade/:atividadeId"
@@ -136,7 +140,8 @@ describe("ExercisePage", () => {
 
         it("exibe o selo de resposta instantânea quando a dica vem do cache", async () => {
             mockDica({
-                resposta_coach: "Pense em qual palavra-chave declara variáveis.",
+                resposta_coach:
+                    "Pense em qual palavra-chave declara variáveis.",
                 origem_resposta: "CACHE_SEMANTICO",
                 questao_id: "q-1",
                 duvida_assimilada_id: "duvida-1",
@@ -156,7 +161,8 @@ describe("ExercisePage", () => {
 
         it("não exibe o selo quando a dica vem da IA externa", async () => {
             mockDica({
-                resposta_coach: "Pense em qual palavra-chave declara variáveis.",
+                resposta_coach:
+                    "Pense em qual palavra-chave declara variáveis.",
                 origem_resposta: "IA_EXTERNA",
                 questao_id: "q-1",
                 duvida_assimilada_id: null,
@@ -205,6 +211,7 @@ describe("ExercisePage", () => {
                     method: "POST",
                     body: JSON.stringify({
                         respostas: { "q-1": ["bloco-1"] },
+                        pratica_reforco: false,
                     }),
                 }),
             ),
@@ -256,6 +263,7 @@ describe("ExercisePage", () => {
                             "q-1": ["bloco-1"],
                             "q-2": ["opcao-1"],
                         },
+                        pratica_reforco: false,
                     }),
                 }),
             ),
@@ -280,7 +288,8 @@ describe("ExercisePage", () => {
                               id: "conquista-1",
                               codigo: "PRIMEIRO_PASSO",
                               titulo: "Primeiro Passo",
-                              descricao: "Você concluiu sua primeira atividade.",
+                              descricao:
+                                  "Você concluiu sua primeira atividade.",
                               icone: "conquistas/primeiro_passo.svg",
                               xp_recompensa: 50,
                               item_desbloqueado: null,
@@ -333,7 +342,8 @@ describe("ExercisePage", () => {
                               id: "conquista-1",
                               codigo: "PRIMEIRO_PASSO",
                               titulo: "Primeiro Passo",
-                              descricao: "Você concluiu sua primeira atividade.",
+                              descricao:
+                                  "Você concluiu sua primeira atividade.",
                               icone: "conquistas/primeiro_passo.svg",
                               xp_recompensa: 50,
                               item_desbloqueado: null,
@@ -426,6 +436,7 @@ describe("ExercisePage", () => {
                             "q-1": ["bloco-1"],
                             "q-2": ["opcao-1"],
                         },
+                        pratica_reforco: false,
                     }),
                 }),
             ),
@@ -433,6 +444,54 @@ describe("ExercisePage", () => {
         expect(
             await screen.findByText("Parabéns, você foi aprovado!"),
         ).toBeInTheDocument()
+    })
+
+    it("na prática do Raio-X, só a primeira submissão abre nova rodada", async () => {
+        mockApi(ATIVIDADE_MULTIPLA)
+        const submitResponses = [
+            {
+                ...RESULTADO,
+                aprovado: false,
+                taxa_acerto: 50,
+                questoes_feedback: [
+                    { questao_id: "q-1", correta: true, explicacao: "" },
+                    { questao_id: "q-2", correta: false, explicacao: "" },
+                ],
+            },
+            RESULTADO,
+        ]
+        const defaultImpl = mockedApi.getMockImplementation()!
+        mockedApi.mockImplementation((path: string, ...rest) =>
+            path === "/atividades/ativ-1/submeter/"
+                ? Promise.resolve(submitResponses.shift())
+                : defaultImpl(path, ...rest),
+        )
+        renderExercise({ praticaReforco: true })
+
+        await screen.findByText("Questão 1 de 2")
+        fireEvent.click(screen.getByText("let"))
+        fireEvent.click(screen.getByRole("button", { name: "Próxima" }))
+        await screen.findByText("Questão 2 de 2")
+        fireEvent.click(screen.getByText("str('42')"))
+        fireEvent.click(screen.getByRole("button", { name: "Verificar" }))
+
+        fireEvent.click(
+            await screen.findByRole("button", { name: /Tentar Novamente/i }),
+        )
+        await screen.findByText("Revisão: questão 1 de 1")
+        fireEvent.click(screen.getByText("int('42')"))
+        const verifyButton = screen.getByRole("button", { name: "Verificar" })
+        await waitFor(() => expect(verifyButton).toBeEnabled())
+        fireEvent.click(verifyButton)
+        await screen.findByText("Parabéns, você foi aprovado!")
+
+        const bodies = mockedApi.mock.calls
+            .filter(([path]) => path === "/atividades/ativ-1/submeter/")
+            .map(([, init]) => JSON.parse(String(init?.body)))
+        expect(bodies.map((body) => body.pratica_reforco)).toEqual([
+            true,
+            false,
+        ])
     })
 
     it("restaura a questão atual e as respostas salvas no localStorage", async () => {

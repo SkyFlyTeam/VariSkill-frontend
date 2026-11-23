@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 
-import { useNavigate, useParams } from "react-router-dom"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 
 import { AchievementUnlockedModal } from "@/components/shared/AchievementUnlockedModal/AchievementUnlockedModal"
 import {
@@ -56,6 +56,16 @@ type RoadmapModule = {
 type Roadmap = {
     percentual_conclusao: number
     modulos: RoadmapModule[]
+}
+
+/** Atividade aberta pelo "Praticar de novo" do Raio-X de Aprendizado. */
+function isPracticeFromState(state: unknown): boolean {
+    return (
+        !!state &&
+        typeof state === "object" &&
+        "praticaReforco" in state &&
+        (state as { praticaReforco: unknown }).praticaReforco === true
+    )
 }
 
 export function ExercisePage() {
@@ -194,8 +204,10 @@ function ExerciseSession({
     onContinue,
 }: ExerciseSessionProps) {
     const navigate = useNavigate()
+    const location = useLocation()
     const { user, refreshUser } = useAuth()
     const { questoes } = atividade
+    const isPractice = isPracticeFromState(location.state)
 
     const {
         activeQuestoes,
@@ -291,7 +303,12 @@ function ExerciseSession({
                 `/atividades/${atividade.id}/submeter/`,
                 {
                     method: "POST",
-                    body: JSON.stringify({ respostas }),
+                    // Só a primeira submissão da prática abre uma nova rodada no
+                    // Raio-X; o "Tentar de novo" dentro dela não apaga os erros.
+                    body: JSON.stringify({
+                        respostas,
+                        pratica_reforco: isPractice && !isRetry,
+                    }),
                 },
             )
             clearStorage()
@@ -353,17 +370,14 @@ function ExerciseSession({
                 resposta_coach: string
                 origem_resposta?: string | null
                 duvida_assimilada_id?: string | null
-            }>(
-                `/atividades/${encodeURIComponent(atividade.id)}/pedir-dica/`,
-                {
-                    method: "POST",
-                    body: JSON.stringify({
-                        sessao_id: currentSessaoId,
-                        questao_id: questaoId,
-                        pergunta: "Como resolver este exercício?",
-                    }),
-                },
-            )
+            }>(`/atividades/${encodeURIComponent(atividade.id)}/pedir-dica/`, {
+                method: "POST",
+                body: JSON.stringify({
+                    sessao_id: currentSessaoId,
+                    questao_id: questaoId,
+                    pergunta: "Como resolver este exercício?",
+                }),
+            })
             setHints((previous) => ({
                 ...previous,
                 [questaoId]: {
