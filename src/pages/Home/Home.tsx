@@ -23,6 +23,7 @@ type TrilhaItem = {
     titulo: string
     descricao: string
     habilidade: string
+    gerada_por_ia: boolean
     total_modulos: number
     total_atividades: number
 }
@@ -218,6 +219,7 @@ export function HomePage() {
                                     skill={trilha.habilidade}
                                     reason={trilha.motivo}
                                     totalModules={trilha.total_modulos}
+                                    aiGenerated={trilha.gerada_por_ia}
                                     loading={enrollingTrackId === trilha.id}
                                     onStartTrack={handleStartTrack}
                                 />
@@ -276,6 +278,7 @@ export function HomePage() {
                                                     totalModules={
                                                         trilhaInfo?.total_modulos || 1
                                                     }
+                                                    aiGenerated={trilhaInfo?.gerada_por_ia}
                                                     completedModules={
                                                         modulosConcluidos[mat.trilha_id] ?? 0
                                                     }
@@ -317,6 +320,7 @@ export function HomePage() {
                                                 variant="available"
                                                 category={track.habilidade}
                                                 totalModules={track.total_modulos}
+                                                aiGenerated={track.gerada_por_ia}
                                                 onStart={() => handleStartTrack(track.id)}
                                                 image={
                                                     <CodeXml

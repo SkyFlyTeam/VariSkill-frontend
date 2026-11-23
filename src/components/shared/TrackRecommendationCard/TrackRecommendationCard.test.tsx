@@ -56,4 +56,12 @@ describe("TrackRecommendationCard", () => {
         expect(button).toBeDisabled()
         expect(screen.getByText("Iniciando...")).toBeInTheDocument()
     })
+
+    it("deve exibir o selo de IA apenas para trilhas geradas por IA", () => {
+        const { rerender } = render(<TrackRecommendationCard {...mockProps} />)
+        expect(screen.queryByText("Gerada por IA")).not.toBeInTheDocument()
+
+        rerender(<TrackRecommendationCard {...mockProps} aiGenerated />)
+        expect(screen.getByText("Gerada por IA")).toBeInTheDocument()
+    })
 })

@@ -7,6 +7,7 @@ import {
     type ActivityPurpose,
     type ActivityStatus,
 } from "@/components/shared/ActivityNode/ActivityNode"
+import { AiGeneratedBadge } from "@/components/shared/AiGeneratedBadge"
 import { RadialProgress } from "@/components/shared/RadialProgress"
 import { ApiError, api } from "@/services/api"
 
@@ -28,7 +29,7 @@ type RoadmapModule = {
 }
 
 type Roadmap = {
-    trilha: { id: string; titulo: string; habilidade: string }
+    trilha: { id: string; titulo: string; habilidade: string; gerada_por_ia: boolean }
     percentual_conclusao: number
     modulos: RoadmapModule[]
     proxima_atividade_recomendada: {
@@ -124,9 +125,14 @@ export function TrackRoadmapPage() {
                 {!loading && !error && roadmap && (
                     <div className="flex flex-col gap-7">
                         <header className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 rounded-xl bg-main-blue px-5 py-3.5 shadow-sm sm:px-6">
-                            <h1 className="truncate text-base font-bold text-white sm:text-lg">
-                                {roadmap.trilha.titulo}
-                            </h1>
+                            <div className="flex min-w-0 items-center gap-2">
+                                <h1 className="truncate text-base font-bold text-white sm:text-lg">
+                                    {roadmap.trilha.titulo}
+                                </h1>
+                                {roadmap.trilha.gerada_por_ia && (
+                                    <AiGeneratedBadge variant="inverse" compact />
+                                )}
+                            </div>
                             <p className="truncate text-center text-[11px] font-medium text-white/90 sm:text-sm">
                                 {roadmap.modulos.find((m) => m.status === "EM_ANDAMENTO")?.titulo ??
                                     roadmap.modulos[0]?.titulo ??

@@ -155,4 +155,20 @@ describe("TrackCard", () => {
             )
         },
     )
+
+    it("marca a trilha gerada por IA", () => {
+        const { rerender } = render(
+            <MemoryRouter>
+                <TrackCard {...baseProps} variant="available" />
+            </MemoryRouter>,
+        )
+        expect(screen.queryByText("Gerada por IA")).not.toBeInTheDocument()
+
+        rerender(
+            <MemoryRouter>
+                <TrackCard {...baseProps} variant="available" aiGenerated />
+            </MemoryRouter>,
+        )
+        expect(screen.getByText("Gerada por IA")).toBeInTheDocument()
+    })
 })

@@ -149,6 +149,33 @@ describe("ChatPage", () => {
         expect(mockedApi).toHaveBeenCalledTimes(1) // Apenas a sessão inicial
     })
 
+    it("deve marcar no chip a trilha gerada por IA", async () => {
+        const user = userEvent.setup()
+        const resposta = {
+            resposta_assistente: {
+                ...RESPOSTA.resposta_assistente,
+                intencao_detectada: "RECOMENDAR_TRILHA",
+                opcoes_trilhas: [
+                    { id: "trilha-ia", titulo: "Culinária: Primeiros Passos", habilidade: "Culinária", gerada_por_ia: true },
+                ],
+                sugestoes_rapidas: [],
+            },
+        }
+        mockedApi.mockResolvedValueOnce(SESSAO).mockResolvedValueOnce(resposta)
+        renderPage()
+        await screen.findByText(SESSAO.mensagem_inicial.conteudo)
+
+        await user.type(screen.getByPlaceholderText("Digite sua dúvida..."), "Quero aprender culinária")
+        await user.click(screen.getByRole("button", { name: "Enviar mensagem" }))
+
+        const rodape = await screen.findByRole("group", { name: "Sugestões rápidas" })
+        expect(
+            within(rodape).getByRole("button", {
+                name: "Iniciar trilha Culinária: Primeiros Passos Gerada por IA",
+            }),
+        ).toBeInTheDocument()
+    })
+
     it("deve enviar a mensagem e exibir as opções da resposta apenas no rodapé", async () => {
         const user = userEvent.setup()
         mockedApi.mockResolvedValueOnce(SESSAO).mockResolvedValueOnce(RESPOSTA)
