@@ -41,9 +41,17 @@ export type UpdateProfileData = Pick<
  * Contrato de `GET /users/me/diagnostico-pedagogico/` (VAR-126). Sem memória
  * consolidada, o backend responde 200 com as listas vazias.
  */
+export type PracticeTopic = {
+    topico: string
+    trilha_id: string
+    /** Atividade do módulo com menor acerto: refazê-la pode tirar o tópico do foco. */
+    atividade_id: string
+}
+
 export type LearningDiagnostics = {
     pontos_fortes: string[]
     topicos_dificuldade: string[]
+    topicos_praticar: PracticeTopic[]
     taxa_acerto_geral: number
     total_atividades_avaliadas: number
     ultima_atualizacao: string | null
