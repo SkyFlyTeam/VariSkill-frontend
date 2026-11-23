@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom"
 
+import { AiGeneratedBadge } from "@/components/shared/AiGeneratedBadge"
 import type {
     ChatAction,
     ChatTrack,
@@ -57,11 +58,12 @@ export function QuickChips({
                     type="button"
                     disabled={disabled || startingTrackId !== null}
                     onClick={() => onStartTrack?.(track)}
-                    className={CHIP_PRIMARIO}
+                    className={`${CHIP_PRIMARIO} inline-flex items-center gap-1.5`}
                 >
                     {startingTrackId === track.id
                         ? "Iniciando..."
                         : `Iniciar trilha ${track.titulo}`}
+                    {track.gerada_por_ia && <AiGeneratedBadge variant="inverse" compact />}
                 </button>
             ))}
             {chips.map((chip) => (

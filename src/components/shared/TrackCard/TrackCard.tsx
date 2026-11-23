@@ -2,6 +2,7 @@ import { type ReactNode, useId } from "react"
 
 import { Link } from "react-router-dom"
 
+import { AiGeneratedBadge } from "@/components/shared/AiGeneratedBadge"
 import { RadialProgress } from "@/components/shared/RadialProgress"
 
 type TrackCardBaseProps = {
@@ -10,6 +11,8 @@ type TrackCardBaseProps = {
     category?: string
     image: ReactNode
     totalModules: number
+    // Trilha criada pelo Coach com IA generativa.
+    aiGenerated?: boolean
     onStart?: (id: string, e: React.MouseEvent) => void
 }
 
@@ -24,7 +27,7 @@ function normalizeCount(value: number) {
 }
 
 export function TrackCard(props: TrackCardProps) {
-    const { id, title, category = "Tecnologia", image, onStart } = props
+    const { id, title, category = "Tecnologia", image, aiGenerated = false, onStart } = props
     const descriptionId = useId()
     const total = normalizeCount(props.totalModules)
     const completed =
@@ -54,9 +57,12 @@ export function TrackCard(props: TrackCardProps) {
                 {image}
             </div>
             <div className="min-w-0 flex-1">
-                <p className="text-[9px] font-medium text-sky-700">
-                    {category}
-                </p>
+                <div className="flex items-center gap-1.5">
+                    <p className="truncate text-[9px] font-medium text-sky-700">
+                        {category}
+                    </p>
+                    {aiGenerated && <AiGeneratedBadge compact />}
+                </div>
                 <h3
                     className="truncate text-xs font-bold text-slate-900"
                     title={title}

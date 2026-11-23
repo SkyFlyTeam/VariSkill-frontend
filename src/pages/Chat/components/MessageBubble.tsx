@@ -9,6 +9,7 @@ export type ChatAction = {
 export type ChatTrack = {
     id: string
     titulo: string
+    gerada_por_ia?: boolean
 }
 
 export type ChatMessage = {

@@ -1,11 +1,15 @@
 import { Sparkles, ArrowRight, BookOpen, Layers } from "lucide-react"
 
+import { AiGeneratedBadge } from "@/components/shared/AiGeneratedBadge"
+
 export type TrackRecommendationCardProps = {
     id: string
     title: string
     skill: string
     reason?: string
     totalModules?: number
+    // Trilha criada pelo Coach com IA generativa.
+    aiGenerated?: boolean
     onStartTrack?: (id: string) => void | Promise<void>
     loading?: boolean
     compact?: boolean
@@ -17,6 +21,7 @@ export function TrackRecommendationCard({
     skill,
     reason,
     totalModules,
+    aiGenerated = false,
     onStartTrack,
     loading = false,
     compact = false,
@@ -42,6 +47,7 @@ export function TrackRecommendationCard({
                 <h4 className="text-sm font-bold text-slate-900 group-hover:text-sky-900 transition-colors">
                     {title}
                 </h4>
+                {aiGenerated && <AiGeneratedBadge className="self-start" />}
 
                 {reason && (
                     <p className="text-xs text-slate-600 leading-relaxed bg-slate-50/80 rounded-lg p-2.5 border border-slate-100/80">

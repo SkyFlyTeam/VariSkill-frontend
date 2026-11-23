@@ -113,7 +113,7 @@ function opcoesDaResposta(
         (sugestao) => !tracks.some((t) => sugestao.includes(t.titulo)),
     )
     return {
-        tracks: tracks.map(({ id, titulo }) => ({ id, titulo })),
+        tracks: tracks.map(({ id, titulo, gerada_por_ia }) => ({ id, titulo, gerada_por_ia })),
         suggestions,
     }
 }
